@@ -1,6 +1,6 @@
 # IT Service Management backend
 
-Spring Boot REST backend and PostgreSQL schema for incident reporting, administrator-confirmed assignment, SLA tracking, and resolution history. React and Python/scikit-learn are separate team components.
+Spring Boot REST backend and PostgreSQL schema for incident reporting, administrator-confirmed assignment, SLA tracking, and resolution history. A React client and Python/scikit-learn recommendation service are companion components.
 
 **Verification status:** 51 domain tests and 23 PostgreSQL/API integration tests previously passed against PostgreSQL 17.11. The starter-catalog migration was added after those test runs and still needs validation. Python model integration and the complete React workflow also remain. See [validation results](docs/validation-results.md).
 
@@ -15,10 +15,10 @@ The two Maven modules produce one deployable backend application; they are not m
 
 ## Requirements and setup
 
-Use Java 21 or newer supported by Spring Boot 4.1.1, Maven, and PostgreSQL 17.x. PostgreSQL 17 matches the Compose setup and remains supported. The project compiles to Java 21. Spring Boot 4.1.1 matches the parent/dependency metadata already present in this environment; dependencies are pinned by its BOM. See the official [Spring Boot installation guide](https://docs.spring.io/spring-boot/installing.html) for supported tooling. PostgreSQL's [macOS download page](https://www.postgresql.org/download/macosx/) links to the EDB installer, which includes the server and pgAdmin.
+Requirements: Java 21 or newer, Maven, and PostgreSQL 17.x. The project compiles to Java 21. Spring Boot manages compatible dependency versions.
 
-1. Install PostgreSQL 17.x for macOS and start the PostgreSQL server. The assignment app does not need pgAdmin, but it can make the first database setup easier.
-2. In pgAdmin's Query Tool connected to the local server as its administrator, create an application login and two separate databases. Choose a strong local password in place of `choose-a-local-password`:
+1. Install PostgreSQL 17.x using the installer or package manager for your operating system, then start the database service.
+2. Using a PostgreSQL administration client, create an application login and two databases. Replace the example passwords with local development passwords:
 
    ```sql
    CREATE ROLE itsm LOGIN PASSWORD 'choose-a-local-password';
@@ -27,15 +27,22 @@ Use Java 21 or newer supported by Spring Boot 4.1.1, Maven, and PostgreSQL 17.x.
    CREATE DATABASE itsm_test OWNER itsm_test;
    ```
 
-   The test database is separate so automated tests cannot change development data. These local credentials are examples; choose your own for development.
-3. Copy `.env.example` to `.env`, set `DB_PASSWORD` to the password chosen above, and replace the bootstrap administrator password. Never commit `.env`.
-4. Export the variables in the terminal used to launch Java. Spring Boot does **not** read `.env` automatically. For a trusted shell-compatible `.env` file, `set -a; . ./.env; set +a` exports them.
-5. Run `scripts/run.sh`. Maven needs internet access on its first build.
+   The separate test database protects development data from automated tests.
+3. Copy `.env.example` to `.env`, set `DB_PASSWORD` to the application database password, and choose a bootstrap administrator email and password. Do not commit `.env`.
+4. Set the required environment variables in the shell or IDE used to run Java. Spring Boot does **not** load `.env` automatically.
+5. Build and start the application from the project root:
+
+   ```sh
+   mvn -DskipTests package
+   java -jar backend/target/itsm-backend-0.1.0-SNAPSHOT.jar
+   ```
+
+   Maven needs internet access for the initial dependency download.
 6. The API listens at `http://localhost:8080/api/v1`. Flyway creates the schema; Hibernate validates it rather than changing it automatically.
 
 The bootstrap administrator is created only when no administrator exists and `BOOTSTRAP_ADMIN_EMAIL` is supplied. Its password must be at least 12 characters and at most 72 UTF-8 bytes. The bootstrap process does not reset existing passwords. There are no hard-coded production credentials.
 
-A Maven Wrapper is not included yet: its distribution/plugin could not be downloaded. Use the installed `mvn` commands above.
+The repository does not include a Maven Wrapper; use an installed Maven version.
 
 ## First use
 
@@ -57,16 +64,19 @@ Records are retained after closure. Normal lists exclude closed incidents; use `
 ## Testing
 
 ```sh
-scripts/test.sh unit
+mvn -pl domain test
 ```
 
-For database/API integration tests, use the separate `itsm_test` database, never the development database:
+For database/API integration tests, set these variables to use the separate `itsm_test` database, then run the Maven command below. Do not point tests at the development database.
+
+| Variable | Example value |
+|---|---|
+| `TEST_DB_URL` | `jdbc:postgresql://localhost:5432/itsm_test` |
+| `TEST_DB_USER` | `itsm_test` |
+| `TEST_DB_PASSWORD` | The password set when creating the test role |
 
 ```sh
-export TEST_DB_PASSWORD=local-test-only
-export TEST_DB_URL=jdbc:postgresql://localhost:5432/itsm_test
-export TEST_DB_USER=itsm_test
-scripts/test.sh integration
+mvn -Pintegration verify
 ```
 
 Start the local PostgreSQL service before running tests. Tests run migrations and use transaction rollback for isolation. To use the optional Docker test service instead, run `docker compose -f compose.test.yaml up -d db-test`, then leave `TEST_DB_URL` and `TEST_DB_USER` unset; that service listens on port 5433 and uses temporary storage.
@@ -142,19 +152,19 @@ Return at most five results, ordered from highest to lowest score. Each result m
 
 ### 2. Implement and run the Python service
 
-Use FastAPI, Flask, or another HTTP framework agreed by the team. Implement both routes against the envelope above, then replace the ranking function with the team's scikit-learn model. Test with a small set of clearly similar and unrelated examples; record what score ranges mean for that model. The model version should change when its preprocessing or ranking behavior changes.
+Use FastAPI, Flask, or another HTTP framework. Implement both routes against the envelope above, then connect the scikit-learn model. Test with a small set of clearly similar and unrelated examples; record what score ranges mean for that model. The model version should change when its preprocessing or ranking behavior changes.
 
-Run the Python service on the same machine as the backend for local development. For example, if the team runs it on port `8000`, set the backend base URL to `http://localhost:8000`. Do not add `/v1/...` to this setting; Spring appends the route itself.
+Run the Python service on the same machine as the backend for local development. For example, if it runs on port `8000`, set the backend base URL to `http://localhost:8000`. Do not add `/v1/...` to this setting; Spring appends the route itself.
 
-The backend sends only the fields shown in the contract. It does not send reporter names/emails, internal comments, or audit history. Do not export real incident data for training without a separate team decision. Keep the Python service internal to the application environment.
+The backend sends only the fields shown in the contract. It does not send reporter names/emails, internal comments, or audit history. Keep any training data approved for use and keep the Python service internal to the application environment.
 
 ### 3. Configure and start Spring Boot
 
 Add these optional settings to the environment used to launch the backend. They are also listed in `.env.example`:
 
-```sh
-export INTELLIGENCE_URL=http://localhost:8000
-export INTELLIGENCE_TOKEN=local-shared-token
+```text
+INTELLIGENCE_URL=http://localhost:8000
+INTELLIGENCE_TOKEN=local-shared-token
 ```
 
 `INTELLIGENCE_TOKEN` is optional. If set, Spring sends it as `Authorization: Bearer ...`; configure the Python service to require the same value. Keep real tokens out of source control. Restart Spring Boot after changing either variable. The adapter uses a two-second request timeout and does not retry a slow request.
@@ -173,7 +183,7 @@ On success, Spring returns `status: "AVAILABLE"` and `suggestions`. Employees an
 ### 5. Verify the end-to-end integration
 
 1. Start PostgreSQL and the Python service.
-2. Export `DB_PASSWORD`, `INTELLIGENCE_URL`, and the optional `INTELLIGENCE_TOKEN` in the backend terminal; start the backend with `scripts/run.sh`.
+2. Set `DB_PASSWORD`, `INTELLIGENCE_URL`, and the optional `INTELLIGENCE_TOKEN` in the backend environment, then build and start Spring Boot using the commands above.
 3. Start the React app with its `/api` proxy aimed at the backend.
 4. Create one active incident, then submit a similar draft as an employee with duplicate suggestions enabled. Confirm similar reports are suggested without exposing another employee's incident details. With no matching candidates, an empty successful result is expected and Python is not called.
 5. Complete and accept a resolution for an incident. As the assigned technician, open an incident and request resolution suggestions. Confirm only accepted historical resolutions are shown.
