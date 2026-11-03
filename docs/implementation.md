@@ -1,6 +1,6 @@
 # Implementation decisions and remaining work
 
-The user authorized implementation after phase 1. The documented proposals were used as defaults, with these explicit implementation choices:
+Implementation follows the Phase 1 proposals with these explicit choices:
 
 - Spring Boot 4.1.1, Java 21 bytecode, Maven, PostgreSQL 17, Flyway, Spring Security sessions/CSRF, and JPA.
 - One deployment split into a plain Java domain module and a Spring backend module.
@@ -21,12 +21,12 @@ Domain code compiles and 51 domain tests pass. The backend compiles and all 23 P
 
 ## Work required before declaring the backend ready
 
-1. Run the application from a fresh database and exercise the complete frontend workflow; verify restart persistence.
+1. Apply the latest migration to a fresh database, then exercise the complete React workflow and verify restart persistence.
 2. Repeat `mvn -Pintegration verify` after any subsequent changes.
 3. Confirm and test the Python service with teammates, including useful duplicate/resolution examples. The backend adapter alone does not establish model quality.
 4. Expand integration coverage for concurrent capacity confirmations, transaction rollback under database failure, notification delivery retries, and fresh-process restart. Existing tests cover sequential capacity conflicts, not a proven concurrency race.
-5. Finalize class/use-case diagrams against implementation, produce the final report and sample dataset, and record the team demonstration.
+5. Finalize class/use-case diagrams against implementation, produce the final report and sample dataset, and record the demonstration.
 
 ## Scope limits
 
-Account roles are immutable after provisioning. The initial dashboard supplies counts/queues through APIs, not a frontend. Catalog/user lists and historical SLA scanning target a small assignment dataset; production pagination, batched historical monitoring, rate limiting, and operational metrics are future work. Automatic reassignment, real email, cloud deployment, model training, and frontend implementation are outside this backend version. A Maven Wrapper remains to be generated once dependencies are downloadable.
+Account roles are immutable after provisioning. The initial dashboard supplies counts/queues through APIs; the complete React frontend remains to be built. Catalog/user lists and historical SLA scanning target a small assignment dataset; production pagination, batched historical monitoring, rate limiting, and operational metrics are future work. Automatic reassignment, real email, cloud deployment, and model training are outside this backend version. A Maven Wrapper remains to be generated once dependencies are downloadable.

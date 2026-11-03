@@ -2,9 +2,9 @@
 
 ## Status and scope
 
-The user authorized backend implementation after phase 1. An initial implementation now exists in `domain/` and `backend/`, with a PostgreSQL migration, setup scripts, and API handoff. The application builds and starts against local PostgreSQL 17.11. All 51 domain tests and 23 PostgreSQL/API integration tests pass. Python/frontend integration and a full workflow remain. See [implementation decisions](docs/implementation.md) and [validation results](docs/validation-results.md).
+The Java domain and Spring Boot backend are implemented in `domain/` and `backend/`, with PostgreSQL migrations, setup scripts, and API documentation. The 51 domain tests and 23 PostgreSQL/API integration tests previously passed against PostgreSQL 17.11. The starter-catalog migration was added afterward and still needs to be exercised against a fresh/local database. Python service integration and a complete React workflow remain. See [implementation decisions](docs/implementation.md) and [validation results](docs/validation-results.md).
 
-The project is based on `OOP S1 2026-2027 Project.pdf` and the team's meeting notes. The human handles Spring Boot and PostgreSQL; teammates handle React and intelligence features using Python/scikit-learn.
+The project is based on `OOP S1 2026-2027 Project.pdf` and the team's meeting notes. Component ownership: Java/Spring Boot and PostgreSQL for the backend, React for the frontend, and Python/scikit-learn for intelligence features.
 
 Team targets: backend/database by November 10, 2026; feature cutoff November 15; recording/submission target November 16. The assignment deadline is November 22. These are targets, not promises; preserve integration and demonstration time when prioritizing work.
 
@@ -18,8 +18,8 @@ Team targets: backend/database by November 10, 2026; feature cutoff November 15;
 | 4 — incident workflow | Workflow, history, comments, feedback, reopening, and permission cases covered by integration tests |
 | 5 — priority/assignment | Both strategies pass domain tests; core assignment and priority workflows are covered in integration tests |
 | 6 — SLA/notifications | Timing rules and SLA/notification integration cases pass; simulated email only |
-| 7 — intelligence/reports | Adapter, filters, dashboards, and reports implemented; live Python/frontend integration pending |
-| 8 — submission readiness | 51 domain and 23 backend integration tests pass; frontend workflow, Python integration, final report and demo remain |
+| 7 — intelligence/reports | Java adapter, filters, dashboards, and reports implemented. Python service and React feature integration remain pending. |
+| 8 — submission readiness | 51 domain and 23 backend integration tests previously passed; validate the latest migration, complete the React workflow and Python integration, then finish report and demo. |
 
 ## Accepted decisions
 
@@ -165,4 +165,13 @@ Resolve before implementing the dependent functionality:
 
 ## Working cadence
 
-After implementation authorization, proceed in reviewable phases. Explain each phase's important classes and database changes, provide reproducible checks, and report remaining decisions. Keep documentation current throughout. Do not create commits; the human reviews and commits changes.
+Complete the remaining work in this order:
+
+1. Build the React interface for employee, technician, and administrator workflows. Use the API contracts in `docs/frontend-handoff.md`; include session/CSRF handling, validation, empty states, and role-appropriate actions.
+2. Run the latest Flyway migrations against a fresh PostgreSQL database and verify that the starter catalog and SLA policy appear.
+3. Connect the Python service to the existing duplicate and resolution adapter. Verify valid rankings, empty results, malformed responses, and service outage behavior.
+4. Exercise the full employee-to-technician-to-administrator workflow through the React interface and confirm persistence after restarting the backend.
+5. If time permits, add coverage for concurrent capacity confirmation, database-failure rollback, and notification delivery retry/restart behavior.
+6. Finalize diagrams, report, test evidence, and the recorded demonstration.
+
+The React interface, real Python service, latest migration validation, complete end-to-end workflow, final report, and demonstration are not yet complete.

@@ -47,9 +47,9 @@ Suggested resolutions are advisory and require technician review. No result shou
 
 ## Reliability and error contract
 
-- Proposed total timeout: two seconds per interactive suggestion call, configurable. No synchronous retries that extend UI latency.
-- Timeout, malformed response, unknown candidate ID, invalid score, or connection failure returns backend capability status UNAVAILABLE, with no guessed suggestions.
-- The frontend envelope distinguishes `{"status":"AVAILABLE","suggestions":[]}` from `{"status":"UNAVAILABLE","suggestions":[],"retryable":true}`. The latter uses HTTP 503. A successful empty result uses 200.
+- The current adapter uses a two-second connection and request timeout. It makes no synchronous retries that extend UI latency.
+- Timeout, malformed response, unknown candidate ID, invalid score, non-200 response, or connection failure maps to HTTP 503 with the normal API error shape: `{"code":"INTELLIGENCE_UNAVAILABLE","message":"Suggestions are temporarily unavailable. You can continue without them.","fieldErrors":[],"requestId":"..."}`.
+- Successful responses use `{"status":"AVAILABLE","suggestions":[]}` when no matches are found. An empty candidate list is handled by Spring without calling Python.
 - Incident creation, manual assignment, and deterministic priority/SLA rules remain available during outages.
 - Keep the Python endpoint internal and authenticated between services; configure secrets outside source control. Exact mechanism depends on deployment.
 - Record operational failure metadata without logging private incident text. Mock fixtures support frontend/backend progress before the model is ready.
