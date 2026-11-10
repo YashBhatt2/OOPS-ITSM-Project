@@ -1,0 +1,337 @@
+.page {
+  min-height: 100dvh;
+  background-color: var(--bg);
+  color: var(--text-1);
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+  max-width: var(--content-max);
+  width: 100%;
+  margin: 0 auto;
+  padding: var(--space-6) var(--margin) calc(var(--space-10) + 4rem);
+}
+
+@media (min-width: 64rem) {
+  .main {
+    padding-bottom: var(--space-10);
+  }
+}
+
+.headerRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+@media (min-width: 48rem) {
+  .headerRow {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.pageTitle {
+  font-family: var(--font-serif);
+  font-size: var(--fs-serif-title);
+  font-weight: 400;
+  color: var(--text-1);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.pageSub {
+  font-size: var(--fs-body);
+  color: var(--text-2);
+  margin: 0;
+}
+
+/* Capacity Meter */
+.capacityCard {
+  background-color: var(--surface-1);
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 240px;
+}
+
+.capacityHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--fs-body-s);
+}
+
+.capacityLabel {
+  color: var(--text-2);
+}
+
+.capacityValue {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  color: var(--text-1);
+}
+
+.capacityTrack {
+  display: flex;
+  gap: 4px;
+  height: 8px;
+}
+
+.capacitySegment {
+  flex: 1;
+  border-radius: var(--r-sm);
+  background-color: var(--surface-3);
+  transition: background-color var(--dur-2) var(--ease-out);
+}
+
+.capacitySegmentFilled {
+  background-color: var(--btn-primary-bg);
+}
+
+.capacitySegmentOverload {
+  background-color: var(--red);
+}
+
+/* Queue List / Table */
+.queuePanel {
+  background-color: var(--surface-1);
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.queueCardList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+@media (min-width: 64rem) {
+  .queueCardList {
+    display: none;
+  }
+}
+
+.queueCard {
+  background-color: var(--surface-1);
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  transition: background-color var(--dur-1) var(--ease-out);
+}
+
+.queueCard:hover {
+  background-color: var(--surface-2);
+}
+
+.queueCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.reference {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  color: var(--text-2);
+  letter-spacing: 0.04em;
+}
+
+.queueCardTitle {
+  font-size: var(--fs-body);
+  font-weight: 500;
+  color: var(--text-1);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.queueCardBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.tableWrapper {
+  display: none;
+}
+
+@media (min-width: 64rem) {
+  .tableWrapper {
+    display: block;
+  }
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.th {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--line-1);
+  background-color: var(--surface-1);
+}
+
+.tr {
+  cursor: pointer;
+  transition: background-color var(--dur-1) var(--ease-out);
+}
+
+.tr:hover {
+  background-color: var(--surface-2);
+}
+
+.tr:not(:last-child) td {
+  border-bottom: 1px solid var(--line-1);
+}
+
+.td {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--fs-body-s);
+  color: var(--text-1);
+  vertical-align: middle;
+}
+
+.tdMuted {
+  color: var(--text-2);
+}
+
+/* Incident Detail Page Grid */
+.detailGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+}
+
+@media (min-width: 64rem) {
+  .detailGrid {
+    grid-template-columns: 1fr 360px;
+  }
+}
+
+.stickyActionCard {
+  background-color: var(--surface-1);
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-xl);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: sticky;
+  top: calc(3.5rem + var(--space-4));
+}
+
+.actionCardTitle {
+  font-size: var(--fs-title-3);
+  font-weight: 600;
+  color: var(--text-1);
+  margin: 0;
+}
+
+.suggestionsPanel {
+  background-color: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.suggestionCard {
+  background-color: var(--surface-1);
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.suggestionRef {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  color: var(--blue);
+}
+
+.suggestionTitle {
+  font-size: var(--fs-body-s);
+  font-weight: 500;
+  color: var(--text-1);
+  margin: 0;
+}
+
+.suggestionText {
+  font-size: var(--fs-body-s);
+  color: var(--text-2);
+  margin: 0;
+}
+
+/* Comment Kind Selector */
+.commentTypeSelector {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.typeBtn {
+  background: none;
+  border: 1px solid var(--line-2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--r-pill);
+  font-size: var(--fs-meta);
+  color: var(--text-2);
+  cursor: pointer;
+  min-height: 32px;
+}
+
+.typeBtnActive {
+  background-color: var(--surface-3);
+  color: var(--text-1);
+  border-color: var(--text-3);
+}
+
+.internalNoteBanner {
+  border-left: 3px solid var(--amber);
+  background-color: var(--surface-2);
+  padding: var(--space-3);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+}
+
+.infoRequestBanner {
+  border-left: 3px solid var(--blue);
+  background-color: var(--surface-2);
+  padding: var(--space-3);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+}

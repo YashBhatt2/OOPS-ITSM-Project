@@ -3,11 +3,34 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from '@/features/auth/AuthContext';
 import { ToastProvider } from '@/components/ui/Toast/Toast';
+
+// Auth
 import { SignInPage } from '@/features/auth/SignInPage';
 import { RegisterPage } from '@/features/auth/RegisterPage';
+
+// Employee
 import { EmployeeHomePage } from '@/features/employee/EmployeeHomePage';
+import { ReportIncidentPage } from '@/features/employee/ReportIncidentPage';
+import { IncidentDetailPage } from '@/features/employee/IncidentDetailPage';
+
+// Technician
 import { TechnicianQueuePage } from '@/features/technician/TechnicianQueuePage';
+import { TechnicianIncidentDetailPage } from '@/features/technician/TechnicianIncidentDetailPage';
+
+// Admin
 import { AdminOverviewPage } from '@/features/admin/AdminOverviewPage';
+import { AdminIncidentDetailPage } from '@/features/admin/AdminIncidentDetailPage';
+import { VerificationQueuePage } from '@/features/admin/VerificationQueuePage';
+import { ReportsPage } from '@/features/admin/ReportsPage';
+import { SkillsSetupPage } from '@/features/admin/setup/SkillsSetupPage';
+import { CategoriesSetupPage } from '@/features/admin/setup/CategoriesSetupPage';
+import { ServicesSetupPage } from '@/features/admin/setup/ServicesSetupPage';
+import { TechniciansSetupPage } from '@/features/admin/setup/TechniciansSetupPage';
+import { UsersSetupPage } from '@/features/admin/setup/UsersSetupPage';
+
+// Shared
+import { AllIncidentsPage } from '@/features/incidents/AllIncidentsPage';
+import { NotificationsPage } from '@/features/notifications/NotificationsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,9 +95,10 @@ export const App: React.FC = () => {
             <Routes>
               {/* Public Routes */}
               <Route path="/login" element={<SignInPage />} />
+              <Route path="/signin" element={<SignInPage />} />
               <Route path="/register" element={<RegisterPage />} />
 
-              {/* Protected Role-Based Routes */}
+              {/* Employee Routes */}
               <Route
                 path="/employee"
                 element={
@@ -84,6 +108,24 @@ export const App: React.FC = () => {
                 }
               />
               <Route
+                path="/employee/report"
+                element={
+                  <ProtectedRoute allowedRoles={['EMPLOYEE', 'ADMIN']}>
+                    <ReportIncidentPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/employee/incidents/:id"
+                element={
+                  <ProtectedRoute allowedRoles={['EMPLOYEE', 'ADMIN']}>
+                    <IncidentDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Technician Routes */}
+              <Route
                 path="/technician"
                 element={
                   <ProtectedRoute allowedRoles={['TECHNICIAN', 'ADMIN']}>
@@ -92,20 +134,98 @@ export const App: React.FC = () => {
                 }
               />
               <Route
-                path="/admin/*"
+                path="/technician/incidents/:id"
+                element={
+                  <ProtectedRoute allowedRoles={['TECHNICIAN', 'ADMIN']}>
+                    <TechnicianIncidentDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Admin Routes */}
+              <Route
+                path="/admin"
                 element={
                   <ProtectedRoute allowedRoles={['ADMIN']}>
                     <AdminOverviewPage />
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/admin/incidents/:id"
+                element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <AdminIncidentDetailPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/verification"
+                element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <VerificationQueuePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/reports"
+                element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <ReportsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/setup"
+                element={<Navigate to="/admin/setup/skills" replace />}
+              />
+              <Route
+                path="/admin/setup/skills"
+                element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <SkillsSetupPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/setup/categories"
+                element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <CategoriesSetupPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/setup/services"
+                element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <ServicesSetupPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/setup/technicians"
+                element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <TechniciansSetupPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/setup/users"
+                element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <UsersSetupPage />
+                  </ProtectedRoute>
+                }
+              />
 
-              {/* Shared Protected Stubs */}
+              {/* Shared Cross-Cutting Routes */}
               <Route
                 path="/incidents"
                 element={
                   <ProtectedRoute>
-                    <RootRedirect />
+                    <AllIncidentsPage />
                   </ProtectedRoute>
                 }
               />
@@ -113,12 +233,12 @@ export const App: React.FC = () => {
                 path="/notifications"
                 element={
                   <ProtectedRoute>
-                    <RootRedirect />
+                    <NotificationsPage />
                   </ProtectedRoute>
                 }
               />
 
-              {/* Catch-All */}
+              {/* Root & Fallback */}
               <Route path="/" element={<RootRedirect />} />
               <Route path="*" element={<RootRedirect />} />
             </Routes>
@@ -128,4 +248,3 @@ export const App: React.FC = () => {
     </QueryClientProvider>
   );
 };
-
