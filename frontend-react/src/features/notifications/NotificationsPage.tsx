@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button/Button';
 import { useToast } from '@/components/ui/Toast/Toast';
 import { apiRequest } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/format';
-import { Notification, Dashboard } from '@/features/admin/types';
+import { Notification, PagedResult } from '@/features/admin/types';
 
 export function NotificationsPage() {
   const { user, logout } = useAuth();
@@ -15,22 +15,18 @@ export function NotificationsPage() {
   const { showToast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: dashboard } = useQuery<Dashboard>({
-    queryKey: ['dashboard', 'me'],
-    queryFn: () => apiRequest('/api/v1/dashboards/me'),
+  const { data: notifResult, refetch } = useQuery<PagedResult<Notification>>({
+    queryKey: ['notifications'],
+    queryFn: () => apiRequest('/api/v1/notifications?page=0&size=50'),
   });
 
-  const { data: notifications = [], refetch } = useQuery<Notification[]>({
-    queryKey: ['notifications'],
-    queryFn: () => apiRequest('/api/v1/notifications'),
-  });
+  const notifications = notifResult?.items ?? [];
 
   const markReadMutation = useMutation({
     mutationFn: async (id: string) => {
       return await apiRequest(`/api/v1/notifications/${id}/read`, {
-        method: 'PATCH',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
       });
     },
     onSuccess: () => {
@@ -41,11 +37,15 @@ export function NotificationsPage() {
 
   const markAllMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('/api/v1/notifications/mark-all-read', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      });
+      const unreadList = notifications.filter((n) => !n.readAt);
+      await Promise.all(
+        unreadList.map((n) =>
+          apiRequest(`/api/v1/notifications/${n.id}/read`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+          })
+        )
+      );
     },
     onSuccess: () => {
       showToast({ title: 'All notifications marked as read.', type: 'success' });
@@ -55,7 +55,7 @@ export function NotificationsPage() {
   });
 
   const handleClick = (n: Notification) => {
-    if (!n.read) {
+    if (!n.readAt) {
       markReadMutation.mutate(n.id);
     }
     if (n.incidentId) {
@@ -75,7 +75,7 @@ export function NotificationsPage() {
     return '/employee';
   };
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.readAt).length;
 
   return (
     <div
@@ -179,49 +179,49 @@ export function NotificationsPage() {
               overflow: 'hidden',
             }}
           >
-            {notifications.map((n) => (
-              <div
-                key={n.id}
-                onClick={() => handleClick(n)}
-                style={{
-                  padding: 'var(--space-4)',
-                  borderBottom: '1px solid var(--line-1)',
-                  borderLeft: !n.read ? '3px solid var(--blue)' : '3px solid transparent',
-                  backgroundColor: !n.read ? 'var(--surface-2)' : 'transparent',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  justifyContent: 'space-between',
-                  gap: 'var(--space-4)',
-                  transition: 'background-color var(--dur-1) var(--ease-out)',
-                }}
-              >
-                <div>
-                  <h3
-                    style={{
-                      fontSize: 'var(--fs-body)',
-                      fontWeight: !n.read ? 600 : 400,
-                      color: 'var(--text-1)',
-                      margin: 0,
-                    }}
-                  >
-                    {n.title}
-                  </h3>
-                  <p style={{ fontSize: 'var(--fs-body-s)', color: 'var(--text-2)', margin: 'var(--space-1) 0 0' }}>
-                    {n.body}
-                  </p>
-                </div>
-                <span
+            {notifications.map((n) => {
+              const isUnread = !n.readAt;
+              return (
+                <div
+                  key={n.id}
+                  onClick={() => handleClick(n)}
                   style={{
-                    fontSize: 'var(--fs-meta)',
-                    color: 'var(--text-3)',
-                    whiteSpace: 'nowrap',
+                    padding: 'var(--space-4)',
+                    borderBottom: '1px solid var(--line-1)',
+                    borderLeft: isUnread ? '3px solid var(--blue)' : '3px solid transparent',
+                    backgroundColor: isUnread ? 'var(--surface-2)' : 'transparent',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 'var(--space-4)',
+                    transition: 'background-color var(--dur-1) var(--ease-out)',
                   }}
                 >
-                  {formatRelativeTime(n.createdAt)}
-                </span>
-              </div>
-            ))}
+                  <div>
+                    <h3
+                      style={{
+                        fontSize: 'var(--fs-body)',
+                        fontWeight: isUnread ? 600 : 400,
+                        color: 'var(--text-1)',
+                        margin: 0,
+                      }}
+                    >
+                      {n.message}
+                    </h3>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: 'var(--fs-meta)',
+                      color: 'var(--text-3)',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {formatRelativeTime(n.createdAt)}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
       </main>

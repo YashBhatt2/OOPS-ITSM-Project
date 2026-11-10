@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { X } from '@phosphor-icons/react';
 import clsx from 'clsx';
 import { useQuery, useMutation } from '@tanstack/react-query';

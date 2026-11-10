@@ -105,11 +105,11 @@ export interface AssignmentRecommendation {
 
 export interface Notification {
   id: string;
-  title: string;
-  body: string;
-  read: boolean;
-  createdAt: string;
+  message: string;
   incidentId?: string;
+  createdAt: string;
+  readAt?: string | null;
+  emailDelivered?: boolean;
 }
 
 export interface ReportOverview {

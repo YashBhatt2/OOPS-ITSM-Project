@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Clock, ArrowsCounterClockwise, Star } from '@phosphor-icons/react';
+import { ArrowLeft, ArrowsCounterClockwise, Star } from '@phosphor-icons/react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Nav } from '@/components/ui/Nav/Nav';
 import { StatusLabel } from '@/components/ui/StatusLabel/StatusLabel';
@@ -13,7 +13,7 @@ import { Timeline } from '@/components/ui/Timeline/Timeline';
 import { Input, Textarea } from '@/components/ui/Field/Field';
 import { Button } from '@/components/ui/Button/Button';
 import { useToast } from '@/components/ui/Toast/Toast';
-import { apiRequest, ApiConflictError, ApiError } from '@/lib/api';
+import { apiRequest, ApiConflictError } from '@/lib/api';
 import { formatDateTime } from '@/lib/format';
 import { Priority, IncidentStatus, SlaStatus } from '@/lib/constants';
 import { Incident, IncidentComment, HistoryEvent, Service, Category, Dashboard } from './types';
@@ -487,3 +487,4 @@ export function IncidentDetailPage() {
     </div>
   );
 }
+

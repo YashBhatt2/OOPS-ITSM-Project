@@ -116,3 +116,4 @@ export function IncidentFilters({ filters, onChange }: IncidentFiltersProps) {
     </div>
   );
 }
+

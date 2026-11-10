@@ -4,7 +4,7 @@ import { Plus } from '@phosphor-icons/react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Nav } from '@/components/ui/Nav/Nav';
 import { Button } from '@/components/ui/Button/Button';
-import { Input, Select } from '@/components/ui/Field/Field';
+import { Input } from '@/components/ui/Field/Field';
 import { useToast } from '@/components/ui/Toast/Toast';
 import { apiRequest } from '@/lib/api';
 import { Category, Skill, Dashboard } from '../types';
@@ -250,3 +250,4 @@ export function CategoriesSetupPage() {
     </div>
   );
 }
+

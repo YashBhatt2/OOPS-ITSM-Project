@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { WarningCircle } from '@phosphor-icons/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { WarningCircle, Check } from '@phosphor-icons/react';
 import { Brand } from '@/components/ui/Brand/Brand';
 import { ThemeToggle } from '@/components/ui/ThemeToggle/ThemeToggle';
 import { Input } from '@/components/ui/Field/Field';
@@ -16,6 +17,7 @@ export const SignInPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,16 +26,18 @@ export const SignInPage: React.FC = () => {
 
     try {
       const user = await login(email, password);
-      if (user.role === 'ADMIN') {
-        navigate('/admin');
-      } else if (user.role === 'TECHNICIAN') {
-        navigate('/technician');
-      } else {
-        navigate('/employee');
-      }
+      setIsSuccess(true);
+      setTimeout(() => {
+        if (user.role === 'ADMIN') {
+          navigate('/admin');
+        } else if (user.role === 'TECHNICIAN') {
+          navigate('/technician');
+        } else {
+          navigate('/employee');
+        }
+      }, 750);
     } catch (err: any) {
       setError(err.message || "That email or password isn't right.");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -50,53 +54,103 @@ export const SignInPage: React.FC = () => {
       </div>
 
       <main className={styles.panelWrapper}>
-        <div className={styles.glassPanel}>
-          <h2 className={styles.panelTitle}>Sign in</h2>
+        <motion.div
+          layoutId="auth-glass-card"
+          transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+          className={styles.glassPanel}
+        >
+          <AnimatePresence mode="wait">
+            {isSuccess ? (
+              <motion.div
+                key="auth-success"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                className={styles.authSuccessBox}
+              >
+                <motion.div
+                  initial={{ scale: 0.6, rotate: -20 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+                  className={styles.checkOrb}
+                >
+                  <Check size={28} weight="bold" />
+                </motion.div>
+                <motion.h2
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className={styles.authSuccessTitle}
+                >
+                  Authenticated
+                </motion.h2>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.15 }}
+                  className={styles.authSuccessSub}
+                >
+                  Loading workspace…
+                </motion.p>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="auth-form"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}
+              >
+                <h2 className={styles.panelTitle}>Sign in</h2>
 
-          {error && (
-            <div className={styles.errorBanner} role="alert">
-              <WarningCircle size={18} weight="light" />
-              <span>{error}</span>
-            </div>
-          )}
+                {error && (
+                  <div className={styles.errorBanner} role="alert">
+                    <WarningCircle size={18} weight="light" />
+                    <span>{error}</span>
+                  </div>
+                )}
 
-          <form className={styles.form} onSubmit={handleSubmit} noValidate>
-            <Input
-              id="signin-email"
-              label="Email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@example.com"
-              required
-            />
+                <form className={styles.form} onSubmit={handleSubmit} noValidate>
+                  <Input
+                    id="signin-email"
+                    label="Email"
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@example.com"
+                    required
+                  />
 
-            <Input
-              id="signin-password"
-              label="Password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              required
-            />
+                  <Input
+                    id="signin-password"
+                    label="Password"
+                    type="password"
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    required
+                  />
 
-            <Button
-              type="submit"
-              variant="primary"
-              size="large"
-              isLoading={isLoading}
-            >
-              Sign in
-            </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="large"
+                    isLoading={isLoading}
+                  >
+                    Sign in
+                  </Button>
 
-            <div className={styles.switchLink}>
-              New here? <Link to="/register">Create an account</Link>
-            </div>
-          </form>
-        </div>
+                  <div className={styles.switchLink}>
+                    New here? <Link to="/register">Create an account</Link>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </main>
 
       <footer className={styles.floorArea}>
@@ -107,4 +161,3 @@ export const SignInPage: React.FC = () => {
     </div>
   );
 };
-

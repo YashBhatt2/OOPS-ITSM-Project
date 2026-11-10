@@ -15,3 +15,4 @@ export interface ResolutionSuggestion {
   resolutionDetails: string;
   confidenceScore: number;
 }
+

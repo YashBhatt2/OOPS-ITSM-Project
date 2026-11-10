@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Plus } from '@phosphor-icons/react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Nav } from '@/components/ui/Nav/Nav';
@@ -14,7 +14,6 @@ import styles from './setup.module.css';
 export function SkillsSetupPage() {
   const { user, logout } = useAuth();
   const { showToast } = useToast();
-  const queryClient = useQueryClient();
 
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -192,3 +191,4 @@ export function SkillsSetupPage() {
     </div>
   );
 }
+

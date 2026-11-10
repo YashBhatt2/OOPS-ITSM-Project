@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { useAuth } from '@/features/auth/AuthContext';
@@ -227,3 +227,4 @@ export function AllIncidentsPage() {
     </div>
   );
 }
+

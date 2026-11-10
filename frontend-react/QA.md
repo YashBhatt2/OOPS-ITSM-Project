@@ -75,3 +75,4 @@ Scope: Frontend application in `frontend-react/`
 | Technician | `elena@example.test` | `Password12345!` |
 | Employee | `sarah@example.test` | `Password12345!` |
 | Employee | `david@example.test` | `Password12345!` |
+

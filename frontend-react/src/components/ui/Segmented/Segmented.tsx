@@ -1,3 +1,5 @@
+import { useId } from 'react';
+import { motion } from 'motion/react';
 import clsx from 'clsx';
 import styles from './Segmented.module.css';
 
@@ -21,6 +23,8 @@ export function Segmented<T extends string | number>({
   className,
   name,
 }: SegmentedProps<T>) {
+  const instanceId = useId();
+
   return (
     <div className={clsx(styles.track, className)} role="radiogroup" aria-label={name}>
       {options.map((opt) => {
@@ -34,7 +38,14 @@ export function Segmented<T extends string | number>({
             className={clsx(styles.segment, isSelected && styles.active)}
             onClick={() => onChange(opt.value)}
           >
-            {opt.label}
+            {isSelected && (
+              <motion.div
+                layoutId={`segmented-active-pill-${instanceId}`}
+                className={styles.activePill}
+                transition={{ type: 'spring', stiffness: 500, damping: 38 }}
+              />
+            )}
+            <span className={styles.labelSpan}>{opt.label}</span>
           </button>
         );
       })}

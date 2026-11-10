@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { WarningCircle } from '@phosphor-icons/react';
+import { motion, AnimatePresence } from 'motion/react';
+import { WarningCircle, Check } from '@phosphor-icons/react';
 import { Brand } from '@/components/ui/Brand/Brand';
 import { ThemeToggle } from '@/components/ui/ThemeToggle/ThemeToggle';
 import { Input } from '@/components/ui/Field/Field';
@@ -17,6 +18,7 @@ export const RegisterPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,10 +35,12 @@ export const RegisterPage: React.FC = () => {
       await register(displayName, email, password);
       // Automatically log the new employee in
       await login(email, password);
-      navigate('/employee');
+      setIsSuccess(true);
+      setTimeout(() => {
+        navigate('/employee');
+      }, 750);
     } catch (err: any) {
       setError(err.message || 'We could not create your account. Please try again.');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -53,65 +57,114 @@ export const RegisterPage: React.FC = () => {
       </div>
 
       <main className={styles.panelWrapper}>
-        <div className={styles.glassPanel}>
-          <h2 className={styles.panelTitle}>Create an account</h2>
+        <motion.div
+          layoutId="auth-glass-card"
+          transition={{ type: 'spring', stiffness: 350, damping: 30 }}
+          className={styles.glassPanel}
+        >
+          <AnimatePresence mode="wait">
+            {isSuccess ? (
+              <motion.div
+                key="reg-success"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                className={styles.authSuccessBox}
+              >
+                <motion.div
+                  initial={{ scale: 0.6, rotate: -20 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 28 }}
+                  className={styles.checkOrb}
+                >
+                  <Check size={28} weight="bold" />
+                </motion.div>
+                <motion.h2
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className={styles.authSuccessTitle}
+                >
+                  Account created
+                </motion.h2>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.15 }}
+                  className={styles.authSuccessSub}
+                >
+                  Welcome to Service Desk…
+                </motion.p>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="reg-form"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}
+              >
+                <h2 className={styles.panelTitle}>Create an account</h2>
 
-          {error && (
-            <div className={styles.errorBanner} role="alert">
-              <WarningCircle size={18} weight="light" />
-              <span>{error}</span>
-            </div>
-          )}
+                {error && (
+                  <div className={styles.errorBanner} role="alert">
+                    <WarningCircle size={18} weight="light" />
+                    <span>{error}</span>
+                  </div>
+                )}
 
-          <form className={styles.form} onSubmit={handleSubmit} noValidate>
-            <Input
-              id="register-name"
-              label="Full name"
-              type="text"
-              autoComplete="name"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Enter your name"
-              required
-            />
+                <form className={styles.form} onSubmit={handleSubmit} noValidate>
+                  <Input
+                    id="register-name"
+                    label="Full name"
+                    autoComplete="name"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder="Enter your name"
+                    required
+                  />
 
-            <Input
-              id="register-email"
-              label="Email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@example.com"
-              required
-            />
+                  <Input
+                    id="register-email"
+                    label="Email"
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="name@example.com"
+                    required
+                  />
 
-            <Input
-              id="register-password"
-              label="Password"
-              type="password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Create a strong password"
-              helperText="Must be between 12 and 72 characters."
-              required
-            />
+                  <Input
+                    id="register-password"
+                    label="Password"
+                    type="password"
+                    autoComplete="new-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Create a strong password"
+                    helperText="Must be between 12 and 72 characters."
+                    required
+                  />
 
-            <Button
-              type="submit"
-              variant="primary"
-              size="large"
-              isLoading={isLoading}
-            >
-              Create account
-            </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="large"
+                    isLoading={isLoading}
+                  >
+                    Create account
+                  </Button>
 
-            <div className={styles.switchLink}>
-              Already have an account? <Link to="/login">Sign in</Link>
-            </div>
-          </form>
-        </div>
+                  <div className={styles.switchLink}>
+                    Already have an account? <Link to="/login">Sign in</Link>
+                  </div>
+                </form>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
       </main>
 
       <footer className={styles.floorArea}>
@@ -122,4 +175,3 @@ export const RegisterPage: React.FC = () => {
     </div>
   );
 };
-

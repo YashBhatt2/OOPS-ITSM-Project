@@ -13,6 +13,7 @@ import { apiRequest } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/format';
 import { Priority, IncidentStatus } from '@/lib/constants';
 import { Incident, Dashboard, PagedResult, Service } from './types';
+import { ReportIncidentDialog } from './ReportIncidentDialog';
 import styles from './employee.module.css';
 
 export function EmployeeHomePage() {
@@ -22,6 +23,7 @@ export function EmployeeHomePage() {
   const [page, setPage] = useState(0);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [includeClosed, setIncludeClosed] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   // Time of day greeting
   const getGreeting = () => {
@@ -110,7 +112,7 @@ export function EmployeeHomePage() {
             <Button
               variant="primary"
               size="default"
-              onClick={() => navigate('/employee/report')}
+              onClick={() => setReportModalOpen(true)}
             >
               <Plus size={18} weight="light" />
               <span>Report an incident</span>
@@ -184,7 +186,7 @@ export function EmployeeHomePage() {
               <Button
                 variant="primary"
                 size="default"
-                onClick={() => navigate('/employee/report')}
+                onClick={() => setReportModalOpen(true)}
               >
                 <Plus size={18} weight="light" />
                 <span>Report an incident</span>
@@ -294,6 +296,14 @@ export function EmployeeHomePage() {
           )}
         </section>
       </main>
+
+      <ReportIncidentDialog
+        open={reportModalOpen}
+        onOpenChange={setReportModalOpen}
+        onSuccess={(newInc) => {
+          navigate(`/employee/incidents/${newInc.id}`);
+        }}
+      />
     </div>
   );
 }

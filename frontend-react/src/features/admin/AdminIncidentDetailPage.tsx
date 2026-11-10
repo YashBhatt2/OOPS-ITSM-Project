@@ -6,7 +6,6 @@ import { useAuth } from '@/features/auth/AuthContext';
 import { Nav } from '@/components/ui/Nav/Nav';
 import { StatusLabel } from '@/components/ui/StatusLabel/StatusLabel';
 import { PriorityMarker } from '@/components/ui/PriorityMarker/PriorityMarker';
-import { LifecycleBar } from '@/components/ui/LifecycleBar/LifecycleBar';
 import { SlaMeter } from '@/components/ui/SlaMeter/SlaMeter';
 import { Comment } from '@/components/ui/Comment/Comment';
 import { Timeline } from '@/components/ui/Timeline/Timeline';
@@ -17,7 +16,7 @@ import { useToast } from '@/components/ui/Toast/Toast';
 import { apiRequest, ApiConflictError } from '@/lib/api';
 import { formatDateTime } from '@/lib/format';
 import { Priority, IncidentStatus, SlaStatus } from '@/lib/constants';
-import { Incident, IncidentComment, HistoryEvent, Dashboard, Service, Category } from './types';
+import { Incident, IncidentComment, HistoryEvent, Dashboard } from './types';
 import { AssignmentDrawer } from './AssignmentDrawer';
 import styles from './admin.module.css';
 
@@ -545,3 +544,4 @@ export function AdminIncidentDetailPage() {
     </div>
   );
 }
+
