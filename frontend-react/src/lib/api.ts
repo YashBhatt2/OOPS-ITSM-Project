@@ -51,9 +51,12 @@ export async function fetchCsrf(forceRefresh = false): Promise<CsrfToken> {
 
   csrfPromise = (async () => {
     try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 3000);
       const res = await fetch('/api/v1/auth/csrf', {
         credentials: 'include',
-      });
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timer));
       if (!res.ok) {
         throw new Error(`Failed to fetch CSRF token: ${res.status}`);
       }
@@ -81,12 +84,22 @@ export async function apiRequest<T = unknown>(
     headers.set(csrf.headerName, csrf.token);
   }
 
-  const response = await fetch(url, {
-    ...options,
-    method,
-    headers,
-    credentials: 'include',
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 6000);
+  const signal = options.signal || controller.signal;
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      method,
+      headers,
+      credentials: 'include',
+      signal,
+    });
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!response.ok) {
     let errorData: ApiErrorResponse;

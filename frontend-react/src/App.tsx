@@ -41,6 +41,33 @@ const queryClient = new QueryClient({
   },
 });
 
+const LoadingScreen: React.FC = () => (
+  <div
+    style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '100dvh',
+      backgroundColor: 'var(--bg)',
+      color: 'var(--text-2)',
+      gap: 'var(--space-3)',
+    }}
+  >
+    <div
+      style={{
+        width: '24px',
+        height: '24px',
+        borderRadius: '50%',
+        border: '2px solid var(--line-2)',
+        borderTopColor: 'var(--text-1)',
+        animation: 'spin 0.8s linear infinite',
+      }}
+    />
+    <span style={{ fontSize: 'var(--fs-body-s)' }}>Loading Service Desk…</span>
+  </div>
+);
+
 const ProtectedRoute: React.FC<{
   children: React.ReactNode;
   allowedRoles?: Array<'EMPLOYEE' | 'TECHNICIAN' | 'ADMIN'>;
@@ -48,19 +75,7 @@ const ProtectedRoute: React.FC<{
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100dvh',
-          backgroundColor: 'var(--bg)',
-        }}
-      >
-        <span className="sr-only">Loading…</span>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (!user) {
@@ -79,7 +94,7 @@ const ProtectedRoute: React.FC<{
 const RootRedirect: React.FC = () => {
   const { user, isLoading } = useAuth();
 
-  if (isLoading) return null;
+  if (isLoading) return <LoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === 'ADMIN') return <Navigate to="/admin" replace />;
   if (user.role === 'TECHNICIAN') return <Navigate to="/technician" replace />;
