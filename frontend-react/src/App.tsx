@@ -151,6 +151,14 @@ export const App: React.FC = () => {
                 }
               />
               <Route
+                path="/technician/incidents"
+                element={
+                  <ProtectedRoute allowedRoles={['TECHNICIAN', 'ADMIN']}>
+                    <AllIncidentsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/technician/incidents/:id"
                 element={
                   <ProtectedRoute allowedRoles={['TECHNICIAN', 'ADMIN']}>
@@ -170,7 +178,11 @@ export const App: React.FC = () => {
               />
               <Route
                 path="/admin/incidents"
-                element={<Navigate to="/incidents" replace />}
+                element={
+                  <ProtectedRoute allowedRoles={['ADMIN']}>
+                    <AllIncidentsPage />
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/admin/incidents/:id"

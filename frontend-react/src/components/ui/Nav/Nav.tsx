@@ -28,7 +28,7 @@ export const Nav: React.FC<NavProps> = ({
       case 'ADMIN':
         return [
           { to: '/admin', label: 'Overview', icon: <House size={24} weight="light" /> },
-          { to: '/incidents', label: 'Incidents', icon: <Queue size={24} weight="light" /> },
+          { to: '/admin/incidents', label: 'Incidents', icon: <Queue size={24} weight="light" /> },
           { to: '/admin/verification', label: 'Verification', icon: <CheckCircle size={24} weight="light" /> },
           { to: '/admin/reports', label: 'Reports', icon: <ChartBar size={24} weight="light" /> },
           { to: '/admin/setup', label: 'Setup', icon: <Gear size={24} weight="light" /> },
@@ -36,7 +36,7 @@ export const Nav: React.FC<NavProps> = ({
       case 'TECHNICIAN':
         return [
           { to: '/technician', label: 'Queue', icon: <Queue size={24} weight="light" /> },
-          { to: '/incidents', label: 'Incidents', icon: <WarningOctagon size={24} weight="light" /> },
+          { to: '/technician/incidents', label: 'Incidents', icon: <WarningOctagon size={24} weight="light" /> },
         ];
       case 'EMPLOYEE':
       default:
