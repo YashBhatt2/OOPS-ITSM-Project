@@ -3,7 +3,19 @@
   inset: 0;
   background: rgb(0 0 0 / 0.5);
   z-index: var(--z-drawer);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(12px);
+  animation: overlayFadeBlur 0.25s var(--ease-out);
+}
+
+@keyframes overlayFadeBlur {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(12px);
+  }
 }
 
 .drawer {
@@ -20,6 +32,20 @@
   flex-direction: column;
   box-shadow: var(--shadow-float);
   overflow: hidden;
+  animation: drawerSlideBlur 0.3s var(--ease-out);
+}
+
+@keyframes drawerSlideBlur {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateX(1.5rem);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateX(0);
+  }
 }
 
 @media (max-width: 600px) {

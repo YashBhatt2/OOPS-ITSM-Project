@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { WarningCircle, Check } from '@phosphor-icons/react';
+import { WarningCircle } from '@phosphor-icons/react';
 import { Brand } from '@/components/ui/Brand/Brand';
 import { ThemeToggle } from '@/components/ui/ThemeToggle/ThemeToggle';
 import { Input } from '@/components/ui/Field/Field';
 import { Button } from '@/components/ui/Button/Button';
+import { AuthFaceIdMorph } from './AuthFaceIdMorph';
 import { useAuth } from './AuthContext';
 import styles from './AuthPages.module.css';
 
@@ -75,39 +76,19 @@ export const RegisterPage: React.FC = () => {
           className={styles.glassPanel}
         >
           <AnimatePresence mode="wait">
-            {isSuccess ? (
+            {isLoading || isSuccess ? (
               <motion.div
-                key="reg-success"
-                initial={{ opacity: 0, scale: 0.9 }}
+                key="reg-face-id"
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-                className={styles.authSuccessBox}
+                transition={{ type: 'spring', stiffness: 400, damping: 28 }}
               >
-                <motion.div
-                  initial={{ scale: 0.6, rotate: -20 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 28 }}
-                  className={styles.checkOrb}
-                >
-                  <Check size={28} weight="bold" />
-                </motion.div>
-                <motion.h2
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className={styles.authSuccessTitle}
-                >
-                  Account created
-                </motion.h2>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.15 }}
-                  className={styles.authSuccessSub}
-                >
-                  Welcome to Service Desk…
-                </motion.p>
+                <AuthFaceIdMorph
+                  status={isSuccess ? 'authenticated' : 'authenticating'}
+                  title={isSuccess ? 'Account created' : 'Creating account…'}
+                  subtitle={isSuccess ? 'Welcome to Service Desk…' : 'Registering credentials with server'}
+                />
               </motion.div>
             ) : (
               <motion.div

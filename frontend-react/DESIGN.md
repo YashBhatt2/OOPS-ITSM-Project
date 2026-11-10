@@ -569,6 +569,8 @@ export const spring = {
 
 **Rules.** Animate only `transform`, `opacity`, color, and small `filter: blur()` values. Never animate layout properties (`width`, `height`, `top`, `margin`). No looping decorative animation anywhere.
 
+**Exception (Island):** The Island is the one component permitted a spring layout morph between Rest, Peek, and Open states (executed via transform-based layout animations with `spring.snappy`). This conveys causal notification arrival and triage from a single unified quiet focal point at top-center without abrupt popovers.
+
 **Reduced motion** (`prefers-reduced-motion: reduce`): remove translation, scale, blur, count-ups, shakes, pulses, and shimmer. Keep opacity fades at 120 ms or less. State must remain clear without motion.
 
 ---
@@ -668,9 +670,14 @@ Ruled entries, not chat bubbles: a 32 px monogram avatar (`--surface-3`, initial
 - Mobile: a 56 px top bar (mark, bell) and a glass bottom tab bar (3 to 4 destinations, 24 px icons with labels, 56 px high plus the safe-area inset). The active item uses `--text-1`, others `--text-2`.
 - Destinations by role: **Employee:** Home, Incidents, Notifications. **Technician:** Queue, Incidents, Notifications. **Admin:** Overview, Incidents, Reports, Setup.
 
-### 10.13 Notifications
+### 10.13 Notifications (The Island)
 
-A glass popover on desktop (width 400 px) and a full sheet on mobile. Unread items show the 6 px red signal dot. Each entry: message in `body`, time in `meta --text-3`. Opening an item marks it read. A "Mark all as read" ghost button sits in the header.
+Notifications are managed by **the Island**: a quiet, dynamic glass instrument anchored at top-center of the interface that spring-morphs between three states:
+1. **Rest**: A compact glass pill (`--r-pill`, height 36 px) displaying the ring mark, and when unread notifications exist, the unread count in mono along with the 6 px red signal dot.
+2. **Peek**: When a new notification arrives that has not been seen before, the Island expands to ~360 × 56 px showing priority marker, one message line, and relative time. It auto-collapses after 5 s (or 8 s on an SLA breach). Hover or focus pauses the timer. If multiple arrive together, it displays the newest with a `+N more` badge.
+3. **Open**: Triggered by click, tap, or pressing `N`. Morphs into a floating glass card (`--r-xl`, max width 420 px, max height 70dvh with internal scroll) against a soft scrim. Lists the 20 most recent items with unread dots, relative timestamps in mono, "Also emailed" tags when delivered by email, and direct "Open incident" actions. Includes a "Mark all as read" button in the header. Dismissible via Escape, outside click, or swipe up.
+
+Under reduced motion, morphing and pulsing are disabled in favor of an instantaneous crossfade (≤ 120 ms).
 
 ### 10.14 Dialog and sheet
 

@@ -1,0 +1,326 @@
+/* ── The Island (Notification Instrument) ── */
+.scrim {
+  position: fixed;
+  inset: 0;
+  background-color: rgb(0 0 0 / 0.5);
+  backdrop-filter: blur(8px);
+  z-index: var(--z-modal);
+  animation: scrimIn 0.2s var(--ease-out);
+}
+
+@keyframes scrimIn {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(8px); }
+}
+
+.islandWrapper {
+  position: fixed;
+  top: var(--space-2);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: calc(var(--z-modal) + 1);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+@media (min-width: 48rem) {
+  .islandWrapper {
+    top: 0.875rem; /* Centered vertically inside 64px desktop top bar */
+  }
+}
+
+.islandCard {
+  pointer-events: auto;
+  background-color: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--line-1);
+  color: var(--text-1);
+  box-sizing: border-box;
+  overflow: hidden;
+  outline: none;
+  display: flex;
+  flex-direction: column;
+  transition: border-color var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out);
+}
+
+.islandCard:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ── 1. Rest State ── */
+.restPill {
+  min-height: 2.25rem; /* 36px */
+  padding: 0 var(--space-3);
+  border-radius: var(--r-pill);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  background: none;
+  border: 1px solid var(--line-1);
+  background-color: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  pointer-events: auto;
+  transition: background-color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out);
+}
+
+.restPill:hover {
+  background-color: var(--surface-2);
+  border-color: var(--line-2);
+}
+
+.restPill:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.ringMark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-2);
+}
+
+.countText {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  color: var(--text-1);
+  letter-spacing: -0.02em;
+}
+
+.signalDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--red-fill);
+  flex-shrink: 0;
+}
+
+.signalDotPulse {
+  animation: breachPulse 900ms ease-out 1;
+}
+
+@keyframes breachPulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.6); opacity: 0.4; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ── 2. Peek State ── */
+.peekBox {
+  width: clamp(20rem, 90vw, 24rem); /* 320 to 384px */
+  min-height: 3.5rem; /* 56px */
+  border-radius: var(--r-lg);
+  padding: var(--space-2) var(--space-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  box-shadow: var(--shadow-float);
+  cursor: pointer;
+}
+
+.peekP1 {
+  border-color: var(--red);
+  background-color: color-mix(in srgb, var(--tint-red) 50%, var(--glass));
+}
+
+.peekP2 {
+  border-color: var(--amber);
+  background-color: color-mix(in srgb, var(--tint-amber) 50%, var(--glass));
+}
+
+.peekContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.peekMessage {
+  font-size: var(--fs-body-s);
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  font-weight: 500;
+}
+
+.peekMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-meta);
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+.moreBadge {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--r-pill);
+  background-color: var(--surface-3);
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+/* ── 3. Open Card State ── */
+.openCard {
+  width: clamp(20rem, 92vw, 26.25rem); /* Up to 420px */
+  max-height: 70dvh;
+  border-radius: var(--r-xl);
+  box-shadow: var(--shadow-float);
+}
+
+.openHeader {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--line-1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.openTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.openTitle {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--text-1);
+  margin: 0;
+}
+
+.openHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.listScroll {
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.emptyState {
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  color: var(--text-3);
+  font-size: var(--fs-body-s);
+}
+
+.notificationItem {
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--line-1);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  cursor: pointer;
+  background: transparent;
+  transition: background-color var(--dur-1) var(--ease-out);
+  position: relative;
+}
+
+.notificationItem:hover {
+  background-color: var(--surface-2);
+}
+
+.itemUnread {
+  background-color: color-mix(in srgb, var(--surface-2) 60%, transparent);
+}
+
+.itemDotWrapper {
+  padding-top: 0.4375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.75rem;
+  flex-shrink: 0;
+}
+
+.itemContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.itemMessage {
+  font-size: var(--fs-body-s);
+  color: var(--text-1);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.itemFooter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+
+.itemTime {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  color: var(--text-3);
+}
+
+.emailTag {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--r-sm);
+  background-color: var(--surface-3);
+  color: var(--text-2);
+}
+
+.openIncidentBtn {
+  margin-left: auto;
+  font-size: var(--fs-meta);
+  color: var(--text-2);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--r-sm);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 28px;
+}
+
+.openIncidentBtn:hover {
+  color: var(--text-1);
+  background-color: var(--surface-3);
+}
+
+/* Reduced motion */
+:root[data-reduced-motion="true"] .islandCard {
+  transition-duration: 0.01ms !important;
+}
+
+:root[data-reduced-motion="true"] .signalDotPulse {
+  animation: none !important;
+}
+
