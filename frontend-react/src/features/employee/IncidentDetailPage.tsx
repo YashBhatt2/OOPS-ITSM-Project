@@ -213,7 +213,10 @@ export function IncidentDetailPage() {
     Date.now() - new Date(incident.closedAt).getTime() < 7 * 24 * 60 * 60 * 1000;
 
   // Filter public comments only
-  const publicComments = comments.filter((c) => c.visibility === 'PUBLIC');
+  const publicComments = Array.isArray(comments)
+    ? comments.filter((c) => !c.visibility || c.visibility === 'PUBLIC')
+    : [];
+  const historyList = Array.isArray(history) ? history : [];
 
   return (
     <div className={styles.page}>
@@ -244,7 +247,9 @@ export function IncidentDetailPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
             <span className={styles.reference}>{incident.reference}</span>
             <StatusLabel status={incident.status as IncidentStatus} />
-            <PriorityMarker priority={incident.priority as Priority} />
+            <PriorityMarker
+              priority={(incident.effectivePriority || incident.priority || 'P3') as Priority}
+            />
           </div>
           <div style={{ minWidth: '200px', flex: 1, maxWidth: '360px' }}>
             <LifecycleBar status={incident.status as IncidentStatus} />
@@ -465,17 +470,17 @@ export function IncidentDetailPage() {
             {/* Timeline */}
             <div className={styles.sideCard}>
               <h3 className={styles.sideTitle}>Lifecycle history</h3>
-              {history.length === 0 ? (
+              {historyList.length === 0 ? (
                 <p style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-3)', margin: 0 }}>
                   No history recorded.
                 </p>
               ) : (
                 <Timeline
-                  items={history.map((h) => ({
+                  items={historyList.map((h) => ({
                     id: h.id,
-                    title: h.event,
+                    title: h.event || h.action || 'Event',
                     timestamp: formatDateTime(h.createdAt),
-                    description: h.details,
+                    description: h.details || h.description || '',
                     actor: h.actorName,
                   }))}
                 />

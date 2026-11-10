@@ -293,3 +293,4 @@ export function ReportIncidentDialog({ open, onOpenChange, onSuccess }: ReportIn
     </Dialog>
   );
 }
+

@@ -4,13 +4,17 @@ export interface Incident {
   title: string;
   description: string;
   status: string;
-  priority: string;
+  priority?: string;
+  effectivePriority?: string;
+  calculatedPriority?: string;
   impact: number;
   urgency: number;
   serviceId: string;
   categoryId: string;
+  assignedTechnicianId?: string;
   assignedTo?: string;
-  reportedBy: string;
+  reporterId?: string;
+  reportedBy?: string;
   createdAt: string;
   updatedAt: string;
   version: number;
@@ -23,19 +27,23 @@ export interface Incident {
 export interface IncidentComment {
   id: string;
   body: string;
-  kind: 'COMMENT' | 'INFORMATION_REQUEST' | 'INTERNAL_NOTE';
+  kind: 'COMMENT' | 'NOTE' | 'INFORMATION_REQUEST' | 'INTERNAL_NOTE' | 'REPLY';
   visibility: 'PUBLIC' | 'INTERNAL';
-  createdBy: string;
+  authorId?: string;
+  createdBy?: string;
   createdAt: string;
   authorName?: string;
 }
 
 export interface HistoryEvent {
   id: string;
-  event: string;
+  event?: string;
+  action?: string;
   details?: string;
+  description?: string;
   createdAt: string;
   actorName?: string;
+  actorId?: string;
 }
 
 export interface PagedResult<T> {
@@ -94,13 +102,24 @@ export interface AdminUser {
   active: boolean;
 }
 
-export interface AssignmentRecommendation {
+export interface AssignmentCandidate {
   technicianId: string;
   rank: number;
-  name: string;
+  skillScore?: number;
+  name?: string;
+  displayName?: string;
   activeWorkload: number;
   capacity: number;
   reasons: string[];
+}
+
+export interface AssignmentRecommendation extends AssignmentCandidate {}
+
+export interface AssignmentRecommendationsResponse {
+  strategy: string;
+  incidentVersion: number;
+  candidates: AssignmentCandidate[];
+  requiresConfirmation: boolean;
 }
 
 export interface Notification {
@@ -113,28 +132,33 @@ export interface Notification {
 }
 
 export interface ReportOverview {
-  totalIncidents: number;
-  openIncidents: number;
-  resolvedToday: number;
-  avgResolutionHours: number;
-  slaBreachRate: number;
+  total: number;
+  byStatus: Array<{ status: string; count: number }>;
+  historicallyBreachedIncidents: number;
+  totalIncidents?: number;
+  openIncidents?: number;
+  resolvedToday?: number;
+  avgResolutionHours?: number;
+  slaBreachRate?: number;
 }
 
 export interface TechnicianWorkloadReport {
   technicianId: string;
-  name: string;
-  active: boolean;
+  displayName?: string;
+  name?: string;
+  active?: boolean;
   capacity: number;
   activeWorkload: number;
-  resolved: number;
-  avgResolutionHours: number;
+  resolved?: number;
+  avgResolutionHours?: number;
 }
 
 export interface ServiceReport {
   serviceId: string;
-  name: string;
-  totalIncidents: number;
-  openIncidents: number;
-  breachRate: number;
-  avgResolutionHours: number;
+  count?: number;
+  totalIncidents?: number;
+  name?: string;
+  openIncidents?: number;
+  breachRate?: number;
+  avgResolutionHours?: number;
 }

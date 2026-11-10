@@ -4,13 +4,17 @@ export interface Incident {
   title: string;
   description: string;
   status: string;
-  priority: string;
+  priority?: string;
+  effectivePriority?: string;
+  calculatedPriority?: string;
   impact: number;
   urgency: number;
   serviceId: string;
   categoryId: string;
+  assignedTechnicianId?: string;
   assignedTo?: string;
-  reportedBy: string;
+  reporterId?: string;
+  reportedBy?: string;
   createdAt: string;
   updatedAt: string;
   version: number;
@@ -23,19 +27,23 @@ export interface Incident {
 export interface IncidentComment {
   id: string;
   body: string;
-  kind: 'COMMENT' | 'INFORMATION_REQUEST' | 'INTERNAL_NOTE';
+  kind: 'COMMENT' | 'NOTE' | 'INFORMATION_REQUEST' | 'INTERNAL_NOTE' | 'REPLY';
   visibility: 'PUBLIC' | 'INTERNAL';
-  createdBy: string;
+  authorId?: string;
+  createdBy?: string;
   createdAt: string;
   authorName?: string;
 }
 
 export interface HistoryEvent {
   id: string;
-  event: string;
+  event?: string;
+  action?: string;
   details?: string;
+  description?: string;
   createdAt: string;
   actorName?: string;
+  actorId?: string;
 }
 
 export interface SimilarReport {

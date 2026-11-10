@@ -133,7 +133,9 @@ export function AllIncidentsPage() {
                 >
                   <div className={styles.cardTop}>
                     <span className={styles.reference}>{inc.reference}</span>
-                    <PriorityMarker priority={inc.priority as Priority} />
+                    <PriorityMarker
+                      priority={(inc.effectivePriority || inc.priority || 'P3') as Priority}
+                    />
                   </div>
                   <p className={styles.cardTitle}>{inc.title}</p>
                   <LifecycleBar status={inc.status as IncidentStatus} />
@@ -171,7 +173,9 @@ export function AllIncidentsPage() {
                         <span className={styles.reference}>{inc.reference}</span>
                       </td>
                       <td className={styles.td}>
-                        <PriorityMarker priority={inc.priority as Priority} />
+                        <PriorityMarker
+                          priority={(inc.effectivePriority || inc.priority || 'P3') as Priority}
+                        />
                       </td>
                       <td className={styles.td}>{inc.title}</td>
                       <td className={styles.td}>

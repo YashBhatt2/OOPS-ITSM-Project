@@ -19,6 +19,7 @@ export const RegisterPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,8 +38,11 @@ export const RegisterPage: React.FC = () => {
       await login(email, password);
       setIsSuccess(true);
       setTimeout(() => {
-        navigate('/employee');
-      }, 750);
+        setIsExiting(true);
+        setTimeout(() => {
+          navigate('/employee');
+        }, 280);
+      }, 700);
     } catch (err: any) {
       setError(err.message || 'We could not create your account. Please try again.');
       setIsLoading(false);
@@ -46,7 +50,15 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className={styles.heroContainer}>
+    <motion.div
+      className={styles.heroContainer}
+      animate={{
+        opacity: isExiting ? 0 : 1,
+        filter: isExiting ? 'blur(16px)' : 'blur(0px)',
+        scale: isExiting ? 0.98 : 1,
+      }}
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+    >
       <header className={styles.heroHeader}>
         <Brand />
         <ThemeToggle />
@@ -172,6 +184,6 @@ export const RegisterPage: React.FC = () => {
           Reliable service management. Engineered for clarity.
         </p>
       </footer>
-    </div>
+    </motion.div>
   );
 };

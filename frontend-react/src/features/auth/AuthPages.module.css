@@ -216,3 +216,39 @@
   color: var(--text-2);
   margin: 0;
 }
+
+
+.checkOrb {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  border: 2px solid var(--btn-primary-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 24px rgb(255 255 255 / 0.15);
+  background-color: var(--surface-2);
+}
+
+:root[data-theme="light"] .checkOrb {
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.1);
+}
+
+.checkSvg {
+  width: 2rem;
+  height: 2rem;
+  color: var(--btn-primary-bg);
+}
+
+.authSuccessTitle {
+  font-family: var(--font-serif);
+  font-size: var(--fs-title-2);
+  color: var(--text-1);
+  margin: 0;
+}
+
+.authSuccessSub {
+  font-size: var(--fs-body-s);
+  color: var(--text-2);
+  margin: 0;
+}

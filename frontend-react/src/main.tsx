@@ -13,6 +13,15 @@ import './styles/tokens.css';
 import './styles/base.css';
 import './styles/typography.css';
 
+try {
+  const motionPref = localStorage.getItem('oops-reduced-motion');
+  if (motionPref === 'true') {
+    document.documentElement.setAttribute('data-reduced-motion', 'true');
+  }
+} catch {
+  // Ignore
+}
+
 import { App } from './App';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(

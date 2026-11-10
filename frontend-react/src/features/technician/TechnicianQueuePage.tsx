@@ -42,14 +42,14 @@ export function TechnicianQueuePage() {
   } = useQuery<PagedResult<Incident>>({
     queryKey: ['technician-queue'],
     queryFn: () =>
-      apiRequest('/api/v1/incidents?assignedToMe=true&includeClosed=false&page=0&size=50'),
+      apiRequest('/api/v1/incidents?includeClosed=false&page=0&size=50'),
     refetchInterval: 60000,
   });
 
   // Acknowledge Mutation
   const ackMutation = useMutation({
     mutationFn: async (inc: Incident) => {
-      return await apiRequest(`/api/v1/incidents/${inc.id}/acknowledgments`, {
+      return await apiRequest(`/api/v1/incidents/${inc.id}/acknowledge`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ version: inc.version }),
@@ -243,7 +243,9 @@ export function TechnicianQueuePage() {
                 >
                   <div className={styles.queueCardTop}>
                     <span className={styles.reference}>{inc.reference}</span>
-                    <PriorityMarker priority={inc.priority as Priority} />
+                    <PriorityMarker
+                      priority={(inc.effectivePriority || inc.priority || 'P3') as Priority}
+                    />
                   </div>
                   <p className={styles.queueCardTitle}>{inc.title}</p>
                   <div className={styles.queueCardBottom}>
@@ -318,7 +320,9 @@ export function TechnicianQueuePage() {
                           <span className={styles.reference}>{inc.reference}</span>
                         </td>
                         <td className={styles.td}>
-                          <PriorityMarker priority={inc.priority as Priority} />
+                          <PriorityMarker
+                            priority={(inc.effectivePriority || inc.priority || 'P3') as Priority}
+                          />
                         </td>
                         <td className={styles.td}>{inc.title}</td>
                         <td className={styles.td}>

@@ -18,6 +18,7 @@ export const SignInPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,14 +29,17 @@ export const SignInPage: React.FC = () => {
       const user = await login(email, password);
       setIsSuccess(true);
       setTimeout(() => {
-        if (user.role === 'ADMIN') {
-          navigate('/admin');
-        } else if (user.role === 'TECHNICIAN') {
-          navigate('/technician');
-        } else {
-          navigate('/employee');
-        }
-      }, 750);
+        setIsExiting(true);
+        setTimeout(() => {
+          if (user.role === 'ADMIN') {
+            navigate('/admin');
+          } else if (user.role === 'TECHNICIAN') {
+            navigate('/technician');
+          } else {
+            navigate('/employee');
+          }
+        }, 280);
+      }, 700);
     } catch (err: any) {
       setError(err.message || "That email or password isn't right.");
       setIsLoading(false);
@@ -43,7 +47,15 @@ export const SignInPage: React.FC = () => {
   };
 
   return (
-    <div className={styles.heroContainer}>
+    <motion.div
+      className={styles.heroContainer}
+      animate={{
+        opacity: isExiting ? 0 : 1,
+        filter: isExiting ? 'blur(16px)' : 'blur(0px)',
+        scale: isExiting ? 0.98 : 1,
+      }}
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+    >
       <header className={styles.heroHeader}>
         <Brand />
         <ThemeToggle />
@@ -158,6 +170,6 @@ export const SignInPage: React.FC = () => {
           Reliable service management. Engineered for clarity.
         </p>
       </footer>
-    </div>
+    </motion.div>
   );
 };

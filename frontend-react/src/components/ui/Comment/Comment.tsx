@@ -8,7 +8,7 @@ export interface CommentProps {
   authorName: string;
   createdAt: string;
   body: string;
-  kind?: 'PUBLIC' | 'COMMENT' | 'INFORMATION_REQUEST' | 'INTERNAL_NOTE';
+  kind?: 'PUBLIC' | 'COMMENT' | 'NOTE' | 'REPLY' | 'INFORMATION_REQUEST' | 'INTERNAL_NOTE';
   isReply?: boolean;
   className?: string;
 }

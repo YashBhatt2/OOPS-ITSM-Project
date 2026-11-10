@@ -8,7 +8,7 @@ import { Dialog } from '@/components/ui/Dialog/Dialog';
 import { Textarea } from '@/components/ui/Field/Field';
 import { useToast } from '@/components/ui/Toast/Toast';
 import { apiRequest, ApiConflictError } from '@/lib/api';
-import { AssignmentRecommendation } from './types';
+import { AssignmentCandidate, AssignmentRecommendationsResponse, Technician } from './types';
 import styles from './AssignmentDrawer.module.css';
 
 type Strategy = 'SKILL_FIRST' | 'LOAD_FIRST';
@@ -24,7 +24,7 @@ export function AssignmentDrawer({ incidentId, incidentVersion, onClose, onAssig
   const { showToast } = useToast();
   const [strategy, setStrategy] = useState<Strategy>('SKILL_FIRST');
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [selectedCandidate, setSelectedCandidate] = useState<AssignmentRecommendation | null>(null);
+  const [selectedCandidate, setSelectedCandidate] = useState<AssignmentCandidate | null>(null);
   const [reason, setReason] = useState('');
   const [reasonError, setReasonError] = useState('');
   const [conflictMessage, setConflictMessage] = useState('');
@@ -34,12 +34,21 @@ export function AssignmentDrawer({ incidentId, incidentVersion, onClose, onAssig
     queryKey: ['assignment-settings'],
     queryFn: async () => {
       const data = await apiRequest<{ strategy: Strategy }>('/api/v1/admin/assignment-settings');
-      setStrategy(data.strategy);
+      if (data?.strategy) setStrategy(data.strategy);
       return data;
     },
   });
 
-  const recommendationsQuery = useQuery<AssignmentRecommendation[]>({
+  // Load technicians to map IDs to display names
+  const { data: technicians = [] } = useQuery<Technician[]>({
+    queryKey: ['admin-technicians'],
+    queryFn: () => apiRequest('/api/v1/admin/technicians'),
+  });
+
+  const techMap = new Map<string, Technician>();
+  technicians.forEach((t) => techMap.set(t.id, t));
+
+  const recommendationsQuery = useQuery<AssignmentRecommendationsResponse>({
     queryKey: ['recommendations', incidentId, strategy],
     queryFn: () =>
       apiRequest(`/api/v1/incidents/${incidentId}/assignment-recommendations`, {
@@ -47,20 +56,19 @@ export function AssignmentDrawer({ incidentId, incidentVersion, onClose, onAssig
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ strategy }),
       }),
-    enabled: true,
+    enabled: Boolean(incidentId),
   });
 
   const assignMutation = useMutation({
     mutationFn: (vars: { technicianId: string; name: string; reason: string }) =>
-      apiRequest('/api/v1/assignments', {
+      apiRequest(`/api/v1/incidents/${incidentId}/assignments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          incidentId,
+          version: recommendationsQuery.data?.incidentVersion ?? incidentVersion,
           technicianId: vars.technicianId,
           strategy,
           reason: vars.reason,
-          version: incidentVersion,
         }),
       }),
     onSuccess: (_data, vars) => {
@@ -72,12 +80,12 @@ export function AssignmentDrawer({ incidentId, incidentVersion, onClose, onAssig
       if (err instanceof ApiConflictError) {
         setConflictMessage(err.message || 'This incident was updated by someone else. Please close and retry.');
       } else {
-        showToast({ title: 'Assignment failed. Please try again.', type: 'error' });
+        showToast({ title: 'Assignment failed. Please check inputs and retry.', type: 'error' });
       }
     },
   });
 
-  const handleAssignClick = (candidate: AssignmentRecommendation) => {
+  const handleAssignClick = (candidate: AssignmentCandidate) => {
     setSelectedCandidate(candidate);
     setReason('');
     setReasonError('');
@@ -93,7 +101,7 @@ export function AssignmentDrawer({ incidentId, incidentVersion, onClose, onAssig
     if (!selectedCandidate) return;
     assignMutation.mutate({
       technicianId: selectedCandidate.technicianId,
-      name: selectedCandidate.name,
+      name: selectedCandidate.name || 'Technician',
       reason: reason.trim(),
     });
   };
@@ -102,7 +110,10 @@ export function AssignmentDrawer({ incidentId, incidentVersion, onClose, onAssig
     setStrategy(v);
   }, []);
 
-  const recommendations = recommendationsQuery.data ?? [];
+  const candidates: AssignmentCandidate[] = (recommendationsQuery.data?.candidates ?? []).map((c) => ({
+    ...c,
+    name: techMap.get(c.technicianId)?.displayName || c.displayName || c.name || 'Technician',
+  }));
 
   return (
     <>
@@ -140,14 +151,14 @@ export function AssignmentDrawer({ incidentId, incidentVersion, onClose, onAssig
 
           {recommendationsQuery.isLoading ? (
             <div className={styles.loadingState}>Loading candidates…</div>
-          ) : recommendations.length === 0 ? (
+          ) : candidates.length === 0 ? (
             <div className={styles.emptyState}>
               No one is eligible right now. Check availability, capacity, and skills.
             </div>
           ) : (
             <div className={styles.candidateList}>
               <p className={styles.sectionLabel}>Candidates</p>
-              {recommendations.map((candidate) => {
+              {candidates.map((candidate) => {
                 const fillPct = candidate.capacity > 0
                   ? Math.min(100, (candidate.activeWorkload / candidate.capacity) * 100)
                   : 0;

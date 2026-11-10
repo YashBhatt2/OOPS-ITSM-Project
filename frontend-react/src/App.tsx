@@ -41,6 +41,8 @@ const queryClient = new QueryClient({
   },
 });
 
+import { PageTransition } from '@/components/PageTransition';
+
 const LoadingScreen: React.FC = () => (
   <div
     style={{
@@ -88,7 +90,7 @@ const ProtectedRoute: React.FC<{
     return <Navigate to="/employee" replace />;
   }
 
-  return <>{children}</>;
+  return <PageTransition>{children}</PageTransition>;
 };
 
 const RootRedirect: React.FC = () => {
@@ -165,6 +167,10 @@ export const App: React.FC = () => {
                     <AdminOverviewPage />
                   </ProtectedRoute>
                 }
+              />
+              <Route
+                path="/admin/incidents"
+                element={<Navigate to="/incidents" replace />}
               />
               <Route
                 path="/admin/incidents/:id"

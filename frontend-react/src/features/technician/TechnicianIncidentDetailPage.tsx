@@ -283,7 +283,9 @@ export function TechnicianIncidentDetailPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
             <span className={styles.reference}>{incident.reference}</span>
             <StatusLabel status={incident.status as IncidentStatus} />
-            <PriorityMarker priority={incident.priority as Priority} />
+            <PriorityMarker
+              priority={(incident.effectivePriority || incident.priority || 'P3') as Priority}
+            />
           </div>
           <div style={{ minWidth: '200px', flex: 1, maxWidth: '360px' }}>
             <LifecycleBar status={incident.status as IncidentStatus} />
@@ -557,11 +559,11 @@ export function TechnicianIncidentDetailPage() {
                 History
               </h3>
               <Timeline
-                items={history.map((h) => ({
+                items={(Array.isArray(history) ? history : []).map((h) => ({
                   id: h.id,
-                  title: h.event,
+                  title: h.event || h.action || 'Activity',
                   timestamp: formatDateTime(h.createdAt),
-                  description: h.details,
+                  description: h.details || h.description || '',
                   actor: h.actorName,
                 }))}
               />

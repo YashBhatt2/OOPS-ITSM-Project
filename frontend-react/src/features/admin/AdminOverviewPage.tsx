@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Queue, CheckCircle, ChartBar, Gear } from '@phosphor-icons/react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Nav } from '@/components/ui/Nav/Nav';
@@ -16,6 +16,7 @@ import styles from './admin.module.css';
 
 export function AdminOverviewPage() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [assigningIncident, setAssigningIncident] = useState<Incident | null>(null);
 
   const { data: dashboard } = useQuery<Dashboard>({
@@ -25,7 +26,7 @@ export function AdminOverviewPage() {
 
   const { data: unassignedResult, refetch: refetchUnassigned } = useQuery<PagedResult<Incident>>({
     queryKey: ['incidents', 'unassigned'],
-    queryFn: () => apiRequest('/api/v1/incidents?status=NEW&assignedTo=NONE&page=0&size=10'),
+    queryFn: () => apiRequest('/api/v1/incidents?status=NEW&page=0&size=10'),
   });
 
   const { data: atRiskResult } = useQuery<PagedResult<Incident>>({
@@ -86,11 +87,18 @@ export function AdminOverviewPage() {
             </div>
           ) : (
             unassigned.map((incident) => (
-              <div key={incident.id} className={styles.incidentRow}>
+              <div
+                key={incident.id}
+                className={styles.incidentRow}
+                style={{ cursor: 'pointer' }}
+                onClick={() => navigate(`/admin/incidents/${incident.id}`)}
+              >
                 <span className={styles.incidentRef}>{incident.reference}</span>
-                <PriorityMarker priority={incident.priority as Priority} />
+                <PriorityMarker
+                  priority={(incident.effectivePriority || incident.priority || 'P3') as Priority}
+                />
                 <span className={styles.incidentTitle}>{incident.title}</span>
-                <div className={styles.incidentMeta}>
+                <div className={styles.incidentMeta} onClick={(e) => e.stopPropagation()}>
                   <span className={styles.incidentAge}>{formatRelativeTime(incident.createdAt)}</span>
                   <Button
                     variant="secondary"

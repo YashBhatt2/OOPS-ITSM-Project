@@ -275,7 +275,9 @@ export function AdminIncidentDetailPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
             <span className={styles.incidentRef}>{incident.reference}</span>
             <StatusLabel status={incident.status as IncidentStatus} />
-            <PriorityMarker priority={incident.priority as Priority} />
+            <PriorityMarker
+              priority={(incident.effectivePriority || incident.priority || 'P3') as Priority}
+            />
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
