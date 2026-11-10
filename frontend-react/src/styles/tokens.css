@@ -1,0 +1,160 @@
+:root {
+  /* ── Source constants (lineage; do not use directly in components) ── */
+  --n-black: #000000;
+  --n-white: #ffffff;
+  --n-grey: #dcd7d2;
+  --n-window-grey: #b1b3b3;
+  --n-red: #c8102e;
+  --n-blue: #002f6c;
+  --n-yellow: #ffc700;
+
+  /* ── Typography families ── */
+  --font-sans: "Instrument Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Newsreader Variable", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* ── Fluid type scale ── */
+  --fs-display-xl: clamp(3rem, 1.7rem + 5.333vw, 6.5rem);      /* 48 → 104 */
+  --fs-display-l:  clamp(2.5rem, 1.757rem + 3.048vw, 4.5rem);  /* 40 → 72  */
+  --fs-numeral-xl: clamp(3rem, 2.071rem + 3.81vw, 5.5rem);     /* 48 → 88  */
+  --fs-title-1:    clamp(2rem, 1.629rem + 1.524vw, 3rem);      /* 32 → 48  */
+  --fs-serif-title:clamp(1.75rem, 1.471rem + 1.143vw, 2.5rem); /* 28 → 40  */
+  --fs-title-2:    clamp(1.375rem, 1.236rem + 0.571vw, 1.75rem); /* 22 → 28 */
+  --fs-title-3:    clamp(1.125rem, 1.079rem + 0.19vw, 1.25rem);  /* 18 → 20 */
+  --fs-body-l: 1.0625rem;  /* 17 */
+  --fs-body:   0.9375rem;  /* 15 */
+  --fs-body-s: 0.8125rem;  /* 13 */
+  --fs-label:  0.875rem;   /* 14 */
+  --fs-meta:   0.75rem;    /* 12 */
+  --fs-micro:  0.6875rem;  /* 11 — caps only */
+
+  /* ── Spacing and shapes (4 px base unit) ── */
+  --space-1: 0.25rem;  /*   4 */
+  --space-2: 0.5rem;   /*   8 */
+  --space-3: 0.75rem;  /*  12 */
+  --space-4: 1rem;     /*  16 */
+  --space-5: 1.5rem;   /*  24 */
+  --space-6: 2rem;     /*  32 */
+  --space-7: 3rem;     /*  48 */
+  --space-8: 4rem;     /*  64 */
+  --space-9: 6rem;     /*  96 */
+  --space-10: 8rem;    /* 128 */
+
+  --r-sm: 0.625rem;    /* 10 — compact controls */
+  --r-md: 0.875rem;    /* 14 — buttons, inputs */
+  --r-lg: 1.25rem;     /* 20 — cards, panels */
+  --r-xl: 1.75rem;     /* 28 — sheets, hero glass */
+  --r-pill: 999px;
+
+  --margin: clamp(1rem, 2.3vw, 2.5rem);  /* Nothing's 2.3% rule, with a floor for phones */
+  --content-max: 90rem;                   /* 1440 */
+
+  --z-sticky: 10;
+  --z-nav: 20;
+  --z-drawer: 30;
+  --z-modal: 40;
+  --z-toast: 50;
+
+  /* ── Motion ── */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-1: 120ms;  /* press, hover */
+  --dur-2: 200ms;  /* state change */
+  --dur-3: 320ms;  /* panels, layout */
+  --dur-4: 560ms;  /* page and hero reveal */
+  --dur-5: 900ms;  /* count-up, ambient */
+}
+
+/* ── Obsidian (dark) — default ── */
+:root,
+:root[data-theme="dark"] {
+  --bg: #000000;
+  --surface-1: #0a0a0b;   /* panels, table body */
+  --surface-2: #121214;   /* inputs, raised rows, popovers */
+  --surface-3: #1b1b1e;   /* hover, selected, pressed */
+  --glass: rgb(18 18 20 / 0.64);
+
+  --line-1: rgb(255 255 255 / 0.08);   /* hairlines (decorative) */
+  --line-2: rgb(255 255 255 / 0.14);   /* dividers, card borders */
+  --field-border: rgb(255 255 255 / 0.40); /* inputs: meets 3:1 */
+
+  --text-1: #f5f5f7;
+  --text-2: #a1a1a6;
+  --text-3: #8a8a90;      /* still ≥ 5:1 on every dark surface */
+
+  --btn-primary-bg: #f5f5f7;
+  --btn-primary-fg: #000000;
+  --on-red: #ffffff;
+
+  --red: #ff5468;         /* red as text, dot, or line */
+  --red-fill: #c8102e;    /* red as a filled surface (white text on it) */
+  --amber: #ffc700;
+  --amber-text: #ffc700;
+  --blue: #5aa9ff;
+  --green: #34d27b;
+  --focus: #5aa9ff;
+
+  --chart-bar: #707076;
+  --chart-hi: #f5f5f7;
+
+  --tint-green: color-mix(in srgb, var(--green) 16%, var(--surface-1));
+  --tint-red:   color-mix(in srgb, var(--red) 16%, var(--surface-1));
+  --tint-amber: color-mix(in srgb, var(--amber) 16%, var(--surface-1));
+  --tint-blue:  color-mix(in srgb, var(--blue) 16%, var(--surface-1));
+
+  --shadow-float: 0 24px 64px -16px rgb(0 0 0 / 0.6);
+  --glow-display: 0 0 40px rgb(255 255 255 / 0.18);
+  --bloom: radial-gradient(60% 50% at 50% 0%, rgb(46 143 214 / 0.20), transparent 70%);
+  --horizon: linear-gradient(180deg,
+    #03060c 0%, #04204a 16%, #002f6c 30%, #0e5fb0 44%, #2f93d8 56%,
+    #a9d4ee 68%, #e6f0f5 74%, #11151b 74.5%, #05070a 100%);
+}
+
+/* ── Ceramic (light) ── */
+:root[data-theme="light"] {
+  --bg: #f6f4f1;
+  --surface-1: #ffffff;
+  --surface-2: #fbfaf8;
+  --surface-3: #efebe6;
+  --glass: rgb(255 255 255 / 0.72);
+
+  --line-1: rgb(11 11 12 / 0.08);
+  --line-2: rgb(11 11 12 / 0.14);
+  --field-border: rgb(11 11 12 / 0.50);
+
+  --text-1: #0b0b0c;
+  --text-2: #55555b;
+  --text-3: #64646a;
+
+  --btn-primary-bg: #0b0b0c;
+  --btn-primary-fg: #ffffff;
+  --on-red: #ffffff;
+
+  --red: #c8102e;
+  --red-fill: #c8102e;
+  --amber: #a87500;       /* graphics (dots, borders) */
+  --amber-text: #8a6100;  /* amber used as text */
+  --blue: #0a5bd3;
+  --green: #0b7a3e;
+  --focus: #0a5bd3;
+
+  --chart-bar: #85858b;
+  --chart-hi: #0b0b0c;
+
+  --tint-green: color-mix(in srgb, var(--green) 12%, var(--surface-1));
+  --tint-red:   color-mix(in srgb, var(--red) 10%, var(--surface-1));
+  --tint-amber: color-mix(in srgb, var(--amber-text) 14%, var(--surface-1));
+  --tint-blue:  color-mix(in srgb, var(--blue) 10%, var(--surface-1));
+
+  --shadow-float: 0 20px 48px -12px rgb(11 11 12 / 0.18);
+  --glow-display: none;   /* no glow in Ceramic */
+  --bloom: none;
+  --horizon: linear-gradient(180deg,
+    #ffffff 0%, #eef3f7 30%, #e3ebf1 56%, #dcd7d2 68%, #f6f4f1 74%,
+    #dcd7d2 74.5%, #d2ccc6 100%);
+}
+
+:root[data-theme="dark"]  { color-scheme: dark; }
+:root[data-theme="light"] { color-scheme: light; }
+

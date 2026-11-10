@@ -1,0 +1,43 @@
+import clsx from 'clsx';
+import styles from './Segmented.module.css';
+
+export interface SegmentedOption<T extends string | number> {
+  value: T;
+  label: string;
+}
+
+export interface SegmentedProps<T extends string | number> {
+  options: SegmentedOption<T>[];
+  value: T;
+  onChange: (value: T) => void;
+  className?: string;
+  name?: string;
+}
+
+export function Segmented<T extends string | number>({
+  options,
+  value,
+  onChange,
+  className,
+  name,
+}: SegmentedProps<T>) {
+  return (
+    <div className={clsx(styles.track, className)} role="radiogroup" aria-label={name}>
+      {options.map((opt) => {
+        const isSelected = opt.value === value;
+        return (
+          <button
+            key={String(opt.value)}
+            type="button"
+            role="radio"
+            aria-checked={isSelected}
+            className={clsx(styles.segment, isSelected && styles.active)}
+            onClick={() => onChange(opt.value)}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}

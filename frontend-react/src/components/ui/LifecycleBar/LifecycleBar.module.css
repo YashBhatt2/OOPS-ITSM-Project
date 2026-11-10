@@ -1,0 +1,24 @@
+.bar {
+  display: flex;
+  gap: 0.1875rem; /* 3px */
+  width: 100%;
+  height: 0.125rem; /* 2px */
+  align-items: center;
+}
+
+.segment {
+  flex: 1;
+  height: 100%;
+  border-radius: var(--r-pill);
+  background-color: var(--line-2);
+  transition: background-color var(--dur-2) var(--ease-out);
+}
+
+.filled {
+  background-color: var(--text-1);
+}
+
+.closed {
+  background-color: var(--text-3) !important;
+}
+

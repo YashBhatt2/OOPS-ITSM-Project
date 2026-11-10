@@ -1,0 +1,106 @@
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.label {
+  font-family: var(--font-sans);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.005em;
+  color: var(--text-2);
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  color: var(--text-1);
+  background-color: var(--surface-2);
+  border: 1px solid var(--field-border);
+  border-radius: var(--r-md);
+  padding: 0 var(--space-4);
+  outline: none;
+  transition: border-color var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out);
+}
+
+.input,
+.select {
+  height: 3rem; /* 48px */
+}
+
+.textarea {
+  padding: var(--space-3) var(--space-4);
+  min-height: 6rem;
+  resize: vertical;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--text-3);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 24%, transparent);
+}
+
+.hasError {
+  border-color: var(--red) !important;
+}
+
+.hasError:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--red) 24%, transparent) !important;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: var(--space-3);
+  background: none;
+  border: none;
+  color: var(--text-2);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+  border-radius: var(--r-sm);
+}
+
+.passwordToggle:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.helperText {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-s);
+  line-height: 1.45;
+  color: var(--text-2);
+}
+
+.errorMessage {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-s);
+  line-height: 1.45;
+  color: var(--red);
+}
+

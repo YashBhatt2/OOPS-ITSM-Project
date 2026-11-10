@@ -1,0 +1,64 @@
+.timeline {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-left: var(--space-6);
+}
+
+.line {
+  position: absolute;
+  left: 0.28125rem; /* center of 10px node */
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 1px;
+  background-color: var(--line-2);
+}
+
+.item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-bottom: var(--space-5);
+}
+
+.item:last-child {
+  padding-bottom: 0;
+}
+
+.node {
+  position: absolute;
+  left: -1.5rem;
+  top: 0.25rem;
+  width: 0.625rem; /* 10px */
+  height: 0.625rem;
+  border-radius: var(--r-pill);
+  border: 1.5px solid var(--text-1);
+  background-color: transparent;
+  box-sizing: border-box;
+}
+
+.latestNode {
+  background-color: var(--text-1);
+}
+
+.time {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.content {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  color: var(--text-1);
+  line-height: 1.5;
+}
+
+.actor {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-s);
+  color: var(--text-2);
+}
+

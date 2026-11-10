@@ -1,0 +1,138 @@
+.heroContainer {
+  position: relative;
+  width: 100vw;
+  min-height: 100dvh;
+  background: var(--horizon);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow-x: hidden;
+  padding: 0;
+}
+
+.heroHeader {
+  width: 100%;
+  height: 4rem; /* 64px */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--margin);
+  z-index: var(--z-nav);
+}
+
+.skyArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-4);
+  z-index: 2;
+}
+
+.displayBrand {
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-1);
+  font-weight: 600;
+  line-height: 1.0;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--text-1);
+  text-align: center;
+  text-shadow: var(--glow-display);
+  user-select: none;
+}
+
+:root[data-theme="light"] .displayBrand {
+  color: var(--text-1);
+  text-shadow: none;
+}
+
+.panelWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 var(--space-4);
+  z-index: 3;
+}
+
+.glassPanel {
+  width: 100%;
+  max-width: 26.25rem; /* 420px */
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  backdrop-filter: blur(24px) saturate(1.6);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-float);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.panelTitle {
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-2);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--text-1);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--r-md);
+  border: 1px solid var(--red);
+  background-color: var(--tint-red);
+  color: var(--red);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-s);
+}
+
+.switchLink {
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-s);
+  color: var(--text-2);
+  margin-top: var(--space-1);
+}
+
+.switchLink a {
+  color: var(--text-1);
+  text-decoration: underline;
+  text-underline-offset: 0.1875rem;
+}
+
+.switchLink a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.floorArea {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6) var(--margin);
+  z-index: 2;
+}
+
+.floorTagline {
+  font-family: var(--font-sans);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  text-align: center;
+}

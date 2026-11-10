@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Service Desk</title>
+    <script>
+      (function() {
+        try {
+          var params = new URLSearchParams(window.location.search);
+          var qTheme = params.get('theme');
+          var choice = qTheme || localStorage.getItem('theme-preference') || 'auto';
+          var darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+          
+          function apply(c) {
+            var effective = c;
+            if (c === 'auto') {
+              effective = darkQuery.matches ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-theme', effective);
+            document.documentElement.setAttribute('data-theme-choice', c);
+          }
+
+          apply(choice);
+
+          darkQuery.addEventListener('change', function(e) {
+            try {
+              var current = localStorage.getItem('theme-preference') || 'auto';
+              if (current === 'auto') {
+                document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+              }
+            } catch (err) {}
+          });
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
