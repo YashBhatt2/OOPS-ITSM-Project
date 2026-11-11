@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, ArrowsCounterClockwise, Star } from '@phosphor-icons/react';
+import { ArrowsCounterClockwise, Star } from '@phosphor-icons/react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Nav } from '@/components/ui/Nav/Nav';
+import { BackButton } from '@/components/ui/BackButton/BackButton';
 import { StatusLabel } from '@/components/ui/StatusLabel/StatusLabel';
 import { PriorityMarker } from '@/components/ui/PriorityMarker/PriorityMarker';
 import { LifecycleBar } from '@/components/ui/LifecycleBar/LifecycleBar';
@@ -228,10 +229,7 @@ export function IncidentDetailPage() {
       />
 
       <main className={styles.main}>
-        <Link to="/employee" className={styles.backLink}>
-          <ArrowLeft size={16} weight="light" />
-          <span>Back to requests</span>
-        </Link>
+        <BackButton to="/employee" label="Back to requests" />
 
         {conflictMessage && (
           <div className={styles.conflictBanner} style={{ marginBottom: 'var(--space-4)' }}>

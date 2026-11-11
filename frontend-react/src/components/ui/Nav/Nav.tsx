@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import clsx from 'clsx';
+import { motion, AnimatePresence } from 'motion/react';
 import { House, Queue, WarningOctagon, ChartBar, Gear, SignOut, CheckCircle } from '@phosphor-icons/react';
 import { Role } from '@/lib/constants';
 import { Brand } from '../Brand/Brand';
@@ -22,6 +23,18 @@ export const Nav: React.FC<NavProps> = ({
   userDisplayName,
 }) => {
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [signOutConfirmOpen, setSignOutConfirmOpen] = useState(false);
+
+  // Close sign out confirm on Escape
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && signOutConfirmOpen) {
+        setSignOutConfirmOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [signOutConfirmOpen]);
 
   const getLinks = () => {
     switch (role) {
@@ -56,9 +69,6 @@ export const Nav: React.FC<NavProps> = ({
       <header className={styles.topBar}>
         <Brand />
 
-        {/* Center The Island (Notification Instrument) */}
-        <Island />
-
         <nav className={styles.centerTabs} aria-label="Main navigation">
           {links.map((link) => (
             <NavLink
@@ -75,6 +85,9 @@ export const Nav: React.FC<NavProps> = ({
         </nav>
 
         <div className={styles.rightControls}>
+          {/* The Island: Notification Instrument positioned in header action cluster */}
+          <Island />
+
           <Button
             variant="glassIcon"
             size="large"
@@ -85,17 +98,67 @@ export const Nav: React.FC<NavProps> = ({
           >
             <Gear size={20} weight="light" />
           </Button>
+
           {onLogout && (
-            <Button
-              variant="ghost"
-              size="compact"
-              onClick={onLogout}
-              aria-label="Sign out"
-              title={userDisplayName ? `Sign out (${userDisplayName})` : 'Sign out'}
-            >
-              <SignOut size={18} weight="light" />
-              <span>Sign out</span>
-            </Button>
+            <div style={{ position: 'relative' }}>
+              <Button
+                variant="ghost"
+                size="compact"
+                onClick={() => setSignOutConfirmOpen((prev) => !prev)}
+                aria-label="Sign out"
+                aria-expanded={signOutConfirmOpen}
+                title={userDisplayName ? `Sign out (${userDisplayName})` : 'Sign out'}
+              >
+                <SignOut size={18} weight="light" />
+                <span>Sign out</span>
+              </Button>
+
+              <AnimatePresence>
+                {signOutConfirmOpen && (
+                  <>
+                    <div
+                      className={styles.popoverBackdrop}
+                      onClick={() => setSignOutConfirmOpen(false)}
+                      aria-hidden="true"
+                    />
+                    <motion.div
+                      className={styles.confirmPopover}
+                      initial={{ opacity: 0, scale: 0.92, y: -6 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.92, y: -6 }}
+                      transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+                      role="dialog"
+                      aria-label="Sign out confirmation"
+                    >
+                      <h4 className={styles.confirmTitle}>Sign out</h4>
+                      <p className={styles.confirmDesc}>
+                        Are you sure you want to end your session?
+                      </p>
+                      <div className={styles.confirmActions}>
+                        <Button
+                          variant="ghost"
+                          size="compact"
+                          onClick={() => setSignOutConfirmOpen(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="primary"
+                          size="compact"
+                          onClick={() => {
+                            setSignOutConfirmOpen(false);
+                            onLogout();
+                          }}
+                        >
+                          <SignOut size={16} weight="light" />
+                          <span>Confirm</span>
+                        </Button>
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
           )}
         </div>
       </header>

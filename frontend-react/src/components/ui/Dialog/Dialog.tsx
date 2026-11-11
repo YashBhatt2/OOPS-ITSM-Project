@@ -1,5 +1,6 @@
 import React from 'react';
 import * as RadixDialog from '@radix-ui/react-dialog';
+import clsx from 'clsx';
 import { X } from '@phosphor-icons/react';
 import styles from './Dialog.module.css';
 
@@ -11,6 +12,7 @@ export interface DialogProps {
   children?: React.ReactNode;
   actions?: React.ReactNode;
   isSheet?: boolean;
+  size?: 'small' | 'medium' | 'large';
 }
 
 export const Dialog: React.FC<DialogProps> = ({
@@ -21,12 +23,25 @@ export const Dialog: React.FC<DialogProps> = ({
   children,
   actions,
   isSheet = false,
+  size = 'medium',
 }) => {
+  const sizeClass =
+    size === 'large'
+      ? styles.sizeLarge
+      : size === 'small'
+      ? styles.sizeSmall
+      : styles.sizeMedium;
+
   return (
     <RadixDialog.Root open={open} onOpenChange={onOpenChange}>
       <RadixDialog.Portal>
         <RadixDialog.Overlay className={styles.overlay} />
-        <RadixDialog.Content className={isSheet ? styles.sheetContent : styles.content}>
+        <RadixDialog.Content
+          className={clsx(
+            isSheet ? styles.sheetContent : styles.content,
+            !isSheet && sizeClass
+          )}
+        >
           {isSheet && <div className={styles.grabber} aria-hidden="true" />}
           <RadixDialog.Title className={styles.title}>{title}</RadixDialog.Title>
           {description && (
@@ -34,7 +49,7 @@ export const Dialog: React.FC<DialogProps> = ({
               {description}
             </RadixDialog.Description>
           )}
-          {children}
+          <div className={styles.body}>{children}</div>
           {actions && <div className={styles.actions}>{actions}</div>}
           <RadixDialog.Close asChild aria-label="Close dialog">
             <button type="button" className={styles.closeButton}>

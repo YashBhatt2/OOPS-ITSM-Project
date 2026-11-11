@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import clsx from 'clsx';
-import { ArrowLeft, CheckCircle, Play, Check, Lightbulb } from '@phosphor-icons/react';
+import { CheckCircle, Play, Check, Lightbulb } from '@phosphor-icons/react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Nav } from '@/components/ui/Nav/Nav';
+import { BackButton } from '@/components/ui/BackButton/BackButton';
 import { StatusLabel } from '@/components/ui/StatusLabel/StatusLabel';
 import { PriorityMarker } from '@/components/ui/PriorityMarker/PriorityMarker';
 import { LifecycleBar } from '@/components/ui/LifecycleBar/LifecycleBar';
@@ -226,22 +227,7 @@ export function TechnicianIncidentDetailPage() {
       />
 
       <main className={styles.main}>
-        <Link
-          to="/technician"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 'var(--space-2)',
-            fontSize: 'var(--fs-body-s)',
-            color: 'var(--text-2)',
-            textDecoration: 'none',
-            marginBottom: 'var(--space-4)',
-            minHeight: '44px',
-          }}
-        >
-          <ArrowLeft size={16} weight="light" />
-          <span>Back to queue</span>
-        </Link>
+        <BackButton to="/technician" label="Back to queue" />
 
         {conflictMessage && (
           <div
@@ -441,8 +427,8 @@ export function TechnicianIncidentDetailPage() {
             </section>
           </div>
 
-          {/* Sticky Next Action & SLA Panel */}
-          <aside style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+          {/* Sticky Next Action, SLA & History Panel */}
+          <aside className={styles.sidebar}>
             <div className={styles.stickyActionCard}>
               <h3 className={styles.actionCardTitle}>Next action</h3>
               {incident.status === 'ASSIGNED' && (

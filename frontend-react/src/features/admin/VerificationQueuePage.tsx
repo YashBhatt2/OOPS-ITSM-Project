@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Check, X, Lock } from '@phosphor-icons/react';
+import { Check, X, Lock } from '@phosphor-icons/react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Nav } from '@/components/ui/Nav/Nav';
+import { BackButton } from '@/components/ui/BackButton/BackButton';
 import { Button } from '@/components/ui/Button/Button';
 import { PriorityMarker } from '@/components/ui/PriorityMarker/PriorityMarker';
 import { Dialog } from '@/components/ui/Dialog/Dialog';
@@ -134,22 +135,7 @@ export function VerificationQueuePage() {
       />
 
       <main className={styles.main}>
-        <Link
-          to="/admin"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 'var(--space-2)',
-            fontSize: 'var(--fs-body-s)',
-            color: 'var(--text-2)',
-            textDecoration: 'none',
-            marginBottom: 'var(--space-4)',
-            minHeight: '44px',
-          }}
-        >
-          <ArrowLeft size={16} weight="light" />
-          <span>Back to overview</span>
-        </Link>
+        <BackButton to="/admin" label="Back to overview" />
 
         <div className={styles.pageHeader}>
           <h1 className={styles.pageTitle}>Verification queue</h1>

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, UserPlus, Sliders, LinkSimple, ArrowsClockwise } from '@phosphor-icons/react';
+import { UserPlus, Sliders, LinkSimple, ArrowsClockwise } from '@phosphor-icons/react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Nav } from '@/components/ui/Nav/Nav';
+import { BackButton } from '@/components/ui/BackButton/BackButton';
 import { StatusLabel } from '@/components/ui/StatusLabel/StatusLabel';
 import { PriorityMarker } from '@/components/ui/PriorityMarker/PriorityMarker';
 import { SlaMeter } from '@/components/ui/SlaMeter/SlaMeter';
@@ -218,22 +219,7 @@ export function AdminIncidentDetailPage() {
       />
 
       <main className={styles.main}>
-        <Link
-          to="/admin"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 'var(--space-2)',
-            fontSize: 'var(--fs-body-s)',
-            color: 'var(--text-2)',
-            textDecoration: 'none',
-            marginBottom: 'var(--space-4)',
-            minHeight: '44px',
-          }}
-        >
-          <ArrowLeft size={16} weight="light" />
-          <span>Back to overview</span>
-        </Link>
+        <BackButton to="/admin/incidents" label="Back to incidents" />
 
         {conflictMessage && (
           <div

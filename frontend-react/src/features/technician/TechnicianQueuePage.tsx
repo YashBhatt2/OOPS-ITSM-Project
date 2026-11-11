@@ -147,6 +147,15 @@ export function TechnicianQueuePage() {
   const capacity = dashboard?.capacity || 5;
   const activeWorkload = dashboard?.activeWorkload || sortedItems.length;
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  const firstName = user?.displayName ? user.displayName.split(' ')[0] : 'there';
+
   return (
     <div className={styles.page}>
       <Nav
@@ -159,8 +168,10 @@ export function TechnicianQueuePage() {
       <main className={styles.main}>
         <section className={styles.headerRow}>
           <div className={styles.titleBlock}>
-            <h1 className={styles.pageTitle}>Assigned queue</h1>
-            <p className={styles.pageSub}>Prioritized by upcoming SLA deadlines.</p>
+            <h1 className={styles.pageTitle}>
+              {getGreeting()}, {firstName}.
+            </h1>
+            <p className={styles.pageSub}>Assigned queue prioritized by upcoming SLA deadlines.</p>
           </div>
 
           {/* Capacity Meter */}

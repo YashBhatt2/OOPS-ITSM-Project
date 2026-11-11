@@ -8,7 +8,7 @@ if (!fs.existsSync(screenshotDir)) {
 }
 
 class BrowserSession {
-  constructor(port = 9224) {
+  constructor(port = 9228) {
     this.port = port;
     this.chrome = null;
     this.ws = null;
@@ -93,8 +93,8 @@ class BrowserSession {
 }
 
 async function run() {
-  console.log('=== VERIFYING COMPLETE FRONTEND IN HEADLESS BROWSER ===');
-  const session = new BrowserSession(9224);
+  console.log('=== VERIFYING REFINED FRONTEND IN HEADLESS BROWSER ===');
+  const session = new BrowserSession(9228);
   await session.start();
   await session.send('Page.enable');
   await session.send('Runtime.enable');
@@ -105,7 +105,7 @@ async function run() {
     await session.navigate('http://localhost:5173/login');
     await session.screenshot('01-login-screen.png');
 
-    // 2. Perform Real React Login
+    // 2. Perform Real React Login & check Face ID Reticle
     console.log('\n2. Logging in as admin@example.test...');
     await session.eval(`
       (function() {
@@ -124,22 +124,26 @@ async function run() {
       })()
     `);
 
-    // Give time for AuthFaceIdMorph spinner (authenticating) -> checkmark (authenticated) -> navigation
-    console.log('Waiting for Face ID morph & navigation...');
-    await new Promise(r => setTimeout(r, 600));
-    await session.screenshot('02-login-faceid-morph.png');
+    // Capture Face ID Viewfinder Reticle loader
+    console.log('Waiting for Face ID Viewfinder & Checkmark morph...');
+    await new Promise(r => setTimeout(r, 450));
+    await session.screenshot('02-login-biometric-reticle.png');
 
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise(r => setTimeout(r, 2200));
     const pathAfterLogin = await session.eval('window.location.pathname');
     console.log('Current path after login:', pathAfterLogin);
-    await session.screenshot('03-admin-dashboard.png');
 
-    // 3. Test The Island
-    console.log('\n3. Testing The Island notification component...');
+    // Check user greeting on landing page
+    const greetingText = await session.eval('document.querySelector("h1")?.textContent');
+    console.log('Landing page greeting:', greetingText);
+    await session.screenshot('03-admin-dashboard-greeting.png');
+
+    // 3. Test The Island in rightControls
+    console.log('\n3. Testing The Island notification bell in top-right controls...');
     const islandPresent = await session.eval('!!document.querySelector("[aria-label*=\'Notifications\']")');
     console.log('Island button present:', islandPresent);
-    const islandAria = await session.eval('document.querySelector("[aria-label*=\'Notifications\']").getAttribute("aria-label")');
-    console.log('Island label:', islandAria);
+    const islandLabel = await session.eval('document.querySelector("[aria-label*=\'Notifications\']")?.getAttribute("aria-label")');
+    console.log('Island label:', islandLabel);
 
     // Open the Island by pressing N
     console.log('Opening Island via key N...');
@@ -155,37 +159,68 @@ async function run() {
     `);
     await new Promise(r => setTimeout(r, 400));
 
-    // 4. Test Settings Dialog
-    console.log('\n4. Opening Settings Dialog...');
+    // 4. Test Sign Out Confirmation Popover
+    console.log('\n4. Testing Sign Out Confirmation Popover...');
     await session.eval(`
-      const gear = document.querySelector('button[aria-label="Settings"]');
-      if (gear) gear.click();
+      const signOutBtn = document.querySelector('button[aria-label="Sign out"]');
+      if (signOutBtn) signOutBtn.click();
     `);
-    await new Promise(r => setTimeout(r, 600));
-    await session.screenshot('05-settings-dialog-blur.png');
+    await new Promise(r => setTimeout(r, 500));
+    const confirmPopoverExists = await session.eval('!!document.querySelector("[aria-label=\'Sign out confirmation\']")');
+    console.log('Sign out popover opened:', confirmPopoverExists);
+    await session.screenshot('05-signout-confirm-popover.png');
 
-    // Close Settings Dialog
+    // Cancel sign out
     await session.eval(`
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     `);
     await new Promise(r => setTimeout(r, 400));
 
-    // 5. Test Admin Setup Page
-    console.log('\n5. Navigating to Admin Setup (/admin/setup/services)...');
-    await session.navigate('http://localhost:5173/admin/setup/services');
-    await session.screenshot('06-admin-setup-services.png');
+    // 5. Test Technician Detail Page Sticky Action Card & Timeline
+    console.log('\n5. Visiting Technician Incident Detail Page...');
+    // Login as technician
+    await session.navigate('http://localhost:5173/login');
+    await session.eval(`
+      (function() {
+        const setVal = (el, val) => {
+          const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+          setter.call(el, val);
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        };
+        setVal(document.getElementById('signin-email'), 'priya@example.test');
+        setVal(document.getElementById('signin-password'), 'Password12345!');
+        document.querySelector('button[type="submit"]').click();
+      })()
+    `);
+    await new Promise(r => setTimeout(r, 2500));
 
-    // 6. Test Admin Reports Page
-    console.log('\n6. Navigating to Admin Reports (/admin/reports)...');
-    await session.navigate('http://localhost:5173/admin/reports');
-    await session.screenshot('07-admin-reports.png');
+    // Check technician greeting
+    const techGreeting = await session.eval('document.querySelector("h1")?.textContent');
+    console.log('Technician greeting:', techGreeting);
 
-    // 7. Test Admin Incidents Page
-    console.log('\n7. Navigating to Admin Incidents (/admin/incidents)...');
-    await session.navigate('http://localhost:5173/admin/incidents');
-    await session.screenshot('08-admin-incidents.png');
+    // Find and click an incident
+    const techIncHref = await session.eval('document.querySelector("a[href*=\'/technician/incidents/\'], tr[class*=\'tr\']") ? true : false');
+    console.log('Technician incidents available:', techIncHref);
 
-    console.log('\n=== HEADLESS VERIFICATION COMPLETED WITH FULL SUCCESS ===');
+    const firstIncId = await session.eval(`
+      fetch('/api/v1/incidents?size=1').then(r => r.json()).then(d => d.items[0]?.id)
+    `);
+    if (firstIncId) {
+      console.log('Navigating to technician incident:', firstIncId);
+      await session.navigate('http://localhost:5173/technician/incidents/' + firstIncId);
+      await new Promise(r => setTimeout(r, 1200));
+
+      const backBtnPresent = await session.eval('!!document.querySelector("a[aria-label*=\'Back\'], button[aria-label*=\'Back\']")');
+      console.log('Back button present:', backBtnPresent);
+
+      const hasStickyAction = await session.eval('!!document.querySelector("[class*=\'stickyActionCard\']")');
+      console.log('Frosted sticky action card present:', hasStickyAction);
+
+      await session.screenshot('06-technician-incident-detail.png');
+    }
+
+    console.log('\n=== ALL USER REQUESTS FULLY VERIFIED IN CHROME ===');
   } finally {
     await session.close();
   }

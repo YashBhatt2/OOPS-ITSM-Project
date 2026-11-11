@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/Toast/Toast';
 import { apiRequest } from '@/lib/api';
 import { Technician, Skill, Dashboard } from '../types';
 import { SetupNav } from './SetupNav';
+import { BackButton } from '@/components/ui/BackButton/BackButton';
 import styles from './setup.module.css';
 
 export function TechniciansSetupPage() {
@@ -86,6 +87,7 @@ export function TechniciansSetupPage() {
       />
 
       <main className={styles.main}>
+        <BackButton to="/admin" label="Back to overview" />
         <div style={{ marginBottom: 'var(--space-4)' }}>
           <h1 className={styles.paneTitle} style={{ fontSize: 'var(--fs-title-1)' }}>
             System setup

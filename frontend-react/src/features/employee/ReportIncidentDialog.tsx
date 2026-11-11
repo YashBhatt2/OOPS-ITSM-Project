@@ -179,10 +179,11 @@ export function ReportIncidentDialog({ open, onOpenChange, onSuccess }: ReportIn
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
+      size="large"
       title="Report an incident"
       description="Describe the issue or service request. We will assign the best technician."
       actions={
-        <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end', width: '100%' }}>
+        <div style={{ display: 'flex', gap: 'var(--space-3)', justifyContent: 'flex-end', width: '100%' }}>
           <Button variant="ghost" size="compact" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
@@ -197,7 +198,7 @@ export function ReportIncidentDialog({ open, onOpenChange, onSuccess }: ReportIn
         </div>
       }
     >
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', marginTop: 'var(--space-3)' }}>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-5)', marginTop: 'var(--space-2)' }}>
         <Input
           id="popup-title"
           label="Subject or summary"

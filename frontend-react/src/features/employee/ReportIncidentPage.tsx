@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { ArrowLeft, ArrowUpRight } from '@phosphor-icons/react';
+import { ArrowUpRight } from '@phosphor-icons/react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Nav } from '@/components/ui/Nav/Nav';
+import { BackButton } from '@/components/ui/BackButton/BackButton';
 import { Input, Textarea, Select } from '@/components/ui/Field/Field';
 import { Segmented } from '@/components/ui/Segmented/Segmented';
 import { Button } from '@/components/ui/Button/Button';
@@ -186,10 +187,7 @@ export function ReportIncidentPage() {
 
       <main className={styles.main}>
         <div className={styles.formContainer}>
-          <Link to="/employee" className={styles.backLink}>
-            <ArrowLeft size={16} weight="light" />
-            <span>Back to requests</span>
-          </Link>
+          <BackButton to="/employee" label="Back to requests" />
 
           <div style={{ marginBottom: 'var(--space-6)' }}>
             <h1 className={styles.greeting} style={{ marginBottom: 'var(--space-1)' }}>

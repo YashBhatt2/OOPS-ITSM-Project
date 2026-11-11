@@ -41,6 +41,15 @@ export function AdminOverviewPage() {
 
   const unassigned = unassignedResult?.items ?? [];
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+
+  const firstName = user?.displayName ? user.displayName.split(' ')[0] : 'Administrator';
+
   return (
     <div className={styles.page}>
       <Nav
@@ -51,7 +60,9 @@ export function AdminOverviewPage() {
       />
       <main className={styles.main}>
         <div className={styles.pageHeader}>
-          <h1 className={styles.pageTitle}>Overview</h1>
+          <h1 className={styles.pageTitle}>
+            {getGreeting()}, {firstName}.
+          </h1>
           <p className={styles.pageSub}>Incident dispatch, SLA performance, and system status.</p>
         </div>
 

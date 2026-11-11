@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from '@/features/auth/AuthContext';
 import { ToastProvider } from '@/components/ui/Toast/Toast';
@@ -91,6 +91,14 @@ const ProtectedRoute: React.FC<{
   }
 
   return <PageTransition>{children}</PageTransition>;
+};
+
+const RoleIncidentRedirect: React.FC = () => {
+  const { user } = useAuth();
+  const { id } = useParams<{ id: string }>();
+  if (user?.role === 'ADMIN') return <Navigate to={`/admin/incidents/${id}`} replace />;
+  if (user?.role === 'TECHNICIAN') return <Navigate to={`/technician/incidents/${id}`} replace />;
+  return <Navigate to={`/employee/incidents/${id}`} replace />;
 };
 
 const RootRedirect: React.FC = () => {
@@ -259,6 +267,14 @@ export const App: React.FC = () => {
                 element={
                   <ProtectedRoute>
                     <AllIncidentsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/incidents/:id"
+                element={
+                  <ProtectedRoute>
+                    <RoleIncidentRedirect />
                   </ProtectedRoute>
                 }
               />

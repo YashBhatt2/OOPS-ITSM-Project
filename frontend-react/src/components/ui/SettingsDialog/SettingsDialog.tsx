@@ -33,6 +33,18 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onOpenChan
     } catch {
       // Ignore
     }
+
+    const isReduced =
+      document.documentElement.getAttribute('data-reduced-motion') === 'true' ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (!isReduced) {
+      document.documentElement.classList.add('theme-transitioning');
+      setTimeout(() => {
+        document.documentElement.classList.remove('theme-transitioning');
+      }, 500);
+    }
+
     document.documentElement.setAttribute('data-theme', newTheme);
     document.documentElement.setAttribute('data-theme-choice', newTheme);
   };

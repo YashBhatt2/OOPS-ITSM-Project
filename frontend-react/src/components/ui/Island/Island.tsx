@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowUpRight, X } from '@phosphor-icons/react';
+import { Bell, ArrowUpRight, X } from '@phosphor-icons/react';
+import { useAuth } from '@/features/auth/AuthContext';
 import { apiRequest } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/format';
 import { PriorityMarker } from '../PriorityMarker/PriorityMarker';
@@ -31,6 +32,7 @@ interface IncidentPeekData {
 export const Island: React.FC = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const [isOpen, setIsOpen] = useState(false);
   const [peekNotification, setPeekNotification] = useState<NotificationItem | null>(null);
@@ -45,6 +47,16 @@ export const Island: React.FC = () => {
   const isHoveredRef = useRef(false);
   const restButtonRef = useRef<HTMLButtonElement | null>(null);
   const openCardRef = useRef<HTMLDivElement | null>(null);
+
+  // Helper to get role-based incident detail link
+  const getIncidentPath = useCallback(
+    (incidentId: string) => {
+      if (user?.role === 'ADMIN') return `/admin/incidents/${incidentId}`;
+      if (user?.role === 'TECHNICIAN') return `/technician/incidents/${incidentId}`;
+      return `/employee/incidents/${incidentId}`;
+    },
+    [user?.role]
+  );
 
   // Load seen IDs from localStorage
   useEffect(() => {
@@ -196,7 +208,7 @@ export const Island: React.FC = () => {
     }
   }, [isOpen]);
 
-  // Mark single notification read
+  // Mark single notification read and optionally navigate to incident
   const markRead = async (id: string, incidentId?: string) => {
     try {
       await apiRequest(`/api/v1/notifications/${id}/read`, { method: 'POST' });
@@ -208,7 +220,7 @@ export const Island: React.FC = () => {
     if (incidentId) {
       setIsOpen(false);
       setPeekNotification(null);
-      navigate(`/incidents`);
+      navigate(getIncidentPath(incidentId));
     }
   };
 
@@ -234,11 +246,19 @@ export const Island: React.FC = () => {
     setIsOpen(true);
   };
 
+  const handlePeekClick = () => {
+    if (peekNotification?.incidentId) {
+      markRead(peekNotification.id, peekNotification.incidentId);
+    } else {
+      handleOpenClick();
+    }
+  };
+
   const isPeekP1 = peekIncident?.priority === 'P1';
   const isPeekP2 = peekIncident?.priority === 'P2';
 
   return (
-    <>
+    <div className={styles.islandContainer}>
       {/* Scrim overlay when Island is open */}
       <AnimatePresence>
         {isOpen && (
@@ -255,183 +275,198 @@ export const Island: React.FC = () => {
         )}
       </AnimatePresence>
 
-      <div className={styles.islandWrapper}>
-        <AnimatePresence mode="wait">
-          {isOpen ? (
-            /* ── 3. Open State (Card) ── */
-            <motion.div
-              key="island-open"
-              ref={openCardRef}
-              tabIndex={-1}
-              role="dialog"
-              aria-modal="true"
-              aria-label="Notifications"
-              className={`${styles.islandCard} ${styles.openCard}`}
-              initial={{ scale: 0.95, opacity: 0, y: -6 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: -4 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-            >
-              <div className={styles.openHeader}>
-                <div className={styles.openTitleRow}>
-                  <h3 className={styles.openTitle}>Notifications</h3>
-                  {unreadCount > 0 && (
-                    <span className={styles.countText}>({unreadCount})</span>
-                  )}
-                </div>
-                <div className={styles.openHeaderActions}>
-                  {unreadCount > 0 && (
-                    <button
-                      type="button"
-                      className={styles.openIncidentBtn}
-                      onClick={markAllRead}
-                    >
-                      Mark all as read
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    className={styles.openIncidentBtn}
-                    onClick={() => setIsOpen(false)}
-                    aria-label="Close notifications"
-                  >
-                    <X size={16} weight="light" />
-                  </button>
-                </div>
-              </div>
+      {/* ── 1. Rest State (Glass Pill in Top-Right Action Cluster) ── */}
+      <motion.button
+        ref={restButtonRef}
+        type="button"
+        role="button"
+        aria-expanded={isOpen}
+        aria-label={`Notifications${
+          unreadCount > 0 ? `, ${unreadCount} unread` : ', all caught up'
+        }`}
+        className={styles.restPill}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setIsOpen((prev) => !prev)}
+      >
+        <span className={styles.bellIconWrapper} aria-hidden="true">
+          <Bell size={18} weight={unreadCount > 0 ? 'regular' : 'light'} />
+        </span>
+        {unreadCount > 0 && (
+          <>
+            <span className={styles.countText}>{unreadCount}</span>
+            <span
+              className={`${styles.signalDot} ${
+                hasBreachPulse ? styles.signalDotPulse : ''
+              }`}
+            />
+          </>
+        )}
+      </motion.button>
 
-              <div className={styles.listScroll}>
-                {notifications.length === 0 ? (
-                  <div className={styles.emptyState}>No notifications right now.</div>
-                ) : (
-                  notifications.map((item) => {
-                    const isUnread = !item.readAt;
-                    return (
-                      <div
-                        key={item.id}
-                        className={`${styles.notificationItem} ${isUnread ? styles.itemUnread : ''}`}
-                        onClick={() => markRead(item.id, item.incidentId)}
-                      >
-                        <div className={styles.itemDotWrapper}>
-                          {isUnread && <span className={styles.signalDot} />}
-                        </div>
-                        <div className={styles.itemContent}>
-                          <p className={styles.itemMessage}>{item.message}</p>
-                          <div className={styles.itemFooter}>
-                            <span className={styles.itemTime}>
-                              {formatRelativeTime(item.createdAt)}
-                            </span>
-                            {item.emailDelivered && (
-                              <span className={styles.emailTag}>Also emailed</span>
-                            )}
-                            {item.incidentId && (
-                              <button
-                                type="button"
-                                className={styles.openIncidentBtn}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  markRead(item.id, item.incidentId);
-                                }}
-                              >
-                                <span>Open incident</span>
-                                <ArrowUpRight size={14} weight="light" />
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
+      {/* ── Floating Popups: Peek Mode or Open Card Mode ── */}
+      <AnimatePresence>
+        {isOpen ? (
+          /* ── 3. Open State (Full Frosted Glass Card) ── */
+          <motion.div
+            key="island-open"
+            ref={openCardRef}
+            tabIndex={-1}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Notifications"
+            className={`${styles.islandCard} ${styles.openCard}`}
+            initial={{ scale: 0.94, opacity: 0, y: -8 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.94, opacity: 0, y: -6 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 30 }}
+          >
+            <div className={styles.openHeader}>
+              <div className={styles.openTitleRow}>
+                <div className={styles.headerIconBadge}>
+                  <Bell size={16} weight="light" />
+                </div>
+                <h3 className={styles.openTitle}>Notifications</h3>
+                {unreadCount > 0 && (
+                  <span className={styles.unreadPillBadge}>{unreadCount} unread</span>
                 )}
               </div>
-            </motion.div>
-          ) : peekNotification ? (
-            /* ── 2. Peek State ── */
-            <motion.div
-              key="island-peek"
-              role="status"
-              aria-live={peekIncident?.slaStatus === 'BREACHED' ? 'assertive' : 'polite'}
-              className={`${styles.islandCard} ${styles.peekBox} ${
-                isPeekP1 ? styles.peekP1 : isPeekP2 ? styles.peekP2 : ''
-              }`}
-              initial={{ scale: 0.9, opacity: 0, y: -4 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: -4 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-              onClick={handleOpenClick}
-              onMouseEnter={() => {
-                isHoveredRef.current = true;
-                clearPeekTimer();
-              }}
-              onMouseLeave={() => {
-                isHoveredRef.current = false;
-                startPeekTimer(3000);
-              }}
-            >
-              {peekIncident?.priority && (
-                <PriorityMarker priority={peekIncident.priority} />
-              )}
-              <div className={styles.peekContent}>
-                <p className={styles.peekMessage}>{peekNotification.message}</p>
-                <div className={styles.peekMeta}>
-                  <span>{formatRelativeTime(peekNotification.createdAt)}</span>
-                  {peekMoreCount > 0 && (
-                    <span className={styles.moreBadge}>+{peekMoreCount} more</span>
-                  )}
-                </div>
+              <div className={styles.openHeaderActions}>
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    className={styles.ghostActionBtn}
+                    onClick={markAllRead}
+                  >
+                    Mark all as read
+                  </button>
+                )}
+                <button
+                  type="button"
+                  className={styles.closeBtn}
+                  onClick={() => setIsOpen(false)}
+                  aria-label="Close notifications"
+                >
+                  <X size={16} weight="light" />
+                </button>
               </div>
+            </div>
+
+            <div className={styles.listScroll}>
+              {notifications.length === 0 ? (
+                <div className={styles.emptyState}>
+                  <p className={styles.emptyTitle}>All caught up</p>
+                  <p className={styles.emptyDesc}>No unread notices or incident updates.</p>
+                </div>
+              ) : (
+                notifications.map((item) => {
+                  const isUnread = !item.readAt;
+                  return (
+                    <div
+                      key={item.id}
+                      className={`${styles.notificationItem} ${isUnread ? styles.itemUnread : ''}`}
+                      onClick={() => markRead(item.id, item.incidentId)}
+                    >
+                      <div className={styles.itemDotWrapper}>
+                        {isUnread ? (
+                          <span className={styles.signalDot} />
+                        ) : (
+                          <span className={styles.dotPlaceholder} />
+                        )}
+                      </div>
+                      <div className={styles.itemContent}>
+                        <p className={styles.itemMessage}>{item.message}</p>
+                        <div className={styles.itemFooter}>
+                          <span className={styles.itemTime}>
+                            {formatRelativeTime(item.createdAt)}
+                          </span>
+                          {item.emailDelivered && (
+                            <span className={styles.emailTag}>Also emailed</span>
+                          )}
+                          {item.incidentId && (
+                            <button
+                              type="button"
+                              className={styles.openIncidentBtn}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                markRead(item.id, item.incidentId);
+                              }}
+                            >
+                              <span>Open incident</span>
+                              <ArrowUpRight size={14} weight="light" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </motion.div>
+        ) : peekNotification ? (
+          /* ── 2. Semi-Expanded (Peek) State: Aesthetic Frosted Glass Banner ── */
+          <motion.div
+            key="island-peek"
+            role="status"
+            aria-live={peekIncident?.slaStatus === 'BREACHED' ? 'assertive' : 'polite'}
+            className={`${styles.islandCard} ${styles.peekBox} ${
+              isPeekP1 ? styles.peekP1 : isPeekP2 ? styles.peekP2 : ''
+            }`}
+            initial={{ scale: 0.9, opacity: 0, y: -8 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: -6 }}
+            transition={{ type: 'spring', stiffness: 440, damping: 30 }}
+            onClick={handlePeekClick}
+            onMouseEnter={() => {
+              isHoveredRef.current = true;
+              clearPeekTimer();
+            }}
+            onMouseLeave={() => {
+              isHoveredRef.current = false;
+              startPeekTimer(3500);
+            }}
+          >
+            {/* Left Icon Badge */}
+            <div className={styles.peekIconBadge}>
+              {peekIncident?.priority ? (
+                <PriorityMarker priority={peekIncident.priority} />
+              ) : (
+                <Bell size={18} weight="regular" />
+              )}
+            </div>
+
+            {/* Middle Message */}
+            <div className={styles.peekContent}>
+              <div className={styles.peekEyebrowRow}>
+                <span className={styles.peekEyebrow}>
+                  {peekIncident?.slaStatus === 'BREACHED'
+                    ? 'SLA BREACH ALERT'
+                    : peekNotification.incidentId
+                    ? 'INCIDENT NOTICE'
+                    : 'NEW NOTIFICATION'}
+                </span>
+                <span className={styles.peekTime}>
+                  {formatRelativeTime(peekNotification.createdAt)}
+                </span>
+              </div>
+              <p className={styles.peekMessage}>{peekNotification.message}</p>
+              {peekMoreCount > 0 && (
+                <div className={styles.peekMoreTag}>+{peekMoreCount} more</div>
+              )}
+            </div>
+
+            {/* Right Status Indicator & Action */}
+            <div className={styles.peekRightAction}>
               <span
                 className={`${styles.signalDot} ${
                   hasBreachPulse ? styles.signalDotPulse : ''
                 }`}
               />
-            </motion.div>
-          ) : (
-            /* ── 1. Rest State (Glass Pill) ── */
-            <motion.button
-              key="island-rest"
-              ref={restButtonRef}
-              type="button"
-              role="status"
-              aria-live="polite"
-              aria-expanded={false}
-              aria-label={`Notifications${
-                unreadCount > 0 ? `, ${unreadCount} unread` : ', all caught up'
-              }`}
-              className={styles.restPill}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
-              onClick={handleOpenClick}
-            >
-              <span className={styles.ringMark} aria-hidden="true">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
-                  <circle cx="18.36" cy="5.64" r="2.5" fill="var(--red-fill)" />
-                </svg>
-              </span>
-              {unreadCount > 0 && (
-                <>
-                  <span className={styles.countText}>{unreadCount}</span>
-                  <span
-                    className={`${styles.signalDot} ${
-                      hasBreachPulse ? styles.signalDotPulse : ''
-                    }`}
-                  />
-                </>
-              )}
-            </motion.button>
-          )}
-        </AnimatePresence>
-      </div>
-    </>
+              <ArrowUpRight size={16} weight="light" className={styles.peekArrow} />
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
   );
 };
-
