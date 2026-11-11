@@ -1,10 +1,13 @@
 /* ── The Island (Notification Instrument) ── */
+
 .islandContainer {
   position: relative;
   display: flex;
   align-items: center;
+  z-index: var(--z-nav);
 }
 
+/* ── Modal Scrim ── */
 .scrim {
   position: fixed;
   inset: 0;
@@ -12,16 +15,12 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   z-index: var(--z-modal);
-  animation: scrimIn 0.2s var(--ease-out);
 }
 
-@keyframes scrimIn {
-  from { opacity: 0; backdrop-filter: blur(0px); }
-  to { opacity: 1; backdrop-filter: blur(12px); }
-}
-
-.islandCard {
-  background-color: color-mix(in srgb, var(--surface-1) 94%, transparent);
+/* ── Unified Morphing Surface ── */
+.islandSurface {
+  position: relative;
+  background-color: color-mix(in srgb, var(--surface-1) 95%, transparent);
   backdrop-filter: blur(48px) saturate(190%);
   -webkit-backdrop-filter: blur(48px) saturate(190%);
   border: 1px solid var(--line-2);
@@ -30,42 +29,34 @@
   overflow: hidden;
   outline: none;
   box-shadow: 0 24px 64px -8px rgb(0 0 0 / 0.75), inset 0 1px 0 rgba(255 255 255 / 0.14);
-  transition: border-color var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out);
+  transform-origin: top right;
+  touch-action: pan-y;
+  user-select: none;
 }
 
-.islandCard:focus-visible {
+:root[data-theme="light"] .islandSurface {
+  box-shadow: 0 20px 48px -12px rgb(11 11 12 / 0.18), inset 0 1px 0 rgba(255 255 255 / 0.8);
+}
+
+.islandSurface:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
 /* ── 1. Rest State (Glass Pill) ── */
-.restPill {
+.restPillLayout {
   min-height: 2.25rem; /* 36px */
   padding: 0 var(--space-3);
-  border-radius: var(--r-pill);
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  cursor: pointer;
-  background: none;
-  border: 1px solid var(--line-2);
-  background-color: var(--glass);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  color: var(--text-1);
+  cursor: grab;
   font-family: var(--font-sans);
-  transition: background-color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out), transform var(--dur-1) var(--ease-out);
+  border-radius: var(--r-pill);
 }
 
-.restPill:hover {
-  background-color: var(--surface-2);
-  border-color: var(--line-1);
-  color: var(--text-1);
-}
-
-.restPill:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
+.restPillLayout:active {
+  cursor: grabbing;
 }
 
 .bellIconWrapper {
@@ -75,12 +66,24 @@
   color: var(--text-1);
 }
 
+/* Rolling Number Odometer */
+.rollingNumberContainer {
+  display: inline-flex;
+  height: 1.15em;
+  overflow: hidden;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  min-width: 0.85em;
+}
+
 .countText {
   font-family: var(--font-mono);
   font-size: var(--fs-meta);
   font-weight: 600;
   color: var(--text-1);
   letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 
 .signalDot {
@@ -89,42 +92,39 @@
   border-radius: 50%;
   background-color: var(--red-fill);
   flex-shrink: 0;
+  transition: transform var(--dur-2) var(--ease-out), opacity var(--dur-2) var(--ease-out);
 }
 
 .signalDotPulse {
-  animation: breachPulse 900ms ease-out 1;
+  animation: breachDotPulse 900ms var(--ease-out) 1;
 }
 
-@keyframes breachPulse {
+@keyframes breachDotPulse {
   0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.6); opacity: 0.4; }
+  50% { transform: scale(1.8); opacity: 0.4; }
   100% { transform: scale(1); opacity: 1; }
 }
 
-/* ── 2. Semi-Expanded (Peek) State: Aesthetic Floating Glass Banner ── */
-.peekBox {
+/* ── 2. Peek State (Floating Frosted Banner) ── */
+.peekLayout {
   position: absolute;
   top: calc(100% + var(--space-2));
   right: 0;
   width: clamp(21rem, 90vw, 25rem);
-  min-height: 4.25rem;
+  min-height: 4.5rem;
   border-radius: var(--r-lg);
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3) var(--space-4) calc(var(--space-3) + 2px);
   display: flex;
   align-items: center;
   gap: var(--space-3);
   z-index: calc(var(--z-modal) + 1);
   cursor: pointer;
-  background-color: color-mix(in srgb, var(--surface-1) 94%, transparent);
-  backdrop-filter: blur(48px) saturate(190%);
-  -webkit-backdrop-filter: blur(48px) saturate(190%);
-  box-shadow: 0 24px 64px -8px rgb(0 0 0 / 0.75), inset 0 1px 0 rgba(255 255 255 / 0.14);
 }
 
 @media (max-width: 600px) {
-  .peekBox {
+  .peekLayout {
     position: fixed;
-    top: 4.25rem;
+    top: calc(3.75rem + env(safe-area-inset-top, 0px));
     left: var(--space-3);
     right: var(--space-3);
     width: auto;
@@ -133,12 +133,12 @@
 
 .peekP1 {
   border-color: var(--red);
-  background-color: color-mix(in srgb, var(--tint-red) 55%, var(--glass));
+  background-color: color-mix(in srgb, var(--tint-red) 55%, var(--surface-1));
 }
 
 .peekP2 {
   border-color: var(--amber);
-  background-color: color-mix(in srgb, var(--tint-amber) 55%, var(--glass));
+  background-color: color-mix(in srgb, var(--tint-amber) 55%, var(--surface-1));
 }
 
 .peekIconBadge {
@@ -159,7 +159,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.15rem;
 }
 
 .peekEyebrowRow {
@@ -199,7 +199,7 @@
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
   color: var(--text-2);
-  margin-top: 0.125rem;
+  margin-top: 0.1rem;
 }
 
 .peekRightAction {
@@ -214,32 +214,88 @@
   transition: transform var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
 }
 
-.peekBox:hover .peekArrow {
+.peekLayout:hover .peekArrow {
   transform: translate(2px, -2px);
   color: var(--text-1);
 }
 
-/* ── 3. Open State (Full Frosted Glass Card) ── */
-.openCard {
+/* Hairline Countdown Timer */
+.peekHairlineTrack {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  overflow: hidden;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+  background-color: var(--line-1);
+}
+
+.peekHairlineBar {
+  height: 100%;
+  width: 100%;
+  background-color: var(--text-2);
+  transform-origin: left center;
+  animation: peekCountdown linear 1 forwards;
+}
+
+.peekHairlineBarP1 {
+  background-color: var(--red);
+}
+
+.peekHairlineBarP2 {
+  background-color: var(--amber);
+}
+
+@keyframes peekCountdown {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+/* Breach Perimeter Hairline Trace */
+.breachTraceSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.breachTraceRect {
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 1.5;
+  stroke-dasharray: 800;
+  stroke-dashoffset: 800;
+  animation: traceBorder 850ms var(--ease-out) 1 forwards;
+}
+
+@keyframes traceBorder {
+  to {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+/* ── 3. Open State (Full Glass Card) ── */
+.openCardLayout {
   position: absolute;
   top: calc(100% + var(--space-2));
   right: 0;
-  width: clamp(22rem, 92vw, 26.5rem); /* Up to 424px */
-  max-height: 75dvh;
+  width: clamp(22rem, 92vw, 26.5rem);
+  max-height: 72dvh;
   border-radius: var(--r-xl);
   z-index: calc(var(--z-modal) + 1);
   display: flex;
   flex-direction: column;
-  background-color: color-mix(in srgb, var(--surface-1) 96%, transparent);
-  backdrop-filter: blur(48px) saturate(190%);
-  -webkit-backdrop-filter: blur(48px) saturate(190%);
-  box-shadow: 0 28px 72px -12px rgb(0 0 0 / 0.8), inset 0 1px 0 rgba(255 255 255 / 0.16);
 }
 
 @media (max-width: 600px) {
-  .openCard {
+  .openCardLayout {
     position: fixed;
-    top: 4.25rem;
+    top: calc(3.75rem + env(safe-area-inset-top, 0px));
     left: var(--space-3);
     right: var(--space-3);
     width: auto;
@@ -254,6 +310,11 @@
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
+  cursor: grab;
+}
+
+.openHeader:active {
+  cursor: grabbing;
 }
 
 .openTitleRow {
@@ -291,6 +352,13 @@
   background-color: var(--tint-red);
   color: var(--red);
   border: 1px solid var(--line-1);
+}
+
+.errorNotice {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--amber-text);
+  margin-left: var(--space-2);
 }
 
 .openHeaderActions {
@@ -335,6 +403,7 @@
   background-color: var(--surface-2);
 }
 
+/* ── Grouped Notifications List ── */
 .listScroll {
   overflow-y: auto;
   flex: 1;
@@ -349,14 +418,26 @@
   display: none;
 }
 
+.groupHeader {
+  padding: var(--space-3) var(--space-5) var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
 .notificationItem {
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-5);
   border-bottom: 1px solid var(--line-1);
   cursor: pointer;
-  transition: background-color var(--dur-1) var(--ease-out);
+  touch-action: pan-y;
+  transition: background-color var(--dur-1) var(--ease-out), opacity var(--dur-2) var(--ease-out);
 }
 
 .notificationItem:last-child {
@@ -368,7 +449,11 @@
 }
 
 .itemUnread {
-  background-color: color-mix(in srgb, var(--surface-2) 60%, transparent);
+  background-color: color-mix(in srgb, var(--surface-2) 55%, transparent);
+}
+
+.itemReadDimmed {
+  opacity: 0.65;
 }
 
 .itemDotWrapper {
@@ -380,12 +465,6 @@
   flex-shrink: 0;
 }
 
-.dotPlaceholder {
-  width: 6px;
-  height: 6px;
-  visibility: hidden;
-}
-
 .itemContent {
   flex: 1;
   min-width: 0;
@@ -395,72 +474,103 @@
   font-family: var(--font-sans);
   font-size: var(--fs-body-s);
   color: var(--text-1);
-  margin: 0 0 var(--space-2) 0;
-  line-height: 1.45;
-  word-break: break-word;
+  margin: 0 0 0.25rem 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .itemFooter {
   display: flex;
   align-items: center;
+  gap: var(--space-3);
   flex-wrap: wrap;
-  gap: var(--space-2);
 }
 
 .itemTime {
   font-family: var(--font-mono);
-  font-size: var(--fs-meta);
+  font-size: var(--fs-micro);
   color: var(--text-3);
 }
 
 .emailTag {
   font-family: var(--font-mono);
   font-size: var(--fs-micro);
-  padding: 0.125rem 0.375rem;
-  border-radius: var(--r-pill);
+  padding: 0.1rem 0.35rem;
+  border-radius: var(--r-sm);
   background-color: var(--surface-3);
   color: var(--text-2);
+  border: 1px solid var(--line-1);
 }
 
 .openIncidentBtn {
-  margin-left: auto;
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
   background: none;
   border: none;
+  padding: 0;
+  color: var(--blue);
   font-family: var(--font-sans);
   font-size: var(--fs-meta);
-  font-weight: 500;
-  color: var(--text-1);
   cursor: pointer;
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--r-sm);
-  background-color: var(--surface-2);
-  border: 1px solid var(--line-1);
-  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
+  transition: color var(--dur-1) var(--ease-out);
 }
 
 .openIncidentBtn:hover {
-  background-color: var(--surface-3);
+  color: var(--text-1);
 }
 
+/* Mouse Hover Quick Mark-Read Button */
+.quickCheckBtn {
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--r-sm);
+  background-color: var(--surface-3);
+  border: 1px solid var(--line-1);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: opacity var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out), background-color var(--dur-1) var(--ease-out);
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.notificationItem:hover .quickCheckBtn {
+  opacity: 1;
+}
+
+.quickCheckBtn:hover {
+  color: var(--green);
+  background-color: var(--surface-2);
+  border-color: var(--green);
+}
+
+/* Empty State */
 .emptyState {
   padding: var(--space-8) var(--space-5);
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .emptyTitle {
-  font-family: var(--font-sans);
+  font-family: var(--font-serif);
   font-size: var(--fs-title-3);
-  font-weight: 600;
   color: var(--text-1);
-  margin: 0 0 var(--space-1) 0;
+  margin: 0;
 }
 
 .emptyDesc {
   font-family: var(--font-sans);
   font-size: var(--fs-body-s);
-  color: var(--text-3);
+  color: var(--text-2);
   margin: 0;
 }

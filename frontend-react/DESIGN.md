@@ -672,12 +672,58 @@ Ruled entries, not chat bubbles: a 32 px monogram avatar (`--surface-3`, initial
 
 ### 10.13 Notifications (The Island)
 
-Notifications are managed by **the Island**: a quiet, dynamic glass instrument anchored at top-center of the interface that spring-morphs between three states:
-1. **Rest**: A compact glass pill (`--r-pill`, height 36 px) displaying the ring mark, and when unread notifications exist, the unread count in mono along with the 6 px red signal dot.
-2. **Peek**: When a new notification arrives that has not been seen before, the Island expands to ~360 × 56 px showing priority marker, one message line, and relative time. It auto-collapses after 5 s (or 8 s on an SLA breach). Hover or focus pauses the timer. If multiple arrive together, it displays the newest with a `+N more` badge.
-3. **Open**: Triggered by click, tap, or pressing `N`. Morphs into a floating glass card (`--r-xl`, max width 420 px, max height 70dvh with internal scroll) against a soft scrim. Lists the 20 most recent items with unread dots, relative timestamps in mono, "Also emailed" tags when delivered by email, and direct "Open incident" actions. Includes a "Mark all as read" button in the header. Dismissible via Escape, outside click, or swipe up.
+Notifications are managed by **the Island**: a quiet, dynamic glass instrument anchored at the top-right action cluster of the navigation bar (below the safe-area inset on mobile) that spring-morphs between three states:
 
-Under reduced motion, morphing and pulsing are disabled in favor of an instantaneous crossfade (≤ 120 ms).
+```
+1. Rest (Glass Pill)        2. Peek (Frosted Glass Banner)        3. Open (Floating Feed Card)
+┌────────────────────┐     ┌──────────────────────────────────┐  ┌─────────────────────────────────┐
+│ 🔔  3  •           │ ──► │ [P1] INC-000142: DB replica lag  │ ─►│ 🔔 Notifications (3 unread)   ✕ │
+└────────────────────┘     │      2m ago                    ↗ │  ├─────────────────────────────────┤
+                           └──────────────────────────────────┘  │ NEW                             │
+                                  ━ 2px hairline countdown ━     │ • INC-000142: DB replica lag  ↗ │
+                                                                 │ EARLIER                         │
+                                                                 │   INC-000139: In progress       │
+                                                                 └─────────────────────────────────┘
+```
+
+#### States & Layout
+1. **Rest**: A compact glass pill (`--r-pill`, height 36 px) displaying the notification bell, a rolling mono unread counter, and a 6 px red signal dot. Clicking or dragging down opens the feed.
+2. **Peek**: When an unseen notification arrives, the Island smoothly morphs into a floating frosted glass banner (~360–400 × 72 px, radius `--r-lg`). Shows priority marker (P1 red, P2 amber), title, relative time in mono, and a 2 px bottom hairline countdown timer. Auto-collapses after 5 s (8 s for SLA breaches). Hovering or focusing pauses the countdown. If multiple notifications arrive simultaneously, displays the newest item with a `+N more` badge.
+3. **Open**: Morphs into a floating glass card (`--r-xl`, max width 424 px, max height 72dvh with internal scroll) over a 12 px blurred scrim. Items are grouped into **New** (unread) and **Earlier** (read) with small-caps mono headers. The first six items stagger in. Dismissible via Escape, outside click, or swiping up.
+
+#### Final Motion & Spring Parameters
+- **Container morph spring**:
+  ```ts
+  export const ISLAND_SPRING = {
+    type: 'spring',
+    stiffness: 410,
+    damping: 33,
+    mass: 0.88,
+  } as const;
+  export const EASING_SPRING = [0.16, 1, 0.3, 1] as const;
+  ```
+- **Staged content revealing**: Content unblurs and reveals (`opacity: 1, filter: blur(0px)`) with a 120 ms delay—only after the container has expanded past ~70% of its target size. Exiting content fades and blurs out within 100 ms before the container contracts, preventing layout snapping during rapid retargeting.
+- **Rest count roll**: Rolling vertical odometer (`y: -12` to `0`, exit to `y: 12`) wrapped in an overflow-hidden container, preventing horizontal jumping.
+- **Breach alert**: Red signal dot pulses once (`scale: 1 → 1.8 → 1`), a 1.5 px red hairline traces the perimeter border once (`strokeDashoffset` from 800 to 0 over 850 ms), and triggers `navigator.vibrate(10)` when supported.
+- **Peek hairline timer**: 2 px track along bottom edge shrinking from 100% to 0% width; pauses on `:hover` and `:focus`.
+
+#### Gestures & Interaction
+- **Drag down on Rest pill**: Pulling down (> 25 px or velocity > 200 px/s) springs the Island open. Rubber-band resistance (`dragElastic: 0.25`).
+- **Swipe up on Open card**: Dragging up on the header (> 25 px or velocity < -200 px/s) collapses the card back to the pill.
+- **Swipe left on touch**: Swiping an unread notification left (> 30 px) marks it as read.
+- **Hover checkmark**: Mouse pointer hovering over an unread row reveals a 24 px ghost check button to mark it read immediately.
+- **Press feel**: `whileTap={{ scale: 0.98 }}` on interactive surfaces.
+- **Keyboard shortcuts**: Pressing `N` toggles open/close; `Escape` collapses.
+
+#### Edge Cases
+- **Burst of notifications**: Coalesced into the newest notification plus `+N more`. Never queues sequential peeks.
+- **Tab hidden then shown**: Missed notifications are summarized as a single peek upon tab visibility return (`visibilitychange`), never replaying individually.
+- **Long messages**: Single line with ellipsis in Peek; clamped to maximum 2 lines with `-webkit-line-clamp: 2` in Open list.
+- **Empty state**: Clean editorial message `"Nothing new."` with `"No unread notices or incident updates."`.
+- **Error state**: Unobtrusive `"Can't refresh"` mono notice displayed in the open card header without blocking ticket access.
+- **Breakpoint safety**: Placed in top bar with responsive padding, avoiding collisions with tabs on 600–900 px viewports. On mobile, sits below `env(safe-area-inset-top)`.
+- **Dev Playground**: Route `/dev/island` is included strictly in development mode (`import.meta.env.DEV`), completely excluded from production bundles.
+- **Reduced motion**: Replaces springs, rolls, and border tracing with instantaneous opacity crossfades (≤ 120 ms). Disable haptic vibration.
 
 ### 10.14 Dialog and sheet
 

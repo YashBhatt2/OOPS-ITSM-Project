@@ -33,6 +33,10 @@ import { UsersSetupPage } from '@/features/admin/setup/UsersSetupPage';
 import { AllIncidentsPage } from '@/features/incidents/AllIncidentsPage';
 import { NotificationsPage } from '@/features/notifications/NotificationsPage';
 
+const DevIslandPlayground = import.meta.env.DEV
+  ? React.lazy(() => import('@/features/dev/DevIslandPlayground'))
+  : null;
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -299,6 +303,20 @@ export const App: React.FC = () => {
                   </ProtectedRoute>
                 }
               />
+
+              {/* Dev Only Route (Excluded from Production Builds) */}
+              {import.meta.env.DEV && DevIslandPlayground && (
+                <Route
+                  path="/dev/island"
+                  element={
+                    <React.Suspense fallback={<LoadingScreen />}>
+                      <PageTransition>
+                        <DevIslandPlayground />
+                      </PageTransition>
+                    </React.Suspense>
+                  }
+                />
+              )}
 
               {/* Fallback */}
               <Route path="*" element={<Navigate to="/" replace />} />
