@@ -288,9 +288,9 @@ Any new color pair MUST be checked before use. Run `python3 design-tools/contras
 
 ### 4.6 Hero light (the cinematic moment)
 
-- **`--horizon`** reproduces the sky-over-floor stage of the CRED garage reference: a deep sky that brightens to a luminous horizon line, then a dark floor. Use it only as the background of the sign-in and register screens.
-- **Placement rule.** Display text MUST sit in the upper 0 to 44% of the viewport, where the sky is deep (`#03060C` to `#0E5FB0`; white text is 6.4:1 or better, and 12.9:1 or better above the 30% mark). Never place text over the horizon highlight (white on `#A9D4EE` is only 1.6:1). The tagline sits on the floor.
-- **`--bloom`** is a soft top-center light behind a hero numeral or an empty-state headline. Use it at the stated strength; do not raise the opacity.
+- **`--horizon`** reproduces the sky-over-floor stage of the CRED garage reference: a deep sky that brightens to a luminous horizon line, then a dark floor. Reserved exclusively for the hero section of the public landing page (`/`). Sign-in and register screens use the calm treatment (plain canvas `--bg` with a faint `--bloom` and the centered glass panel, without `--horizon`).
+- **Placement rule.** On the landing page hero, display text MUST sit in the upper 0 to 44% of the viewport, where the sky is deep (`#03060C` to `#0E5FB0`; white text is 6.4:1 or better, and 12.9:1 or better above the 30% mark). Never place text over the horizon highlight (white on `#A9D4EE` is only 1.6:1). The tagline sits on the floor.
+- **`--bloom`** is a soft top-center light behind a hero numeral, an empty-state headline, or the calm sign-in and register canvas. Use it at the stated strength; do not raise the opacity.
 - In Ceramic, the hero uses the daylight variant of `--horizon` with no glow, and the display text switches to `--text-1`.
 
 ---
@@ -701,13 +701,45 @@ Glass, bottom-center (above the tab bar on mobile), one visible at a time. Succe
 
 These describe structure and intent. Build them with the components above.
 
-### 11.1 Sign in and register (the cinematic moment)
+### 11.0 Public landing page (the cinematic horizon moment)
+
+```
+┌──────────────────────────────────────────────┐
+│ ◯• SERVICE DESK               [Sign in] [Get started] │  glass top bar
+│                                              │
+│            S E R V I C E   D E S K           │  display-brand, in deep sky (0–44%)
+│  Every incident, from report to resolution.  │  display-xl headline
+│  A quiet, precise service desk for teams.    │  lead sentence
+│        [Get started]  [Sign in]              │  dual action CTAs
+│                                              │
+│  ENGINEERED FOR TEAMS THAT CANNOT AFFORD DOWNTIME│  floor tagline
+├──────────────────────────────────────────────┤
+│ ── The Journey: Sticky Lifecycle Bar ─────── │  Report → Close scroll progress
+├──────────────────────────────────────────────┤
+│ ── Roles Preview (Employee / Tech / Admin) ─ │  Real UI previews with live tokens
+├──────────────────────────────────────────────┤
+│ ── Capabilities: Editorial Hairline List ─── │  Impact matrix, routing, SLA alarms
+├──────────────────────────────────────────────┤
+│ ── The Island Strip (Notification Instrument)│  Interactive rest/peek/open demo
+├──────────────────────────────────────────────┤
+│ ── Closing CTA & Minimal Footer ──────────── │  Systems operational · copyright
+└──────────────────────────────────────────────┘
+```
+
+- **Cinematic moment:** Hero uses `--horizon` gradient in Obsidian (and Ceramic daylight variant). Follow the strict placement rule in §4.6: all display text sits strictly in the upper 0% to 44% band where background contrast is ≥ 6.4:1. The floor holds the uppercase mono tagline.
+- **Top bar:** Frosted glass, fixed/sticky with wordmark left, theme toggle and session-aware actions right ("Sign in" ghost + "Create account" primary; switches to "Open your workspace" if authenticated).
+- **The journey:** Sticky `LifecycleBar` that fills as the visitor scrolls through the seven stages (Report, Assign, Acknowledge, Investigate, Resolve, Verify, Close). With reduced motion, shown static and complete.
+- **Roles:** Segmented control toggling authentic UI previews for Employee, Technician, and Administrator using real design tokens and components (no screenshots, `aria-hidden` with accessible summary).
+- **Capabilities:** Editorial hairline list separated by `--line-1` detailing dynamic priority scoring, dual routing strategies, SLA warning/breach escalation, tamper-evident audit trail, and notifications.
+- **The Island strip:** Scripted demonstration of the Island notification instrument across Rest, Peek, and Open states.
+
+### 11.1 Sign in and register (calm treatment)
 
 ```
 ┌──────────────────────────────────────────────┐
 │ ◯• SERVICE DESK                      [ ◐ ]  │  wordmark left · glass theme button right
 │                                              │
-│            S E R V I C E   D E S K           │  display-brand, in the deep sky (y ≈ 28–34%)
+│                    •                         │  faint --bloom overhead
 │                                              │
 │        ┌─────────── glass panel ──────────┐  │  420 px, --r-xl
 │        │ Sign in                          │  │  title-2
@@ -716,14 +748,16 @@ These describe structure and intent. Build them with the components above.
 │        │ [          Sign in           ]   │  │  primary, large
 │        │ New here? Create an account      │  │
 │        └──────────────────────────────────┘  │
-│  A  S H O R T  T A G L I N E  G O E S  H E R E│  eyebrow, on the floor
+│                                              │
+│  Reliable service management. Engineered for clarity.│  eyebrow on floor
 └──────────────────────────────────────────────┘
 ```
 
-- Background `--horizon`, full viewport (`100dvh`). Follow the placement rule in §4.6.
-- The form is in a `.glass` panel centered horizontally; on wide screens it may sit right of center. It is the only content panel on this screen.
-- Register is the same composition with a longer panel (name, email, password with the 12-character hint). Never ask for a role.
-- Authentication details (CSRF, form-encoded login) are in `docs/frontend-handoff.md`.
+- Background is calm canvas `--bg` with a faint top-center `--bloom` and no `--horizon`.
+- Centered glass panel (`.glass`, radius `--r-xl`, max-width 420 px) with smooth layout morphing between Sign in and Register.
+- On submit, biometric reticle scanner smoothly morphs into an elastic checkmark before workspace entrance.
+- Register is the same calm composition with fields for name, email, and password (minimum 12 characters). Never ask for a role.
+- Authentication details (CSRF, form-encoded login) follow `docs/frontend-handoff.md`.
 
 ### 11.2 Employee home
 

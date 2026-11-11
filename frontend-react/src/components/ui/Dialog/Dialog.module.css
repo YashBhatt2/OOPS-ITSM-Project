@@ -34,9 +34,15 @@
   z-index: calc(var(--z-modal) + 1);
   outline: none;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   display: flex;
   flex-direction: column;
   animation: contentBlurIn 0.3s var(--ease-out);
+}
+
+.content::-webkit-scrollbar {
+  display: none;
 }
 
 .sizeSmall {
@@ -71,6 +77,8 @@
   right: 0;
   max-height: 90dvh;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   background-color: var(--surface-2);
   border-top: 1px solid var(--line-2);
   border-top-left-radius: var(--r-xl);
@@ -80,6 +88,10 @@
   z-index: calc(var(--z-drawer) + 1);
   outline: none;
   animation: sheetBlurIn 0.3s var(--ease-out);
+}
+
+.sheetContent::-webkit-scrollbar {
+  display: none;
 }
 
 @keyframes sheetBlurIn {
@@ -123,6 +135,16 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  mask-image: linear-gradient(to bottom, transparent 0px, black 20px, black calc(100% - 20px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 20px, black calc(100% - 20px), transparent 100%);
+  padding: var(--space-1) 0;
+}
+
+.body::-webkit-scrollbar {
+  display: none;
 }
 
 .actions {

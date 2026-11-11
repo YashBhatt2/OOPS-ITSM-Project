@@ -7,6 +7,7 @@ import { ToastProvider } from '@/components/ui/Toast/Toast';
 // Auth
 import { SignInPage } from '@/features/auth/SignInPage';
 import { RegisterPage } from '@/features/auth/RegisterPage';
+import { LandingPage } from '@/features/landing/LandingPage';
 
 // Employee
 import { EmployeeHomePage } from '@/features/employee/EmployeeHomePage';
@@ -81,7 +82,7 @@ const ProtectedRoute: React.FC<{
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/signin" replace />;
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
@@ -101,16 +102,6 @@ const RoleIncidentRedirect: React.FC = () => {
   return <Navigate to={`/employee/incidents/${id}`} replace />;
 };
 
-const RootRedirect: React.FC = () => {
-  const { user, isLoading } = useAuth();
-
-  if (isLoading) return <LoadingScreen />;
-  if (!user) return <Navigate to="/login" replace />;
-  if (user.role === 'ADMIN') return <Navigate to="/admin" replace />;
-  if (user.role === 'TECHNICIAN') return <Navigate to="/technician" replace />;
-  return <Navigate to="/employee" replace />;
-};
-
 export const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -119,9 +110,31 @@ export const App: React.FC = () => {
           <BrowserRouter>
             <Routes>
               {/* Public Routes */}
-              <Route path="/login" element={<SignInPage />} />
-              <Route path="/signin" element={<SignInPage />} />
-              <Route path="/register" element={<RegisterPage />} />
+              <Route
+                path="/"
+                element={
+                  <PageTransition>
+                    <LandingPage />
+                  </PageTransition>
+                }
+              />
+              <Route path="/login" element={<Navigate to="/signin" replace />} />
+              <Route
+                path="/signin"
+                element={
+                  <PageTransition>
+                    <SignInPage />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/register"
+                element={
+                  <PageTransition>
+                    <RegisterPage />
+                  </PageTransition>
+                }
+              />
 
               {/* Employee Routes */}
               <Route
@@ -287,9 +300,8 @@ export const App: React.FC = () => {
                 }
               />
 
-              {/* Root & Fallback */}
-              <Route path="/" element={<RootRedirect />} />
-              <Route path="*" element={<RootRedirect />} />
+              {/* Fallback */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>
         </ToastProvider>

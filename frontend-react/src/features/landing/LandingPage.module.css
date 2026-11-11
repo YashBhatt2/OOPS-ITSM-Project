@@ -1,0 +1,594 @@
+/* ── Landing Page Styles ── */
+
+.pageContainer {
+  min-height: 100dvh;
+  background-color: var(--bg);
+  color: var(--text-1);
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* ── 1. Frosted Glass Top Bar ── */
+.topBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  padding: 0 var(--margin);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--line-1);
+  z-index: var(--z-nav);
+  box-sizing: border-box;
+}
+
+.topBarRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.authButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ── 2. Cinematic Horizon Hero ── */
+.heroSection {
+  position: relative;
+  min-height: 94dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-image: var(--horizon);
+  background-size: cover;
+  background-position: center top;
+  box-sizing: border-box;
+  padding-top: 5rem;
+  padding-bottom: var(--space-6);
+  padding-left: var(--margin);
+  padding-right: var(--margin);
+}
+
+.heroUpperBand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 58rem;
+  margin: 0 auto;
+  padding-top: clamp(1.5rem, 4vw, 3.5rem);
+  box-sizing: border-box;
+}
+
+.heroDisplayBrand {
+  font-family: var(--font-sans);
+  font-size: clamp(1.125rem, 3vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--text-1);
+  margin-bottom: var(--space-4);
+}
+
+:root[data-theme="dark"] .heroDisplayBrand {
+  text-shadow: var(--glow-display);
+}
+
+.heroHeadline {
+  font-family: var(--font-sans);
+  font-size: var(--fs-display-xl);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  color: var(--text-1);
+  margin: 0 0 var(--space-4) 0;
+  max-width: 50rem;
+}
+
+.heroSubline {
+  font-family: var(--font-sans);
+  font-size: clamp(var(--fs-body), 2vw, var(--fs-title-3));
+  color: var(--text-2);
+  line-height: 1.5;
+  margin: 0 0 var(--space-6) 0;
+  max-width: 40rem;
+}
+
+.heroCtas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.heroFloor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: var(--space-8);
+  box-sizing: border-box;
+}
+
+.heroFloorTagline {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  text-align: center;
+  margin: 0;
+}
+
+/* ── Section Structure ── */
+.section {
+  padding: clamp(3.5rem, 8vw, 6rem) var(--margin);
+  max-width: 72rem;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-7);
+}
+
+.sectionEyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.sectionTitle {
+  font-family: var(--font-serif);
+  font-size: var(--fs-display);
+  font-weight: 400;
+  color: var(--text-1);
+  margin: 0;
+  line-height: 1.15;
+}
+
+.sectionDesc {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  color: var(--text-2);
+  max-width: 38rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── 3. The Journey (Sticky Lifecycle) ── */
+.journeyContainer {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+  position: relative;
+}
+
+@media (min-width: 48rem) {
+  .journeyContainer {
+    grid-template-columns: 20rem 1fr;
+    gap: var(--space-8);
+  }
+}
+
+.journeyStickyColumn {
+  position: sticky;
+  top: 5.5rem;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  background-color: var(--surface-1);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-xl);
+  padding: var(--space-5);
+  box-sizing: border-box;
+}
+
+.lifecycleStickyTitle {
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-3);
+  font-weight: 600;
+  color: var(--text-1);
+  margin: 0;
+}
+
+.stageProgressIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  color: var(--text-2);
+}
+
+.stagesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.stageItem {
+  padding: var(--space-5);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line-1);
+  background-color: var(--surface-1);
+  transition: border-color var(--dur-2) var(--ease-out), background-color var(--dur-2) var(--ease-out);
+}
+
+.stageItemActive {
+  border-color: var(--line-2);
+  background-color: var(--surface-2);
+}
+
+.stageHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.stageIndex {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-3);
+  text-transform: uppercase;
+}
+
+.stageName {
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-3);
+  font-weight: 600;
+  color: var(--text-1);
+  margin: 0;
+}
+
+.stageDescription {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-s);
+  color: var(--text-2);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── 4. Roles Section ── */
+.rolesControlWrapper {
+  margin-bottom: var(--space-6);
+  display: flex;
+  justify-content: flex-start;
+}
+
+.previewFrame {
+  background-color: var(--surface-1);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-float);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  box-sizing: border-box;
+}
+
+.previewStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--space-4);
+}
+
+.previewIncidentCard {
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-lg);
+  padding: var(--space-4) var(--space-5);
+  background-color: var(--surface-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.previewCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.previewIncidentTitle {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--text-1);
+  margin: 0;
+}
+
+.previewIncidentMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-3);
+}
+
+/* ── 5. Capabilities: Editorial Hairline List (NOT CARDS) ── */
+.hairlineList {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line-1);
+}
+
+.hairlineItem {
+  display: grid;
+  grid-template-columns: 1fr;
+  padding: var(--space-6) 0;
+  border-bottom: 1px solid var(--line-1);
+  gap: var(--space-3);
+  transition: background-color var(--dur-1) var(--ease-out);
+}
+
+@media (min-width: 48rem) {
+  .hairlineItem {
+    grid-template-columns: 4rem 18rem 1fr;
+    gap: var(--space-6);
+    align-items: baseline;
+  }
+}
+
+.itemIndex {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  color: var(--text-3);
+}
+
+.itemTitle {
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-3);
+  font-weight: 600;
+  color: var(--text-1);
+  margin: 0;
+}
+
+.itemSummary {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  color: var(--text-2);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── 6. The Island Strip Demo ── */
+.islandDemoBox {
+  background-color: var(--surface-1);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-xl);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+  min-height: 24rem;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.islandDemoStage {
+  width: 100%;
+  max-width: 26rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  min-height: 12rem;
+}
+
+.demoRestPill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-4);
+  height: 2.25rem;
+  border-radius: var(--r-pill);
+  background-color: color-mix(in srgb, var(--surface-1) 94%, transparent);
+  backdrop-filter: blur(48px) saturate(190%);
+  -webkit-backdrop-filter: blur(48px) saturate(190%);
+  border: 1px solid var(--line-2);
+  color: var(--text-1);
+  box-shadow: 0 16px 36px -8px rgb(0 0 0 / 0.5);
+}
+
+.demoPeekBox {
+  width: 100%;
+  border-radius: var(--r-lg);
+  padding: var(--space-3) var(--space-4);
+  background-color: color-mix(in srgb, var(--surface-1) 94%, transparent);
+  backdrop-filter: blur(48px) saturate(190%);
+  -webkit-backdrop-filter: blur(48px) saturate(190%);
+  border: 1px solid var(--red);
+  box-shadow: 0 24px 64px -8px rgb(0 0 0 / 0.7);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.demoOpenCard {
+  width: 100%;
+  border-radius: var(--r-xl);
+  background-color: color-mix(in srgb, var(--surface-1) 96%, transparent);
+  backdrop-filter: blur(48px) saturate(190%);
+  -webkit-backdrop-filter: blur(48px) saturate(190%);
+  border: 1px solid var(--line-2);
+  box-shadow: 0 28px 72px -12px rgb(0 0 0 / 0.8);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.demoOpenHeader {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--line-1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.demoOpenTitle {
+  font-family: var(--font-sans);
+  font-size: var(--fs-meta);
+  font-weight: 600;
+  color: var(--text-1);
+  margin: 0;
+}
+
+.demoItemList {
+  padding: var(--space-2) 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.demoItem {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--line-1);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.demoItem:last-child {
+  border-bottom: none;
+}
+
+.demoItemContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.demoItemText {
+  font-size: var(--fs-body-s);
+  color: var(--text-1);
+  margin: 0 0 0.125rem 0;
+  line-height: 1.35;
+}
+
+.demoItemMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-3);
+}
+
+.demoEmailedBadge {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  padding: 0 0.35rem;
+  border-radius: var(--r-sm);
+  background-color: var(--surface-3);
+  color: var(--text-2);
+}
+
+/* ── 7. Closing CTA & Minimal Footer ── */
+.closingSection {
+  border-top: 1px solid var(--line-1);
+  padding: clamp(4rem, 9vw, 7rem) var(--margin);
+  background-image: var(--bloom);
+  background-position: top center;
+  background-repeat: no-repeat;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.closingHeadline {
+  font-family: var(--font-serif);
+  font-size: var(--fs-display-xl);
+  font-weight: 400;
+  color: var(--text-1);
+  margin: 0 0 var(--space-3) 0;
+  line-height: 1.1;
+}
+
+.closingSubline {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  color: var(--text-2);
+  max-width: 32rem;
+  line-height: 1.5;
+  margin: 0 0 var(--space-6) 0;
+}
+
+.footer {
+  border-top: 1px solid var(--line-1);
+  padding: var(--space-6) var(--margin);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  box-sizing: border-box;
+}
+
+.footerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.footerStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-2);
+}
+
+.statusGreenDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--green);
+}
+
+.footerLinks {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-s);
+}
+
+.footerLinks a {
+  color: var(--text-2);
+  text-decoration: none;
+  transition: color var(--dur-1) var(--ease-out);
+}
+
+.footerLinks a:hover {
+  color: var(--text-1);
+}
+
+.footerCopy {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-3);
+  margin: 0;
+}

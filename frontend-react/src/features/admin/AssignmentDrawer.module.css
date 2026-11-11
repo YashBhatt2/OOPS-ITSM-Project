@@ -115,6 +115,14 @@
   flex: 1;
   overflow-y: auto;
   padding: var(--space-4) var(--space-5);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  mask-image: linear-gradient(to bottom, transparent 0px, black 20px, black calc(100% - 20px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 20px, black calc(100% - 20px), transparent 100%);
+}
+
+.drawerBody::-webkit-scrollbar {
+  display: none;
 }
 
 .strategySection {

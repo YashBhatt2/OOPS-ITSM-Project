@@ -21,15 +21,15 @@
 }
 
 .islandCard {
-  background-color: var(--glass);
-  backdrop-filter: blur(28px) saturate(200%);
-  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  background-color: color-mix(in srgb, var(--surface-1) 94%, transparent);
+  backdrop-filter: blur(48px) saturate(190%);
+  -webkit-backdrop-filter: blur(48px) saturate(190%);
   border: 1px solid var(--line-2);
   color: var(--text-1);
   box-sizing: border-box;
   overflow: hidden;
   outline: none;
-  box-shadow: 0 20px 48px -12px rgb(0 0 0 / 0.55), inset 0 1px 0 rgba(255 255 255 / 0.12);
+  box-shadow: 0 24px 64px -8px rgb(0 0 0 / 0.75), inset 0 1px 0 rgba(255 255 255 / 0.14);
   transition: border-color var(--dur-2) var(--ease-out), box-shadow var(--dur-2) var(--ease-out);
 }
 
@@ -115,6 +115,10 @@
   gap: var(--space-3);
   z-index: calc(var(--z-modal) + 1);
   cursor: pointer;
+  background-color: color-mix(in srgb, var(--surface-1) 94%, transparent);
+  backdrop-filter: blur(48px) saturate(190%);
+  -webkit-backdrop-filter: blur(48px) saturate(190%);
+  box-shadow: 0 24px 64px -8px rgb(0 0 0 / 0.75), inset 0 1px 0 rgba(255 255 255 / 0.14);
 }
 
 @media (max-width: 600px) {
@@ -226,6 +230,10 @@
   z-index: calc(var(--z-modal) + 1);
   display: flex;
   flex-direction: column;
+  background-color: color-mix(in srgb, var(--surface-1) 96%, transparent);
+  backdrop-filter: blur(48px) saturate(190%);
+  -webkit-backdrop-filter: blur(48px) saturate(190%);
+  box-shadow: 0 28px 72px -12px rgb(0 0 0 / 0.8), inset 0 1px 0 rgba(255 255 255 / 0.16);
 }
 
 @media (max-width: 600px) {
@@ -331,6 +339,14 @@
   overflow-y: auto;
   flex: 1;
   padding: var(--space-2) 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  mask-image: linear-gradient(to bottom, transparent 0px, black 16px, black calc(100% - 16px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 16px, black calc(100% - 16px), transparent 100%);
+}
+
+.listScroll::-webkit-scrollbar {
+  display: none;
 }
 
 .notificationItem {
