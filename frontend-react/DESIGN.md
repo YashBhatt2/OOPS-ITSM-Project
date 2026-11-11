@@ -837,8 +837,12 @@ These describe structure and intent. Build them with the components above.
 
 ### 11.2 Employee home
 
-1. `serif-title` greeting by time of day ("Good morning, Vatsal."). Time of day follows the user's local time.
-2. Three stat tiles from `/dashboards/me`: **Active**, **Awaiting verification**, **Closed**, with `--bloom` faintly behind the row (dark).
+1. **Greeting header (§12.5):**
+   - Eyebrow with tracked caps weekday and date (`"Wednesday, November 11"`, uppercase by CSS, no clock).
+   - `serif-title` heading `h1` by time of day with italicized first name (`Good morning, *Vatsal*.`).
+   - One supporting sentence in `body --text-2` with an underlined link to the filtered target list.
+   - Cinematic atmospheric bloom behind the header shifting tint by time band in Obsidian (none in Ceramic).
+2. Three stat tiles from `/dashboards/me`: **Active**, **Awaiting verification**, **Closed**.
 3. A primary "Report an incident" button.
 4. "Your incidents" list (cards on mobile, table on wide) with filters and the lifecycle bar.
 
@@ -949,6 +953,51 @@ This section adopts the editorial rules of the Apple Style Guide (June 2026) for
 
 - **Impact:** 1 "One person", 2 "A team", 3 "A whole department or more".
 - **Urgency:** 1 "Can wait", 2 "Soon", 3 "Right now".
+
+### 12.5 Greetings
+
+Tone: professional, calm, technical warmth, never distracting. No emoji, no exclamation marks, no jokes, no random rotating phrases, no typewriter animations.
+
+#### Structure
+1. **Eyebrow (eyebrow role, tracked caps):** Weekday and date (e.g. `"Wednesday, November 11"`), rendered uppercase via CSS. No clock.
+2. **Greeting (serif-title role):** The screen's single serif heading, an `<h1>`. The person's first name is rendered in serif italic (`*Vatsal*`). The first word of `displayName` is parsed cleanly, handling empty, punctuation, or odd values safely.
+3. **One supporting sentence:** In `body`, `--text-2`, in sentence case with a final period. The key phrase of the sentence is a link to the matching filtered list, styled in `--text-2` with an underline on hover and focus-visible. While data loads, show a skeleton for the sentence only; on error, omit the sentence quietly.
+
+#### Time Bands (Viewer's Local Time)
+- **05:00 to 11:59:** `"Good morning"` (`--bloom-morning`)
+- **12:00 to 16:59:** `"Good afternoon"` (`--bloom-day`)
+- **17:00 to 23:59:** `"Good evening"` (`--bloom-evening`)
+- **00:00 to 04:59:** `"Welcome back"` (`--bloom-night`)
+
+#### Special Visit Rules
+- **First sign-in on browser:** `"Welcome, <Name>."`
+- **Returning after 7+ days:** `"Welcome back, <Name>."`
+- Tracked via `localStorage` per account ID with `try/catch`. Falls back to time-based greeting if storage fails. Last visit updated after render.
+- Re-evaluated on tab focus and every 5 minutes. If the band changes while the page is open, crossfade over 200 ms. Never re-animate on data refetches.
+
+#### Supporting-Sentence Ladders (First matching condition applies)
+- **Administrator:**
+  1. Breached: `"Two incidents have breached their deadline."` (Link: `/admin/incidents?slaStatus=BREACHED`)
+  2. At risk: `"One incident is close to its deadline."` (Link: `/admin/incidents?slaStatus=AT_RISK`)
+  3. Unassigned NEW: `"Three incidents need an assignment."` (Link: `/admin/incidents?status=NEW`)
+  4. RESOLVED waiting: `"Two resolutions are waiting for verification."` (Link: `/admin/verification`)
+  5. Else: `"Everything is on track."`
+- **Technician:**
+  1. Breached: `"One of your incidents is past its deadline."` (Link: `/technician/incidents?slaStatus=BREACHED`)
+  2. At risk: `"One of your incidents is close to its deadline."` (Link: `/technician/incidents?slaStatus=AT_RISK`)
+  3. Not yet acknowledged: `"One incident is waiting for you to acknowledge it."` (Link: `/technician?status=ASSIGNED`)
+  4. Workload: `"Three of your five slots are in use."` (Link: `/technician`)
+  5. Else: `"Your queue is clear."`
+- **Employee:**
+  1. Resolved or verified: `"One of your incidents has been resolved."` (Link: `/incidents?status=RESOLVED`)
+  2. Active: `"You have two active incidents."` (Link: `/incidents`)
+  3. Else: `"Nothing needs your attention."`
+
+#### Grammar & Number Rules
+- Spell out one through nine (`"one"`, `"two"`... `"nine"`). Use numerals for 10 and up.
+- Never start a sentence with a numeral (e.g. write `"A total of 12 incidents..."` or `"You have 12 active incidents."`).
+- Correct singular and plural forms (`"is"` vs `"are"`, `"has"` vs `"have"`, `"its"` vs `"their"`).
+- Always use the word `"incident"` consistently.
 
 ---
 

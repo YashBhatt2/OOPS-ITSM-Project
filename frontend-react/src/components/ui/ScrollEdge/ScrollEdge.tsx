@@ -52,3 +52,4 @@ export const ScrollEdge: React.FC<ScrollEdgeProps> = ({
     </div>
   );
 };
+

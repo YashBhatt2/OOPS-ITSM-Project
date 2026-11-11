@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import clsx from 'clsx';
@@ -10,6 +10,8 @@ import { StatusLabel } from '@/components/ui/StatusLabel/StatusLabel';
 import { PriorityMarker } from '@/components/ui/PriorityMarker/PriorityMarker';
 import { Dialog } from '@/components/ui/Dialog/Dialog';
 import { Textarea } from '@/components/ui/Field/Field';
+import { GreetingHeader } from '@/components/ui/GreetingHeader/GreetingHeader';
+import { getTechnicianSupportingSentence } from '@/lib/greeting';
 import { useToast } from '@/components/ui/Toast/Toast';
 import { apiRequest, ApiConflictError } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/format';
@@ -147,14 +149,19 @@ export function TechnicianQueuePage() {
   const capacity = dashboard?.capacity || 5;
   const activeWorkload = dashboard?.activeWorkload || sortedItems.length;
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
-  };
+  const breachedCount = sortedItems.filter((i) => i.slaStatus === 'BREACHED').length;
+  const atRiskCount = sortedItems.filter((i) => i.slaStatus === 'AT_RISK').length;
+  const unacknowledgedCount = sortedItems.filter((i) => i.status === 'ASSIGNED').length;
 
-  const firstName = user?.displayName ? user.displayName.split(' ')[0] : 'there';
+  const supportingSentence = useMemo(() => {
+    return getTechnicianSupportingSentence({
+      breachedCount,
+      atRiskCount,
+      unacknowledgedCount,
+      activeWorkload,
+      capacity,
+    });
+  }, [breachedCount, atRiskCount, unacknowledgedCount, activeWorkload, capacity]);
 
   return (
     <div className={styles.page}>
@@ -167,12 +174,12 @@ export function TechnicianQueuePage() {
 
       <main className={styles.main}>
         <section className={styles.headerRow}>
-          <div className={styles.titleBlock}>
-            <h1 className={styles.pageTitle}>
-              {getGreeting()}, {firstName}.
-            </h1>
-            <p className={styles.pageSub}>Assigned queue prioritized by upcoming SLA deadlines.</p>
-          </div>
+          <GreetingHeader
+            displayName={user?.displayName}
+            userId={user?.id}
+            supportingSentence={supportingSentence}
+            isSentenceLoading={isLoading && !dashboard}
+          />
 
           {/* Capacity Meter */}
           <div className={styles.capacityCard}>

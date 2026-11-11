@@ -6,12 +6,14 @@ import { Nav } from '@/components/ui/Nav/Nav';
 import { StatTile } from '@/components/ui/StatTile/StatTile';
 import { Button } from '@/components/ui/Button/Button';
 import { PriorityMarker } from '@/components/ui/PriorityMarker/PriorityMarker';
+import { GreetingHeader } from '@/components/ui/GreetingHeader/GreetingHeader';
+import { getAdminSupportingSentence } from '@/lib/greeting';
 import { apiRequest } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/format';
 import { Priority } from '@/lib/constants';
 import { Dashboard, Incident, PagedResult } from './types';
 import { AssignmentDrawer } from './AssignmentDrawer';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import styles from './admin.module.css';
 
 export function AdminOverviewPage() {
@@ -19,7 +21,7 @@ export function AdminOverviewPage() {
   const navigate = useNavigate();
   const [assigningIncident, setAssigningIncident] = useState<Incident | null>(null);
 
-  const { data: dashboard } = useQuery<Dashboard>({
+  const { data: dashboard, isLoading: isDashboardLoading } = useQuery<Dashboard>({
     queryKey: ['dashboard', 'admin'],
     queryFn: () => apiRequest('/api/v1/dashboards/me'),
   });
@@ -29,26 +31,26 @@ export function AdminOverviewPage() {
     queryFn: () => apiRequest('/api/v1/incidents?status=NEW&page=0&size=10'),
   });
 
-  const { data: atRiskResult } = useQuery<PagedResult<Incident>>({
+  const { data: atRiskResult, isLoading: isAtRiskLoading } = useQuery<PagedResult<Incident>>({
     queryKey: ['incidents', 'atRisk'],
     queryFn: () => apiRequest('/api/v1/incidents?slaStatus=AT_RISK&page=0&size=1'),
   });
 
-  const { data: breachedResult } = useQuery<PagedResult<Incident>>({
+  const { data: breachedResult, isLoading: isBreachedLoading } = useQuery<PagedResult<Incident>>({
     queryKey: ['incidents', 'breached'],
     queryFn: () => apiRequest('/api/v1/incidents?slaStatus=BREACHED&page=0&size=1'),
   });
 
   const unassigned = unassignedResult?.items ?? [];
 
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
-  };
-
-  const firstName = user?.displayName ? user.displayName.split(' ')[0] : 'Administrator';
+  const supportingSentence = useMemo(() => {
+    return getAdminSupportingSentence({
+      breachedCount: breachedResult?.totalElements ?? 0,
+      atRiskCount: atRiskResult?.totalElements ?? 0,
+      unassignedNewCount: dashboard?.byStatus?.NEW ?? unassignedResult?.totalElements ?? 0,
+      resolutionsWaitingCount: dashboard?.byStatus?.RESOLVED ?? 0,
+    });
+  }, [breachedResult, atRiskResult, dashboard, unassignedResult]);
 
   return (
     <div className={styles.page}>
@@ -59,12 +61,12 @@ export function AdminOverviewPage() {
         unreadNotificationsCount={dashboard?.unreadNotifications ?? 0}
       />
       <main className={styles.main}>
-        <div className={styles.pageHeader}>
-          <h1 className={styles.pageTitle}>
-            {getGreeting()}, {firstName}.
-          </h1>
-          <p className={styles.pageSub}>Incident dispatch, SLA performance, and system status.</p>
-        </div>
+        <GreetingHeader
+          displayName={user?.displayName}
+          userId={user?.id}
+          supportingSentence={supportingSentence}
+          isSentenceLoading={isDashboardLoading && isBreachedLoading}
+        />
 
         <div className={styles.statsGrid}>
           <StatTile

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Plus, CaretLeft, CaretRight } from '@phosphor-icons/react';
@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/Button/Button';
 import { StatusLabel } from '@/components/ui/StatusLabel/StatusLabel';
 import { PriorityMarker } from '@/components/ui/PriorityMarker/PriorityMarker';
 import { LifecycleBar } from '@/components/ui/LifecycleBar/LifecycleBar';
+import { GreetingHeader } from '@/components/ui/GreetingHeader/GreetingHeader';
+import { getEmployeeSupportingSentence } from '@/lib/greeting';
 import { apiRequest } from '@/lib/api';
 import { formatRelativeTime } from '@/lib/format';
 import { Priority, IncidentStatus } from '@/lib/constants';
@@ -24,16 +26,6 @@ export function EmployeeHomePage() {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [includeClosed, setIncludeClosed] = useState(false);
   const [reportModalOpen, setReportModalOpen] = useState(false);
-
-  // Time of day greeting
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
-  };
-
-  const firstName = user?.displayName ? user.displayName.split(' ')[0] : 'there';
 
   // 1. Dashboard summary
   const { data: dashboard } = useQuery<Dashboard>({
@@ -90,6 +82,13 @@ export function EmployeeHomePage() {
     (dashboard?.byStatus?.RESOLVED ?? 0) + (dashboard?.byStatus?.VERIFIED ?? 0);
   const closedCount = dashboard?.byStatus?.CLOSED ?? 0;
 
+  const supportingSentence = useMemo(() => {
+    return getEmployeeSupportingSentence({
+      resolvedOrVerifiedCount: awaitingFeedbackCount,
+      activeIncidentsCount: activeCount,
+    });
+  }, [awaitingFeedbackCount, activeCount]);
+
   return (
     <div className={styles.page}>
       <Nav
@@ -102,12 +101,12 @@ export function EmployeeHomePage() {
       <main className={styles.main}>
         {/* Hero Greeting Row */}
         <section className={styles.heroRow}>
-          <div className={styles.greetingBlock}>
-            <h1 className={styles.greeting}>
-              {getGreeting()}, {firstName}.
-            </h1>
-            <p className={styles.subgreeting}>Here is the status of your reported requests.</p>
-          </div>
+          <GreetingHeader
+            displayName={user?.displayName}
+            userId={user?.id}
+            supportingSentence={supportingSentence}
+            isSentenceLoading={!dashboard && !incidentsResult}
+          />
           <div className={styles.actions}>
             <Button
               variant="primary"

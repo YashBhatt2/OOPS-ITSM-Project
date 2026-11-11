@@ -109,6 +109,10 @@
   --shadow-float: 0 24px 64px -16px rgb(0 0 0 / 0.6);
   --glow-display: 0 0 40px rgb(255 255 255 / 0.18);
   --bloom: radial-gradient(60% 50% at 50% 0%, rgb(46 143 214 / 0.20), transparent 70%);
+  --bloom-morning: radial-gradient(60% 50% at 50% 0%, rgb(70 150 225 / 0.18), transparent 70%);
+  --bloom-day: radial-gradient(60% 50% at 50% 0%, rgb(50 140 215 / 0.20), transparent 70%);
+  --bloom-evening: radial-gradient(60% 50% at 50% 0%, rgb(120 130 180 / 0.16), transparent 70%);
+  --bloom-night: radial-gradient(60% 50% at 50% 0%, rgb(40 80 140 / 0.14), transparent 70%);
   --horizon: linear-gradient(180deg,
     #03060c 0%, #04204a 16%, #002f6c 30%, #0e5fb0 44%, #2f93d8 56%,
     #a9d4ee 68%, #e6f0f5 74%, #11151b 74.5%, #05070a 100%);
@@ -155,6 +159,10 @@
   --shadow-float: 0 20px 48px -12px rgb(11 11 12 / 0.18);
   --glow-display: none;   /* no glow in Ceramic */
   --bloom: none;
+  --bloom-morning: none;
+  --bloom-day: none;
+  --bloom-evening: none;
+  --bloom-night: none;
   --horizon: linear-gradient(180deg,
     #ffffff 0%, #eef3f7 30%, #e3ebf1 56%, #dcd7d2 68%, #f6f4f1 74%,
     #dcd7d2 74.5%, #d2ccc6 100%);

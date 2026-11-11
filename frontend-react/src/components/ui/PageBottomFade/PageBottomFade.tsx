@@ -50,3 +50,4 @@ export const PageBottomFade: React.FC<PageBottomFadeProps> = ({ className, hide 
     </>
   );
 };
+

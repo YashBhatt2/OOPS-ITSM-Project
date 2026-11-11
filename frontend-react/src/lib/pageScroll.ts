@@ -50,3 +50,4 @@ export function initPageScrollHelper(): () => void {
     if (rafId !== null) cancelAnimationFrame(rafId);
   };
 }
+
