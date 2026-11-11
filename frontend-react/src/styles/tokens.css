@@ -48,6 +48,7 @@
 
   --margin: clamp(1rem, 2.3vw, 2.5rem);  /* Nothing's 2.3% rule, with a floor for phones */
   --content-max: 90rem;                   /* 1440 */
+  --fade-size: 2.5rem;                    /* 40px scroll edge cues */
 
   --z-sticky: 10;
   --z-nav: 20;
@@ -78,6 +79,8 @@
   --line-1: rgb(255 255 255 / 0.08);   /* hairlines (decorative) */
   --line-2: rgb(255 255 255 / 0.14);   /* dividers, card borders */
   --field-border: rgb(255 255 255 / 0.40); /* inputs: meets 3:1 */
+  --scrollbar-thumb: color-mix(in srgb, var(--text-3) 45%, transparent);
+  --scrollbar-thumb-hover: var(--text-2);
 
   --text-1: #f5f5f7;
   --text-2: #a1a1a6;
@@ -117,11 +120,13 @@
   --surface-1: #ffffff;
   --surface-2: #fbfaf8;
   --surface-3: #efebe6;
-  --glass: rgb(255 255 255 / 0.72);
+  --glass: rgb(255 255 255 / 0.88);
 
   --line-1: rgb(11 11 12 / 0.08);
   --line-2: rgb(11 11 12 / 0.14);
   --field-border: rgb(11 11 12 / 0.50);
+  --scrollbar-thumb: color-mix(in srgb, var(--text-3) 45%, transparent);
+  --scrollbar-thumb-hover: var(--text-2);
 
   --text-1: #0b0b0c;
   --text-2: #55555b;

@@ -160,7 +160,7 @@ Put this in `src/styles/tokens.css`. Theme is set by `data-theme` on `<html>` (`
   --surface-1: #ffffff;
   --surface-2: #fbfaf8;
   --surface-3: #efebe6;
-  --glass: rgb(255 255 255 / 0.72);
+  --glass: rgb(255 255 255 / 0.88);
 
   --line-1: rgb(11 11 12 / 0.08);
   --line-2: rgb(11 11 12 / 0.14);
@@ -459,6 +459,18 @@ Rules:
 
 Two modes. **Comfortable** is the default and the only mode on touch devices. **Compact** (rows 44 px, 36 px controls) is available on pointer devices in tables only.
 
+### 6.5 Layout invariants
+
+1. **Shared Container & Edge Alignment:** The top bar and all page views share ONE container bounding rule: a content width capped at `--content-max` (90rem / 1440px), centered with `margin: 0 auto;`, and padded horizontally by `var(--margin)`. The wordmark's left edge and the page title's left edge must align precisely at every viewport width (360px to 1920px+).
+2. **Radius Hierarchy:**
+   - Controls, buttons, inputs, filter chips: `--r-md` (14 px) or `--r-pill`.
+   - Content cards, panels, list containers: `--r-lg` (20 px).
+   - Dialogs, bottom sheets, drawers, modal overlays: `--r-xl` (28 px).
+3. **Flat Status Strip:** The incident header is rendered as a clean, flat status strip (`StatusStrip`, §10.9) with `--r-md`, holding the monospace reference, status dot + label, priority marker, step indicator ("Step X of 7"), and lifecycle progress bar. Never enclose the header in a floating pill card.
+4. **Structured Incident Details:** Metadata (Service, Category, Reporter, Created date, Closed date) is organized into a semantic definition list (`<dl>`, `<dt>`, `<dd>`) in an `IncidentDetailsCard` component in the sticky right column.
+5. **No Nested Cards:** The comment and note composer is an un-nested, flat surface with a single hairline border, avoiding "card inside a card" visual clutter. Primary actions are disabled until text is typed.
+6. **Duration Formatting:** Durations never render minutes exceeding 59 (e.g. format as `"8 h"` or `"1 d 3 h"`, never `"480m"`). Ticking clocks display an explicit `"left"` unit word.
+
 ---
 
 ## 7. Surfaces, depth, glass
@@ -524,6 +536,24 @@ Hand-built SVG, not a chart library (library defaults look generic).
 - Axis labels in `meta` using single letters or numbers (J F M A…). Gridlines in `--line-1`, only two or three, no vertical grid.
 - Every chart has a text equivalent: visible values in a tooltip or a table, and an `aria-label` summarizing it.
 - Tooltips: solid `--surface-3`, 1 px `--line-2`, `meta` text.
+
+### 8.5 Scroll affordances
+
+The app enforces a clean, quiet viewport with far fewer visible default scrollbars. Overflowing content surfaces clear, subtle affordance cues indicating that more content exists.
+
+#### Decision Table by Context
+| Context | Mechanism | Scrollbar visibility | Overflow edge cue |
+|---|---|---|---|
+| **Root page** | Window scroll | Slim native thumb (6 px, `--scrollbar-thumb`), reveals `--scrollbar-thumb-hover` on scroll | Top bar progress hairline (2 px); 56 px bottom sentinel fade |
+| **Popups & Dialogs** | Radix `ScrollArea` (`type="scroll"`) | On active scrolling only | Edge fade (`linear-gradient` mask); dynamic footer hairline when content sits behind |
+| **Activity Timeline** | Radix `ScrollArea` (`type="scroll"`) | On active scrolling only | 4-layer progressive blur ramp (`edgeMode="blur"`); pinned `"N more"` pill |
+| **Wide Data Tables** | Radix `ScrollArea` (`type="hover"`) | On hover or drag | Horizontal fade masks on un-scrolled edges; sticky first column |
+
+#### Primitives
+1. **`ScrollArea` (`src/components/ui/ScrollArea`):** Headless wrapper over `@radix-ui/react-scroll-area` styled entirely with tokens. Vertical thumb starts at 6 px in `--scrollbar-thumb` and transforms smoothly via `transform: scaleX(1.666)` (10 px) and `--scrollbar-thumb-hover` on hover or active dragging. The viewport has `tabIndex={0}`, `role="region"`, and an explicit `aria-label` so keyboard arrows scroll without traps.
+2. **`useScrollEdges` (`src/lib/useScrollEdges.ts`):** Returns reactive booleans `moreBefore` and `moreAfter`, computed with `requestAnimationFrame` throttling and a `ResizeObserver`, with a 2 px tolerance threshold.
+3. **`ScrollEdge` (`src/components/ui/ScrollEdge`):** Renders dynamic cues. Mode `"fade"` applies an alpha mask, ideal for dark/light solid surfaces. Mode `"blur"` applies a 4-tier progressive backdrop filter (`blur(2px)` to `blur(18px)`) across a 40 px ramp, preserving legibility over glass or complex backdrops.
+4. **Page Scroll Helper (`src/lib/pageScroll.ts`):** Sets `data-scrolling="true"` during active scroll (debounced to 120 ms), `data-scrolled="true"` after 8 px scroll, and computes `--scroll-progress: 0 to 1` driving the 2 px top bar progress hairline.
 
 ---
 

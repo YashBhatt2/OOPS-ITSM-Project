@@ -5,8 +5,8 @@ import { UserPlus, Sliders, LinkSimple, ArrowsClockwise } from '@phosphor-icons/
 import { useAuth } from '@/features/auth/AuthContext';
 import { Nav } from '@/components/ui/Nav/Nav';
 import { BackButton } from '@/components/ui/BackButton/BackButton';
-import { StatusLabel } from '@/components/ui/StatusLabel/StatusLabel';
-import { PriorityMarker } from '@/components/ui/PriorityMarker/PriorityMarker';
+import { StatusStrip } from '@/components/ui/StatusStrip/StatusStrip';
+import { IncidentDetailsCard } from '@/features/incident/IncidentDetailsCard';
 import { SlaMeter } from '@/components/ui/SlaMeter/SlaMeter';
 import { Comment } from '@/components/ui/Comment/Comment';
 import { Timeline } from '@/components/ui/Timeline/Timeline';
@@ -15,7 +15,6 @@ import { Button } from '@/components/ui/Button/Button';
 import { Dialog } from '@/components/ui/Dialog/Dialog';
 import { useToast } from '@/components/ui/Toast/Toast';
 import { apiRequest, ApiConflictError } from '@/lib/api';
-import { formatDateTime } from '@/lib/format';
 import { Priority, IncidentStatus, SlaStatus } from '@/lib/constants';
 import { Incident, IncidentComment, HistoryEvent, Dashboard } from './types';
 import { AssignmentDrawer } from './AssignmentDrawer';
@@ -243,123 +242,153 @@ export function AdminIncidentDetailPage() {
           </div>
         )}
 
-        {/* Status Strip & Admin Actions */}
-        <section
-          style={{
-            backgroundColor: 'var(--surface-2)',
-            border: '1px solid var(--line-1)',
-            borderRadius: 'var(--r-lg)',
-            padding: 'var(--space-4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 'var(--space-4)',
-            flexWrap: 'wrap',
-            marginBottom: 'var(--space-5)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-            <span className={styles.incidentRef}>{incident.reference}</span>
-            <StatusLabel status={incident.status as IncidentStatus} />
-            <PriorityMarker
-              priority={(incident.effectivePriority || incident.priority || 'P3') as Priority}
-            />
-          </div>
+        {/* Status Strip */}
+        <StatusStrip
+          reference={incident.reference}
+          status={incident.status as IncidentStatus}
+          priority={(incident.effectivePriority || incident.priority || 'P3') as Priority}
+          slaStatus={incident.slaStatus as SlaStatus}
+        />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-            <Button variant="secondary" size="compact" onClick={() => setAssignmentOpen(true)}>
-              <UserPlus size={16} weight="light" />
-              <span>Assign</span>
-            </Button>
-            <Button variant="secondary" size="compact" onClick={() => setPriorityDialogOpen(true)}>
-              <Sliders size={16} weight="light" />
-              <span>Override priority</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="compact"
-              isLoading={recalcMutation.isPending}
-              onClick={() => recalcMutation.mutate()}
-            >
-              <ArrowsClockwise size={16} weight="light" />
-              <span>Recalculate</span>
-            </Button>
-            <Button variant="ghost" size="compact" onClick={() => setLinkDialogOpen(true)}>
-              <LinkSimple size={16} weight="light" />
-              <span>Link related</span>
-            </Button>
-          </div>
-        </section>
-
-        {/* Content Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 'var(--space-6)' }}>
-          <article
-            style={{
-              backgroundColor: 'var(--surface-1)',
-              border: '1px solid var(--line-1)',
-              borderRadius: 'var(--r-xl)',
-              padding: 'var(--space-6)',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'var(--space-4)',
-            }}
+        {/* Admin Quick Action Toolbar */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', margin: 'var(--space-4) 0 var(--space-5)', flexWrap: 'wrap' }}>
+          <Button variant="secondary" size="compact" onClick={() => setAssignmentOpen(true)}>
+            <UserPlus size={16} weight="light" />
+            <span>Assign</span>
+          </Button>
+          <Button variant="secondary" size="compact" onClick={() => setPriorityDialogOpen(true)}>
+            <Sliders size={16} weight="light" />
+            <span>Override priority</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="compact"
+            isLoading={recalcMutation.isPending}
+            onClick={() => recalcMutation.mutate()}
           >
-            <h1 className={styles.pageTitle} style={{ fontSize: 'var(--fs-title-1)', fontWeight: 600 }}>
-              {incident.title}
-            </h1>
-            <p
+            <ArrowsClockwise size={16} weight="light" />
+            <span>Recalculate</span>
+          </Button>
+          <Button variant="ghost" size="compact" onClick={() => setLinkDialogOpen(true)}>
+            <LinkSimple size={16} weight="light" />
+            <span>Link related</span>
+          </Button>
+        </div>
+
+        {/* Detail Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 'var(--space-6)', alignItems: 'start' }}>
+          {/* Main Column */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-6)' }}>
+            <article
               style={{
-                fontSize: 'var(--fs-body-l)',
-                color: 'var(--text-2)',
-                lineHeight: 1.6,
-                whiteSpace: 'pre-wrap',
-                margin: 0,
+                backgroundColor: 'var(--surface-1)',
+                border: '1px solid var(--line-1)',
+                borderRadius: 'var(--r-xl)',
+                padding: 'var(--space-6)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--space-4)',
               }}
             >
-              {incident.description}
-            </p>
-          </article>
+              <h1 className={styles.pageTitle} style={{ fontSize: 'var(--fs-title-1)', fontWeight: 600 }}>
+                {incident.title}
+              </h1>
+              <p
+                style={{
+                  fontSize: 'var(--fs-body-l)',
+                  color: 'var(--text-2)',
+                  lineHeight: 1.6,
+                  whiteSpace: 'pre-wrap',
+                  margin: 0,
+                }}
+              >
+                {incident.description}
+              </p>
+            </article>
 
-          {/* SLA section */}
-          <div
-            style={{
-              backgroundColor: 'var(--surface-1)',
-              border: '1px solid var(--line-1)',
-              borderRadius: 'var(--r-lg)',
-              padding: 'var(--space-4)',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-              gap: 'var(--space-4)',
-            }}
-          >
-            <SlaMeter
-              label="Response"
-              dueAt={incident.responseDueAt || null}
-              targetSeconds={7200}
-              slaStatus={incident.slaStatus as SlaStatus}
-            />
-            <SlaMeter
-              label="Resolution"
-              dueAt={incident.resolutionDueAt || null}
-              targetSeconds={28800}
-              slaStatus={incident.slaStatus as SlaStatus}
-            />
+            {/* Activity Stream */}
+            <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+              <h2 className={styles.sectionTitle} style={{ fontSize: 'var(--fs-title-2)' }}>Full incident audit & comments</h2>
+              {comments.map((c) => (
+                <Comment
+                  key={c.id}
+                  id={c.id}
+                  authorName={c.authorName || 'Staff'}
+                  createdAt={c.createdAt}
+                  body={c.body}
+                  kind={c.kind}
+                />
+              ))}
+
+              <div
+                style={{
+                  backgroundColor: 'var(--surface-1)',
+                  border: '1px solid var(--line-1)',
+                  borderRadius: 'var(--r-lg)',
+                  padding: 'var(--space-4)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 'var(--space-2)',
+                }}
+              >
+                <Textarea
+                  id="admin-internal-note"
+                  label="Add administrative internal note"
+                  placeholder="Log internal dispatch notes or escalations..."
+                  rows={3}
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-2)' }}>
+                  <Button
+                    variant="primary"
+                    size="compact"
+                    disabled={!commentText.trim()}
+                    isLoading={postNoteMutation.isPending}
+                    onClick={() => postNoteMutation.mutate()}
+                  >
+                    Post note
+                  </Button>
+                </div>
+              </div>
+            </section>
           </div>
 
-          {/* Activity Stream */}
-          <section style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-            <h2 className={styles.sectionTitle}>Full incident audit & comments</h2>
-            {comments.map((c) => (
-              <Comment
-                key={c.id}
-                id={c.id}
-                authorName={c.authorName || 'Staff'}
-                createdAt={c.createdAt}
-                body={c.body}
-                kind={c.kind}
+          {/* Sidebar */}
+          <aside style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', position: 'sticky', top: 'calc(4rem + var(--space-4))', alignSelf: 'flex-start' }}>
+            {/* SLA Targets */}
+            <div
+              style={{
+                backgroundColor: 'var(--surface-1)',
+                border: '1px solid var(--line-1)',
+                borderRadius: 'var(--r-lg)',
+                padding: 'var(--space-4)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 'var(--space-3)',
+              }}
+            >
+              <h3 style={{ fontSize: 'var(--fs-label)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-1)', margin: 0 }}>
+                SLA targets
+              </h3>
+              <SlaMeter
+                label="Response"
+                dueAt={incident.responseDueAt || null}
+                targetSeconds={7200}
+                slaStatus={incident.slaStatus as SlaStatus}
               />
-            ))}
+              <SlaMeter
+                label="Resolution"
+                dueAt={incident.resolutionDueAt || null}
+                targetSeconds={28800}
+                slaStatus={incident.slaStatus as SlaStatus}
+              />
+            </div>
 
+            {/* Incident Details Definition List */}
+            <IncidentDetailsCard incident={incident} />
+
+            {/* Lifecycle Timeline */}
             <div
               style={{
                 backgroundColor: 'var(--surface-1)',
@@ -368,50 +397,9 @@ export function AdminIncidentDetailPage() {
                 padding: 'var(--space-4)',
               }}
             >
-              <Textarea
-                id="admin-internal-note"
-                label="Add administrative internal note"
-                placeholder="Log internal dispatch notes or escalations..."
-                rows={3}
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-              />
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-2)' }}>
-                <Button
-                  variant="primary"
-                  size="compact"
-                  disabled={!commentText.trim()}
-                  isLoading={postNoteMutation.isPending}
-                  onClick={() => postNoteMutation.mutate()}
-                >
-                  Post note
-                </Button>
-              </div>
+              <Timeline entries={Array.isArray(history) ? history : []} cycleStartIso={incident.createdAt} />
             </div>
-          </section>
-
-          {/* Lifecycle Timeline */}
-          <div
-            style={{
-              backgroundColor: 'var(--surface-1)',
-              border: '1px solid var(--line-1)',
-              borderRadius: 'var(--r-lg)',
-              padding: 'var(--space-4)',
-            }}
-          >
-            <h2 className={styles.sectionTitle} style={{ marginBottom: 'var(--space-3)' }}>
-              Audit timeline
-            </h2>
-            <Timeline
-              items={history.map((h) => ({
-                id: h.id,
-                title: h.event,
-                timestamp: formatDateTime(h.createdAt),
-                description: h.details,
-                actor: h.actorName,
-              }))}
-            />
-          </div>
+          </aside>
         </div>
       </main>
 

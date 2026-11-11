@@ -5,9 +5,8 @@ import { ArrowsCounterClockwise, Star } from '@phosphor-icons/react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Nav } from '@/components/ui/Nav/Nav';
 import { BackButton } from '@/components/ui/BackButton/BackButton';
-import { StatusLabel } from '@/components/ui/StatusLabel/StatusLabel';
-import { PriorityMarker } from '@/components/ui/PriorityMarker/PriorityMarker';
-import { LifecycleBar } from '@/components/ui/LifecycleBar/LifecycleBar';
+import { StatusStrip } from '@/components/ui/StatusStrip/StatusStrip';
+import { IncidentDetailsCard } from '@/features/incident/IncidentDetailsCard';
 import { SlaMeter } from '@/components/ui/SlaMeter/SlaMeter';
 import { Comment } from '@/components/ui/Comment/Comment';
 import { Timeline } from '@/components/ui/Timeline/Timeline';
@@ -15,7 +14,6 @@ import { Input, Textarea } from '@/components/ui/Field/Field';
 import { Button } from '@/components/ui/Button/Button';
 import { useToast } from '@/components/ui/Toast/Toast';
 import { apiRequest, ApiConflictError } from '@/lib/api';
-import { formatDateTime } from '@/lib/format';
 import { Priority, IncidentStatus, SlaStatus } from '@/lib/constants';
 import { Incident, IncidentComment, HistoryEvent, Service, Category, Dashboard } from './types';
 import styles from './employee.module.css';
@@ -229,7 +227,7 @@ export function IncidentDetailPage() {
       />
 
       <main className={styles.main}>
-        <BackButton to="/employee" label="Back to requests" />
+        <BackButton to="/incidents" label="Back to incidents" />
 
         {conflictMessage && (
           <div className={styles.conflictBanner} style={{ marginBottom: 'var(--space-4)' }}>
@@ -241,18 +239,12 @@ export function IncidentDetailPage() {
         )}
 
         {/* Status Strip */}
-        <section className={styles.statusStrip}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-            <span className={styles.reference}>{incident.reference}</span>
-            <StatusLabel status={incident.status as IncidentStatus} />
-            <PriorityMarker
-              priority={(incident.effectivePriority || incident.priority || 'P3') as Priority}
-            />
-          </div>
-          <div style={{ minWidth: '200px', flex: 1, maxWidth: '360px' }}>
-            <LifecycleBar status={incident.status as IncidentStatus} />
-          </div>
-        </section>
+        <StatusStrip
+          reference={incident.reference}
+          status={incident.status as IncidentStatus}
+          priority={(incident.effectivePriority || incident.priority || 'P3') as Priority}
+          slaStatus={incident.slaStatus as SlaStatus}
+        />
 
         {/* Detail Layout */}
         <div className={styles.detailGrid}>
@@ -419,7 +411,7 @@ export function IncidentDetailPage() {
 
               {/* Add Comment Input */}
               {incident.status !== 'CLOSED' && (
-                <div className={styles.sideCard} style={{ marginTop: 'var(--space-4)' }}>
+                <div className={styles.commentComposer}>
                   <Textarea
                     id="add-comment"
                     label="Add a comment"
@@ -444,7 +436,7 @@ export function IncidentDetailPage() {
             </section>
           </div>
 
-          {/* Side Column: SLA & History Timeline */}
+          {/* Side Column: SLA, Details & History Timeline */}
           <aside className={styles.sidePanel}>
             {/* SLA Clocks (Only shown if at-risk or breached, or ticking down) */}
             <div className={styles.sideCard}>
@@ -465,24 +457,16 @@ export function IncidentDetailPage() {
               </div>
             </div>
 
-            {/* Timeline */}
+            {/* Incident Details Definition List */}
+            <IncidentDetailsCard
+              incident={incident}
+              serviceName={serviceName}
+              categoryName={categoryName}
+            />
+
+            {/* Lifecycle History */}
             <div className={styles.sideCard}>
-              <h3 className={styles.sideTitle}>Lifecycle history</h3>
-              {historyList.length === 0 ? (
-                <p style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-3)', margin: 0 }}>
-                  No history recorded.
-                </p>
-              ) : (
-                <Timeline
-                  items={historyList.map((h) => ({
-                    id: h.id,
-                    title: h.event || h.action || 'Event',
-                    timestamp: formatDateTime(h.createdAt),
-                    description: h.details || h.description || '',
-                    actor: h.actorName,
-                  }))}
-                />
-              )}
+              <Timeline entries={historyList} cycleStartIso={incident.createdAt} />
             </div>
           </aside>
         </div>

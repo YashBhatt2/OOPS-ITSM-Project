@@ -6,9 +6,8 @@ import { CheckCircle, Play, Check, Lightbulb } from '@phosphor-icons/react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Nav } from '@/components/ui/Nav/Nav';
 import { BackButton } from '@/components/ui/BackButton/BackButton';
-import { StatusLabel } from '@/components/ui/StatusLabel/StatusLabel';
-import { PriorityMarker } from '@/components/ui/PriorityMarker/PriorityMarker';
-import { LifecycleBar } from '@/components/ui/LifecycleBar/LifecycleBar';
+import { StatusStrip } from '@/components/ui/StatusStrip/StatusStrip';
+import { IncidentDetailsCard } from '@/features/incident/IncidentDetailsCard';
 import { SlaMeter } from '@/components/ui/SlaMeter/SlaMeter';
 import { Comment } from '@/components/ui/Comment/Comment';
 import { Timeline } from '@/components/ui/Timeline/Timeline';
@@ -17,7 +16,6 @@ import { Button } from '@/components/ui/Button/Button';
 import { Dialog } from '@/components/ui/Dialog/Dialog';
 import { useToast } from '@/components/ui/Toast/Toast';
 import { apiRequest, ApiConflictError, ApiError } from '@/lib/api';
-import { formatDateTime } from '@/lib/format';
 import { Priority, IncidentStatus, SlaStatus } from '@/lib/constants';
 import { Incident, IncidentComment, HistoryEvent, ResolutionSuggestion, Dashboard } from './types';
 import styles from './technician.module.css';
@@ -252,31 +250,12 @@ export function TechnicianIncidentDetailPage() {
         )}
 
         {/* Status Strip */}
-        <section
-          style={{
-            backgroundColor: 'var(--surface-2)',
-            border: '1px solid var(--line-1)',
-            borderRadius: 'var(--r-lg)',
-            padding: 'var(--space-4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 'var(--space-4)',
-            flexWrap: 'wrap',
-            marginBottom: 'var(--space-5)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-            <span className={styles.reference}>{incident.reference}</span>
-            <StatusLabel status={incident.status as IncidentStatus} />
-            <PriorityMarker
-              priority={(incident.effectivePriority || incident.priority || 'P3') as Priority}
-            />
-          </div>
-          <div style={{ minWidth: '200px', flex: 1, maxWidth: '360px' }}>
-            <LifecycleBar status={incident.status as IncidentStatus} />
-          </div>
-        </section>
+        <StatusStrip
+          reference={incident.reference}
+          status={incident.status as IncidentStatus}
+          priority={(incident.effectivePriority || incident.priority || 'P3') as Priority}
+          slaStatus={incident.slaStatus as SlaStatus}
+        />
 
         {/* Detail Layout */}
         <div className={styles.detailGrid}>
@@ -532,6 +511,9 @@ export function TechnicianIncidentDetailPage() {
               />
             </div>
 
+            {/* Incident Details Definition List */}
+            <IncidentDetailsCard incident={incident} />
+
             {/* History Timeline */}
             <div
               style={{
@@ -541,18 +523,7 @@ export function TechnicianIncidentDetailPage() {
                 padding: 'var(--space-4)',
               }}
             >
-              <h3 className={styles.actionCardTitle} style={{ fontSize: 'var(--fs-label)', marginBottom: 'var(--space-3)' }}>
-                History
-              </h3>
-              <Timeline
-                items={(Array.isArray(history) ? history : []).map((h) => ({
-                  id: h.id,
-                  title: h.event || h.action || 'Activity',
-                  timestamp: formatDateTime(h.createdAt),
-                  description: h.details || h.description || '',
-                  actor: h.actorName,
-                }))}
-              />
+              <Timeline entries={Array.isArray(history) ? history : []} cycleStartIso={incident.createdAt} />
             </div>
           </aside>
         </div>

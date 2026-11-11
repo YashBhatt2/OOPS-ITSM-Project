@@ -1,0 +1,105 @@
+.root {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+.viewport {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  outline: none;
+}
+
+.viewport:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+
+/* Scrollbar tracks */
+.scrollbarVertical {
+  display: flex;
+  user-select: none;
+  touch-action: none;
+  padding: 2px;
+  background: transparent;
+  transition: opacity 160ms var(--ease-out);
+  width: 10px;
+  z-index: 5;
+}
+
+.scrollbarHorizontal {
+  display: flex;
+  user-select: none;
+  touch-action: none;
+  padding: 2px;
+  background: transparent;
+  transition: opacity 160ms var(--ease-out);
+  height: 10px;
+  flex-direction: column;
+  z-index: 5;
+}
+
+/* Thumb base: 6px wide in --scrollbar-thumb, expands to 10px on hover/active via transform */
+.thumbVertical {
+  flex: 1;
+  background-color: var(--scrollbar-thumb);
+  border-radius: var(--r-pill);
+  position: relative;
+  width: 6px;
+  margin: 0 auto;
+  transform-origin: center;
+  transition: transform var(--dur-1) var(--ease-out), background-color var(--dur-1) var(--ease-out);
+}
+
+.thumbVertical:hover,
+.thumbVertical[data-state="active"] {
+  background-color: var(--scrollbar-thumb-hover);
+  transform: scaleX(1.666);
+}
+
+.thumbHorizontal {
+  flex: 1;
+  background-color: var(--scrollbar-thumb);
+  border-radius: var(--r-pill);
+  position: relative;
+  height: 6px;
+  margin: auto 0;
+  transform-origin: center;
+  transition: transform var(--dur-1) var(--ease-out), background-color var(--dur-1) var(--ease-out);
+}
+
+.thumbHorizontal:hover,
+.thumbHorizontal[data-state="active"] {
+  background-color: var(--scrollbar-thumb-hover);
+  transform: scaleY(1.666);
+}
+
+.corner {
+  background: transparent;
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .thumbVertical,
+  .thumbHorizontal {
+    transition: none !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .thumbVertical,
+  .thumbHorizontal {
+    background-color: var(--text-1) !important;
+    width: 8px !important;
+    height: 8px !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .thumbVertical,
+  .thumbHorizontal {
+    background-color: ButtonText !important;
+  }
+}

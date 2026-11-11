@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from '@/features/auth/AuthContext';
 import { ToastProvider } from '@/components/ui/Toast/Toast';
+import { initPageScrollHelper } from '@/lib/pageScroll';
+import { PageBottomFade } from '@/components/ui/PageBottomFade/PageBottomFade';
 
 // Auth
 import { SignInPage } from '@/features/auth/SignInPage';
@@ -107,11 +109,17 @@ const RoleIncidentRedirect: React.FC = () => {
 };
 
 export const App: React.FC = () => {
+  useEffect(() => {
+    const cleanup = initPageScrollHelper();
+    return cleanup;
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ToastProvider>
           <BrowserRouter>
+            <PageBottomFade />
             <Routes>
               {/* Public Routes */}
               <Route

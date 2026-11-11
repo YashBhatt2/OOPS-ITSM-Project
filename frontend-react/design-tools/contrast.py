@@ -85,7 +85,7 @@ def pairs():
         out.append((f"{name} text on its tint", fg, mix(fg, base, a), 4.5))
     # glass worst cases
     out.append(("dark glass over bright backdrop: t1", D["t1"], mix("#121214", "#E6F0F5", .64), 4.5))
-    out.append(("light glass over black backdrop: t1", L["t1"], mix("#FFFFFF", "#000000", .72), 4.5))
+    out.append(("light glass over black backdrop: t1", L["t1"], mix("#FFFFFF", "#000000", .88), 4.5))
     # hero: display text must sit in the deep part of the sky (0-44%)
     for pos, c in [(0, "#03060C"), (16, "#04204A"), (30, "#002F6C"), (44, "#0E5FB0")]:
         out.append((f"hero white text at horizon stop {pos}%", "#FFFFFF", c, 4.5))

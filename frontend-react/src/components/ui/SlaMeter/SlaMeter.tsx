@@ -85,7 +85,7 @@ export const SlaMeter: React.FC<SlaMeterProps> = ({
           {isBreached ? (
             <span className={clsx(styles.statusSignal, styles.breached)}>
               <span className={clsx(styles.dot, styles.dotBreached)} />
-              Breached ({Math.abs(Math.round(diffSeconds / 60))}m overdue)
+              Breached ({duration.formattedText})
             </span>
           ) : isAtRisk ? (
             <>
@@ -96,12 +96,14 @@ export const SlaMeter: React.FC<SlaMeterProps> = ({
               <span>
                 {duration.primary}
                 <span className={styles.dimmed}>{duration.dimmed}</span>
+                <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-3)', marginLeft: '0.25rem' }}>left</span>
               </span>
             </>
           ) : (
             <span>
               {duration.primary}
               <span className={styles.dimmed}>{duration.dimmed}</span>
+              <span style={{ fontSize: 'var(--fs-caption)', color: 'var(--text-3)', marginLeft: '0.25rem' }}>left</span>
             </span>
           )}
         </div>

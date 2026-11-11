@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import * as RadixDialog from '@radix-ui/react-dialog';
 import clsx from 'clsx';
 import { X } from '@phosphor-icons/react';
+import { ScrollArea } from '../ScrollArea/ScrollArea';
+import { useScrollEdges } from '@/lib/useScrollEdges';
 import styles from './Dialog.module.css';
 
 export interface DialogProps {
@@ -25,6 +27,9 @@ export const Dialog: React.FC<DialogProps> = ({
   isSheet = false,
   size = 'medium',
 }) => {
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const { moreAfter } = useScrollEdges(viewportRef, 'vertical');
+
   const sizeClass =
     size === 'large'
       ? styles.sizeLarge
@@ -49,8 +54,25 @@ export const Dialog: React.FC<DialogProps> = ({
               {description}
             </RadixDialog.Description>
           )}
-          <div className={styles.body}>{children}</div>
-          {actions && <div className={styles.actions}>{actions}</div>}
+
+          <ScrollArea
+            type="scroll"
+            edgeMode="fade"
+            orientation="vertical"
+            ariaLabel={title}
+            viewportRef={viewportRef}
+            overscrollContain
+            className={styles.dialogScrollArea}
+          >
+            <div className={styles.body}>{children}</div>
+          </ScrollArea>
+
+          {actions && (
+            <div className={clsx(styles.actions, moreAfter && styles.actionsBorder)}>
+              {actions}
+            </div>
+          )}
+
           <RadixDialog.Close asChild aria-label="Close dialog">
             <button type="button" className={styles.closeButton}>
               <X size={20} weight="light" />

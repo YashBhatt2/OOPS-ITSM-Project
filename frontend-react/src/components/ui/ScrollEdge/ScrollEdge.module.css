@@ -1,0 +1,144 @@
+.cueContainer {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 160ms var(--ease-out);
+}
+
+.verticalTop {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--fade-size, 2.5rem);
+}
+
+.verticalBottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--fade-size, 2.5rem);
+}
+
+.horizontalLeft {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--fade-size, 2.5rem);
+}
+
+.horizontalRight {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: var(--fade-size, 2.5rem);
+}
+
+/* Visibility states */
+.visible {
+  opacity: 1;
+}
+
+.hidden {
+  opacity: 0;
+}
+
+/* Fade mode overlays */
+.fadeTop {
+  background: linear-gradient(to bottom, var(--surface-1), transparent);
+}
+
+.fadeBottom {
+  background: linear-gradient(to top, var(--surface-1), transparent);
+}
+
+.fadeLeft {
+  background: linear-gradient(to right, var(--surface-1), transparent);
+}
+
+.fadeRight {
+  background: linear-gradient(to left, var(--surface-1), transparent);
+}
+
+/* Progressive Blur Layers: Stack of 4 backdrop-filter layers ramping smoothly */
+.blurLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Top progressive blur layers */
+.blurTop1 {
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 25%, transparent 50%);
+  mask-image: linear-gradient(to bottom, black 0%, black 25%, transparent 50%);
+}
+
+.blurTop2 {
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 75%);
+  mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 75%);
+}
+
+.blurTop3 {
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 75%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0%, black 75%, transparent 100%);
+}
+
+.blurTop4 {
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+}
+
+/* Bottom progressive blur layers */
+.blurBottom1 {
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 25%, transparent 50%);
+  mask-image: linear-gradient(to top, black 0%, black 25%, transparent 50%);
+}
+
+.blurBottom2 {
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 50%, transparent 75%);
+  mask-image: linear-gradient(to top, black 0%, black 50%, transparent 75%);
+}
+
+.blurBottom3 {
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 75%, transparent 100%);
+  mask-image: linear-gradient(to top, black 0%, black 75%, transparent 100%);
+}
+
+.blurBottom4 {
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  -webkit-mask-image: linear-gradient(to top, black 0%, transparent 100%);
+  mask-image: linear-gradient(to top, black 0%, transparent 100%);
+}
+
+/* Accessibility overrides */
+@media (prefers-reduced-motion: reduce) {
+  .cueContainer {
+    transition-duration: 120ms !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .blurLayer {
+    display: none !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .cueContainer {
+    display: none !important;
+  }
+}

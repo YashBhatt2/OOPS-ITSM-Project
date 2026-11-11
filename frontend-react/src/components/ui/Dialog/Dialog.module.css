@@ -33,16 +33,16 @@
   padding: var(--space-6) var(--space-7);
   z-index: calc(var(--z-modal) + 1);
   outline: none;
-  overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
   display: flex;
   flex-direction: column;
   animation: contentBlurIn 0.3s var(--ease-out);
 }
 
-.content::-webkit-scrollbar {
-  display: none;
+.dialogScrollArea {
+  flex: 1;
+  min-height: 0;
+  max-height: 60dvh;
+  margin: var(--space-1) calc(-1 * var(--space-2)) 0 0;
 }
 
 .sizeSmall {
@@ -76,9 +76,6 @@
   left: 0;
   right: 0;
   max-height: 90dvh;
-  overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
   background-color: var(--surface-2);
   border-top: 1px solid var(--line-2);
   border-top-left-radius: var(--r-xl);
@@ -87,11 +84,9 @@
   padding: var(--space-5) var(--space-6) calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
   z-index: calc(var(--z-drawer) + 1);
   outline: none;
+  display: flex;
+  flex-direction: column;
   animation: sheetBlurIn 0.3s var(--ease-out);
-}
-
-.sheetContent::-webkit-scrollbar {
-  display: none;
 }
 
 @keyframes sheetBlurIn {
@@ -132,28 +127,23 @@
 }
 
 .body {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  mask-image: linear-gradient(to bottom, transparent 0px, black 20px, black calc(100% - 20px), transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 20px, black calc(100% - 20px), transparent 100%);
   padding: var(--space-1) 0;
-}
-
-.body::-webkit-scrollbar {
-  display: none;
 }
 
 .actions {
   display: flex;
   justify-content: flex-end;
   gap: var(--space-3);
-  margin-top: var(--space-6);
+  margin-top: var(--space-4);
   padding-top: var(--space-4);
-  border-top: 1px solid var(--line-1);
+  border-top: 1px solid transparent;
+  transition: border-color var(--dur-1) var(--ease-out);
+}
+
+.actionsBorder {
+  border-top-color: var(--line-1);
 }
 
 .closeButton {

@@ -1,0 +1,86 @@
+.statusStrip {
+  width: 100%;
+  min-height: 2.75rem; /* 44px touch target */
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md); /* No larger than --r-md */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+  box-sizing: border-box;
+}
+
+/* Tinted strip fills per DESIGN.md §10.9 */
+.stripNormal {
+  background-color: var(--surface-2);
+  border-color: var(--line-2);
+}
+
+.stripSuccess {
+  background-color: var(--tint-green);
+  border-color: color-mix(in srgb, var(--green) 30%, transparent);
+}
+
+.stripAtRisk {
+  background-color: var(--tint-amber);
+  border-color: color-mix(in srgb, var(--amber) 35%, transparent);
+}
+
+.stripBreached {
+  background-color: var(--tint-red);
+  border-color: color-mix(in srgb, var(--red) 35%, transparent);
+}
+
+.leftCluster {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.reference {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  color: var(--text-1);
+  letter-spacing: 0.04em;
+}
+
+.rightCluster {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex: 1;
+  max-width: 24rem;
+  justify-content: flex-end;
+}
+
+.lifecycleWrapper {
+  flex: 1;
+  min-width: 9rem;
+}
+
+.stepCaption {
+  font-family: var(--font-mono);
+  font-size: var(--fs-caption);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .statusStrip {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+
+  .rightCluster {
+    max-width: 100%;
+    justify-content: space-between;
+  }
+}
