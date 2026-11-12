@@ -1,77 +1,48 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { useScroll, useMotionValueEvent } from 'motion/react';
-import { Bell, ArrowRight } from '@phosphor-icons/react';
+import { motion, useScroll, useMotionValueEvent } from 'motion/react';
+import { List, ArrowRight } from '@phosphor-icons/react';
 import clsx from 'clsx';
-import { Brand, BrandMark } from '@/components/ui/Brand/Brand';
+import { Brand } from '@/components/ui/Brand/Brand';
 import { ThemeToggle } from '@/components/ui/ThemeToggle/ThemeToggle';
 import { Button } from '@/components/ui/Button/Button';
-import { Segmented } from '@/components/ui/Segmented/Segmented';
+import { Dialog } from '@/components/ui/Dialog/Dialog';
 import { LifecycleBar } from '@/components/ui/LifecycleBar/LifecycleBar';
-import { StatTile } from '@/components/ui/StatTile/StatTile';
 import { PriorityMarker } from '@/components/ui/PriorityMarker/PriorityMarker';
 import { StatusLabel } from '@/components/ui/StatusLabel/StatusLabel';
 import { useAuth } from '@/features/auth/AuthContext';
-import { PRODUCT_NAME, IncidentStatus } from '@/lib/constants';
+import { spring } from '@/lib/constants';
+import { INCIDENT_STORY, FACTS_STRIP, ROLE_STORIES, IncidentStageSnapshot } from './fixtures';
 import styles from './LandingPage.module.css';
-
-interface StageInfo {
-  status: IncidentStatus;
-  name: string;
-  desc: string;
-}
-
-const STAGES: StageInfo[] = [
-  {
-    status: 'NEW',
-    name: 'Report',
-    desc: 'Capture the issue with clear impact, urgency, and affected service context.',
-  },
-  {
-    status: 'ASSIGNED',
-    name: 'Assign',
-    desc: 'Route immediately with skill-weighted capacity assignment or balanced round-robin.',
-  },
-  {
-    status: 'ACKNOWLEDGED',
-    name: 'Acknowledge',
-    desc: 'Technicians claim responsibility with immediate SLA countdown initiation.',
-  },
-  {
-    status: 'IN_PROGRESS',
-    name: 'Investigate',
-    desc: 'Diagnose root causes with duplicate detection and resolution suggestions.',
-  },
-  {
-    status: 'RESOLVED',
-    name: 'Resolve',
-    desc: 'Apply permanent fixes, document changes, and record resolution time metrics.',
-  },
-  {
-    status: 'VERIFIED',
-    name: 'Verify',
-    desc: 'End users confirm the resolution before tickets ever settle into permanent records.',
-  },
-  {
-    status: 'CLOSED',
-    name: 'Close',
-    desc: 'Complete the audit record with immutable timeline history and metric logs.',
-  },
-];
 
 export const LandingPage: React.FC = () => {
   const { user } = useAuth();
   const [activeStageIdx, setActiveStageIdx] = useState(0);
-  const [activeRole, setActiveRole] = useState<'employee' | 'technician' | 'admin'>('employee');
-  const [islandState, setIslandState] = useState<'rest' | 'peek' | 'open'>('peek');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
 
-  const journeyRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: journeyRef,
-    offset: ['start center', 'end center'],
-  });
+  // SLA Ticking Clocks (Transform-free pure text updates without aria-live)
+  const [heroSeconds, setHeroSeconds] = useState(82 * 60 + 4); // 01:22:04
+  const [healthySeconds, setHealthySeconds] = useState(74 * 60 + 10); // 01:14:10
+  const [breachedSeconds, setBreachedSeconds] = useState(18 * 60 + 42); // +00:18:42
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHeroSeconds((prev) => (prev > 0 ? prev - 1 : 0));
+      setHealthySeconds((prev) => (prev > 0 ? prev - 1 : 0));
+      setBreachedSeconds((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTimer = (totalSec: number) => {
+    const h = String(Math.floor(totalSec / 3600)).padStart(2, '0');
+    const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+    const s = String(totalSec % 60).padStart(2, '0');
+    return { main: `${h}:${m}:`, tail: s };
+  };
+
+  // Check reduced motion
   useEffect(() => {
     const checkMotion = () => {
       const reduced =
@@ -79,7 +50,7 @@ export const LandingPage: React.FC = () => {
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       setIsReducedMotion(reduced);
       if (reduced) {
-        setActiveStageIdx(6); // Show fully filled
+        setActiveStageIdx(INCIDENT_STORY.length - 1);
       }
     };
     checkMotion();
@@ -88,11 +59,18 @@ export const LandingPage: React.FC = () => {
     return () => media.removeEventListener('change', checkMotion);
   }, []);
 
+  // Lifecycle Story scroll tracking
+  const storyRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: storyRef,
+    offset: ['start start', 'end end'],
+  });
+
   useMotionValueEvent(scrollYProgress, 'change', (latest) => {
     if (isReducedMotion) return;
     const clamped = Math.max(0, Math.min(0.999, latest));
-    const stage = Math.floor(clamped * STAGES.length);
-    setActiveStageIdx(stage);
+    const step = Math.floor(clamped * INCIDENT_STORY.length);
+    setActiveStageIdx(step);
   });
 
   const getWorkspaceUrl = () => {
@@ -101,64 +79,112 @@ export const LandingPage: React.FC = () => {
     return '/employee';
   };
 
+  const currentStage: IncidentStageSnapshot = INCIDENT_STORY[activeStageIdx] || INCIDENT_STORY[0];
+  const heroTimer = formatTimer(heroSeconds);
+  const healthyTimer = formatTimer(healthySeconds);
+  const breachedTimer = formatTimer(breachedSeconds);
+
   return (
     <div className={styles.pageContainer}>
-      {/* ── 1. Top Bar (Glass) ── */}
+      {/* ── 1. Top Bar (Glass Chrome) ── */}
       <header className={styles.topBar}>
-        <Brand />
-        <div className={styles.topBarRight}>
-          <ThemeToggle />
-          {user ? (
-            <Link to={getWorkspaceUrl()}>
-              <Button variant="primary" size="compact">
-                Open your workspace
-              </Button>
-            </Link>
-          ) : (
-            <div className={styles.authButtons}>
-              <Link to="/signin">
-                <Button variant="ghost" size="compact">
-                  Sign in
-                </Button>
-              </Link>
-              <Link to="/register">
+        <div className={styles.topBarInner}>
+          <Brand />
+
+          <nav className={styles.topBarNav} aria-label="Main navigation">
+            <a href="#how-it-works" className={styles.navLink}>
+              How it works
+            </a>
+            <a href="#roles" className={styles.navLink}>
+              Roles
+            </a>
+            <a href="#sla" className={styles.navLink}>
+              SLA
+            </a>
+          </nav>
+
+          <div className={styles.topBarRight}>
+            <ThemeToggle />
+
+            {user ? (
+              <Link to={getWorkspaceUrl()}>
                 <Button variant="primary" size="compact">
-                  Create account
+                  Open your workspace
                 </Button>
               </Link>
-            </div>
-          )}
+            ) : (
+              <div className={styles.authGroup}>
+                <Link to="/signin">
+                  <Button variant="ghost" size="compact">
+                    Sign in
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button variant="primary" size="compact">
+                    Create account
+                  </Button>
+                </Link>
+              </div>
+            )}
+
+            <button
+              type="button"
+              className={styles.mobileMenuBtn}
+              onClick={() => setIsMobileMenuOpen(true)}
+              aria-label="Open menu"
+            >
+              <List size={20} weight="light" />
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* ── 2. Hero: Horizon Scene (Cinematic Moment) ── */}
-      <section className={styles.heroSection}>
-        <div className={styles.heroUpperBand}>
-          <div className={styles.heroDisplayBrand}>{PRODUCT_NAME}</div>
-          <h1 className={styles.heroHeadline}>
-            Every incident, from report to resolution.
-          </h1>
-          <p className={styles.heroSubline}>
-            A quiet, precise service desk for modern teams. Built for zero noise,
-            immediate clarity, and unyielding SLA adherence.
-          </p>
+      {/* Mobile Nav Dialog (Solid Surface, not glass) */}
+      <Dialog
+        open={isMobileMenuOpen}
+        onOpenChange={setIsMobileMenuOpen}
+        title="Navigation"
+        size="small"
+      >
+        <div className={styles.mobileNavContent}>
+          <a
+            href="#how-it-works"
+            className={styles.mobileNavLink}
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            How it works
+          </a>
+          <a
+            href="#roles"
+            className={styles.mobileNavLink}
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            Roles
+          </a>
+          <a
+            href="#sla"
+            className={styles.mobileNavLink}
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            SLA
+          </a>
 
-          <div className={styles.heroCtas}>
+          <div className={styles.mobileNavActions}>
             {user ? (
-              <Link to={getWorkspaceUrl()}>
-                <Button variant="primary" size="large">
+              <Link to={getWorkspaceUrl()} onClick={() => setIsMobileMenuOpen(false)}>
+                <Button variant="primary" size="large" style={{ width: '100%' }}>
                   Open your workspace
                 </Button>
               </Link>
             ) : (
               <>
-                <Link to="/register">
-                  <Button variant="primary" size="large">
-                    Get started
+                <Link to="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button variant="primary" size="large" style={{ width: '100%' }}>
+                    Create account
                   </Button>
                 </Link>
-                <Link to="/signin">
-                  <Button variant="ghost" size="large">
+                <Link to="/signin" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button variant="ghost" size="large" style={{ width: '100%' }}>
                     Sign in
                   </Button>
                 </Link>
@@ -166,402 +192,420 @@ export const LandingPage: React.FC = () => {
             )}
           </div>
         </div>
+      </Dialog>
 
-        <div className={styles.heroFloor}>
-          <p className={styles.heroFloorTagline}>
-            ENGINEERED FOR TEAMS THAT CANNOT AFFORD DOWNTIME
-          </p>
+      {/* ── 2. Hero: The One Cinematic Moment ── */}
+      <section className={styles.heroSection}>
+        <div className={styles.heroCore} aria-hidden="true" />
+        <div className={styles.heroGrain} aria-hidden="true" />
+
+        <div className={styles.heroContainer}>
+          <div className={styles.heroLeft}>
+            <motion.h1
+              className={styles.heroHeadline}
+              initial={isReducedMotion ? false : { opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={spring.snappy}
+            >
+              Every incident, seen through.
+            </motion.h1>
+
+            <motion.p
+              className={styles.heroSubhead}
+              initial={isReducedMotion ? false : { opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...spring.snappy, delay: isReducedMotion ? 0 : 0.08 }}
+            >
+              Service Desk carries an issue from the first report to a verified fix.
+              The right technician, a clock that&apos;s always running, and a record of every step.
+            </motion.p>
+
+            <motion.div
+              className={styles.heroCtas}
+              initial={isReducedMotion ? false : { opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...spring.snappy, delay: isReducedMotion ? 0 : 0.16 }}
+            >
+              {user ? (
+                <Link to={getWorkspaceUrl()}>
+                  <Button variant="primary" size="large">
+                    Open your workspace
+                  </Button>
+                </Link>
+              ) : (
+                <>
+                  <Link to="/register">
+                    <Button variant="primary" size="large">
+                      Get started
+                    </Button>
+                  </Link>
+                  <Link to="/signin">
+                    <Button variant="ghost" size="large">
+                      Sign in
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </motion.div>
+          </div>
+
+          {/* Product Stage: Real incident card rising out of hero light */}
+          <div className={styles.heroRight}>
+            <motion.div
+              className={styles.heroProductCard}
+              initial={isReducedMotion ? false : { opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ ...spring.snappy, delay: isReducedMotion ? 0 : 0.2 }}
+              aria-hidden="true"
+            >
+              <div className={styles.cardHeaderRow}>
+                <span className={styles.cardRef}>INC-000123</span>
+                <StatusLabel status="IN_PROGRESS" />
+              </div>
+
+              <div>
+                <h3 className={styles.cardTitle}>
+                  Primary database replica connection timeout
+                </h3>
+                <div className={styles.cardMetaRow}>
+                  <span>Database Services</span>
+                  <span className={styles.cardDividerDot}>•</span>
+                  <span>Infrastructure</span>
+                </div>
+              </div>
+
+              <div className={styles.cardClockRow}>
+                <span className={styles.clockLabel}>Resolution SLA</span>
+                <span className={styles.clockDigits}>
+                  {heroTimer.main}
+                  <span className={styles.clockDimTail}>{heroTimer.tail}</span>
+                </span>
+              </div>
+
+              <LifecycleBar status="IN_PROGRESS" />
+
+              <div className={styles.cardFooterRow}>
+                <span>Elena Rostova</span>
+                <PriorityMarker priority="P1" />
+              </div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* ── 3. The Journey (Sticky Lifecycle Bar) ── */}
-      <section className={styles.section} ref={journeyRef}>
-        <div className={styles.sectionHeader}>
-          <span className={styles.sectionEyebrow}>Lifecycle Architecture</span>
-          <h2 className={styles.sectionTitle}>The Incident Journey</h2>
-          <p className={styles.sectionDesc}>
-            Seven deliberate stages ensure total operational ownership without tickets falling through the cracks.
-          </p>
+      {/* ── 3. Facts Strip (One Mono Line of Real Facts Only) ── */}
+      <section className={styles.factsStrip} aria-label="System facts">
+        <div className={styles.factsInner}>
+          {FACTS_STRIP.map((fact, idx) => (
+            <React.Fragment key={fact}>
+              <span className={styles.factItem}>{fact}</span>
+              {idx < FACTS_STRIP.length - 1 && (
+                <span className={styles.factSeparator} aria-hidden="true">
+                  /
+                </span>
+              )}
+            </React.Fragment>
+          ))}
         </div>
+      </section>
 
-        <div className={styles.journeyContainer}>
-          <aside className={styles.journeyStickyColumn}>
-            <h3 className={styles.lifecycleStickyTitle}>Stage Progress</h3>
-            <div className={styles.stageProgressIndicator}>
-              <span>Stage {activeStageIdx + 1} of 7</span>
-              <span>{STAGES[activeStageIdx].name}</span>
+      {/* ── 4. The Lifecycle Story (Replaces Six Cards) ── */}
+      <section id="how-it-works" className={styles.section} ref={storyRef}>
+        <div className={styles.sectionEyebrow}>One incident, followed from report to fix</div>
+        <h2 className={styles.sectionTitle}>The lifecycle of an issue</h2>
+        <p className={styles.sectionDesc}>
+          Follow incident INC-000123 through every phase of resolution.
+          No ambiguous states, no lost tickets, and an immutable audit trail.
+        </p>
+
+        <div className={styles.storyGrid}>
+          {/* Sticky Left Column: One Morphing Incident Surface */}
+          <div className={styles.storyStickyColumn} aria-hidden="true">
+            <div className={styles.stickySurfaceContainer}>
+              <div className={styles.progressRail}>
+                <div
+                  className={styles.railIndicator}
+                  style={{
+                    height: `${((activeStageIdx + 1) / INCIDENT_STORY.length) * 100}%`,
+                  }}
+                />
+                {INCIDENT_STORY.map((_, idx) => (
+                  <div
+                    key={idx}
+                    className={clsx(
+                      styles.railTick,
+                      idx <= activeStageIdx && styles.railTickActive
+                    )}
+                  />
+                ))}
+              </div>
+
+              <div className={styles.storySurfaceCard}>
+                <div className={styles.surfaceMetaRow}>
+                  <span className={styles.cardRef}>{currentStage.reference}</span>
+                  <StatusLabel status={currentStage.status} />
+                </div>
+
+                <div>
+                  <h3 className={styles.cardTitle}>{currentStage.title}</h3>
+                  <div className={styles.cardMetaRow}>
+                    <span>{currentStage.service}</span>
+                    <span className={styles.cardDividerDot}>•</span>
+                    <span>Reporter: {currentStage.reporter}</span>
+                  </div>
+                </div>
+
+                <LifecycleBar status={currentStage.status} />
+
+                <div className={styles.cardClockRow}>
+                  <span className={styles.clockLabel}>
+                    {currentStage.status === 'NEW'
+                      ? 'Target Deadline'
+                      : currentStage.status === 'VERIFIED'
+                      ? 'Total Elapsed Time'
+                      : 'Resolution SLA Remaining'}
+                  </span>
+                  <span className={styles.clockDigits}>
+                    {currentStage.status === 'VERIFIED'
+                      ? currentStage.slaElapsed
+                      : currentStage.slaRemaining}
+                  </span>
+                </div>
+
+                {currentStage.notes.length > 0 && (
+                  <div className={styles.surfaceNotesBox}>
+                    {currentStage.notes.map((n, i) => (
+                      <div key={i} className={styles.noteItem}>
+                        <div className={styles.noteHeader}>
+                          <span>{n.author}</span>
+                          {n.isInternal && (
+                            <span className={styles.internalBadge}>• Internal note</span>
+                          )}
+                          <span>• {n.time}</span>
+                        </div>
+                        <p className={styles.noteText}>{n.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {currentStage.resolution && (
+                  <div className={styles.resolutionBox}>
+                    <div className={styles.resolutionLabel}>Resolution recorded</div>
+                    <p className={styles.resolutionText}>{currentStage.resolution}</p>
+                  </div>
+                )}
+
+                <div className={styles.cardFooterRow}>
+                  <span>
+                    {currentStage.assignee
+                      ? `${currentStage.assignee} (${currentStage.assigneeRole})`
+                      : 'Unassigned'}
+                  </span>
+                  <PriorityMarker priority={currentStage.priority} />
+                </div>
+
+                {currentStage.auditBadge && (
+                  <div className={styles.auditBadgeBox}>
+                    {currentStage.auditBadge}
+                  </div>
+                )}
+              </div>
             </div>
-            <LifecycleBar status={STAGES[activeStageIdx].status} />
-          </aside>
+          </div>
 
-          <div className={styles.stagesList}>
-            {STAGES.map((s, idx) => {
+          {/* Right Column: Six Clean Steps with Hairlines (NO CARDS) */}
+          <div className={styles.stepsColumn}>
+            {INCIDENT_STORY.map((stage, idx) => {
               const isActive = idx === activeStageIdx;
               return (
-                <article
-                  key={s.status}
-                  className={clsx(styles.stageItem, isActive && styles.stageItemActive)}
+                <div
+                  key={stage.stepNumber}
+                  className={styles.stepRow}
+                  style={{
+                    opacity: isReducedMotion ? 1 : isActive ? 1 : 0.45,
+                  }}
                 >
-                  <div className={styles.stageHeaderRow}>
-                    <span className={styles.stageIndex}>0{idx + 1} // STAGE</span>
-                    <StatusLabel status={s.status} />
+                  <div className={styles.stepHeader}>
+                    <span
+                      className={clsx(
+                        styles.stepNumber,
+                        isActive && styles.stepNumberActive
+                      )}
+                    >
+                      {stage.stepNumber}
+                    </span>
+                    <h3 className={styles.stepTitle}>{stage.stepTitle}</h3>
                   </div>
-                  <h4 className={styles.stageName}>{s.name}</h4>
-                  <p className={styles.stageDescription}>{s.desc}</p>
-                </article>
+
+                  <p className={styles.stepSummary}>{stage.stepSummary}</p>
+
+                  {/* Compact Preview on Mobile */}
+                  <div className={styles.mobileStepPreview} aria-hidden="true">
+                    <div className={styles.cardClockRow} style={{ marginTop: 'var(--space-2)' }}>
+                      <span className={styles.clockLabel}>Status: {stage.statusLabel}</span>
+                      <span className={styles.clockDigits} style={{ fontSize: 'var(--fs-body)' }}>
+                        {stage.assignee || 'Unassigned'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               );
             })}
           </div>
         </div>
       </section>
 
-      {/* ── 4. Roles Section ── */}
-      <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <span className={styles.sectionEyebrow}>Role-Specific Workspaces</span>
-          <h2 className={styles.sectionTitle}>Built for every stakeholder</h2>
-          <p className={styles.sectionDesc}>
-            Tailored interfaces designed for reporting speed, tactical triage, and administrative oversight.
-          </p>
-        </div>
+      {/* ── 5. Three Roles (Three Hairline Columns, Real-UI Vignettes, NO CARDS) ── */}
+      <section id="roles" className={styles.section}>
+        <div className={styles.sectionEyebrow}>Responsibility and reach</div>
+        <h2 className={styles.sectionTitle}>Three roles. Absolute clarity.</h2>
+        <p className={styles.sectionDesc}>
+          Every user has one role and one focused interface. Permissions are strictly
+          checked on the backend.
+        </p>
 
-        <div className={styles.rolesControlWrapper}>
-          <Segmented
-            name="role-preview"
-            value={activeRole}
-            onChange={(val) => setActiveRole(val)}
-            options={[
-              { value: 'employee', label: 'Employee' },
-              { value: 'technician', label: 'Technician' },
-              { value: 'admin', label: 'Administrator' },
-            ]}
-          />
-        </div>
+        <div className={styles.rolesGrid}>
+          {ROLE_STORIES.map((role) => (
+            <div key={role.id} className={styles.roleColumn}>
+              <div className={styles.roleTitleRow}>
+                <span className={styles.roleTagline}>{role.tagline}</span>
+                <h3 className={styles.roleTitle}>{role.title}</h3>
+              </div>
+              <p className={styles.roleDesc}>{role.description}</p>
 
-        <div className="sr-only">
-          Preview of the {activeRole} interface showing dedicated dashboard stats and real-time operational incident view.
-        </div>
-
-        <div className={styles.previewFrame} aria-hidden="true">
-          {activeRole === 'employee' && (
-            <>
-              <div className={styles.previewStatsGrid}>
-                <StatTile label="Active incidents" value={1} />
-                <StatTile label="Awaiting verification" value={0} />
-                <StatTile label="Resolved this month" value={4} />
-              </div>
-              <div className={styles.previewIncidentCard}>
-                <div className={styles.previewCardHeader}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                    <PriorityMarker priority="P2" />
-                    <h4 className={styles.previewIncidentTitle}>VPN connection drops after laptop standby</h4>
-                  </div>
-                  <StatusLabel status="IN_PROGRESS" />
-                </div>
-                <div className={styles.previewIncidentMeta}>
-                  <span>INC-000109</span>
-                  <span>•</span>
-                  <span>Network & VPN</span>
-                  <span>•</span>
-                  <span>Reported 45m ago</span>
-                </div>
-                <LifecycleBar status="IN_PROGRESS" />
-              </div>
-            </>
-          )}
-
-          {activeRole === 'technician' && (
-            <>
-              <div className={styles.previewStatsGrid}>
-                <StatTile label="Assigned to you" value={3} />
-                <StatTile label="SLA at risk" value={1} changeText="1 warning" changeDirection="bad" />
-                <StatTile label="Resolved today" value={5} changeText="On track" changeDirection="good" />
-              </div>
-              <div className={styles.previewIncidentCard}>
-                <div className={styles.previewCardHeader}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
-                    <PriorityMarker priority="P1" />
-                    <h4 className={styles.previewIncidentTitle}>Primary PostgreSQL read replica connection timeout</h4>
-                  </div>
-                  <StatusLabel status="IN_PROGRESS" />
-                </div>
-                <div className={styles.previewIncidentMeta}>
-                  <span>INC-000114</span>
-                  <span>•</span>
-                  <span>Database Services</span>
-                  <span>•</span>
-                  <span style={{ color: 'var(--red)', fontWeight: 500 }}>SLA: 18m remaining</span>
-                </div>
-                <LifecycleBar status="IN_PROGRESS" />
-              </div>
-            </>
-          )}
-
-          {activeRole === 'admin' && (
-            <>
-              <div className={styles.previewStatsGrid}>
-                <StatTile label="Open incidents" value={8} />
-                <StatTile label="SLA compliance" value="98.4%" changeText="+1.2%" changeDirection="good" />
-                <StatTile label="Average MTTR" value="38m" changeText="-6m this week" changeDirection="good" />
-              </div>
-              <div className={styles.previewIncidentCard}>
-                <div className={styles.previewCardHeader}>
-                  <div>
-                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-micro)', color: 'var(--text-3)', textTransform: 'uppercase' }}>
-                      Automated Routing Policy
-                    </span>
-                    <h4 className={styles.previewIncidentTitle} style={{ marginTop: 'var(--space-1)' }}>
-                      Skill-Weighted Capacity Distribution
+              {/* Real UI Vignettes */}
+              <div className={styles.roleVignette} aria-hidden="true">
+                {role.id === 'employee' && (
+                  <>
+                    <div className={styles.vignetteMeta}>
+                      <span>EMPLOYEE VIEW</span>
+                      <StatusLabel status="IN_PROGRESS" />
+                    </div>
+                    <h4 className={styles.vignetteTitle}>
+                      INC-000123: Primary database replica connection timeout
                     </h4>
-                  </div>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-micro)', color: 'var(--green)' }}>
-                    Active
-                  </span>
-                </div>
-                <div className={styles.previewIncidentMeta}>
-                  <span>6 eligible technicians</span>
-                  <span>•</span>
-                  <span>14 catalog services configured</span>
-                  <span>•</span>
-                  <span>Zero unassigned queue</span>
-                </div>
+                    <div className={styles.cardMetaRow}>
+                      <span>Reported by you</span>
+                      <span className={styles.cardDividerDot}>•</span>
+                      <span>1 open ticket</span>
+                    </div>
+                  </>
+                )}
+
+                {role.id === 'technician' && (
+                  <>
+                    <div className={styles.vignetteMeta}>
+                      <span>ASSIGNED QUEUE</span>
+                      <PriorityMarker priority="P1" />
+                    </div>
+                    <h4 className={styles.vignetteTitle}>
+                      INC-000123: Database replica timeout
+                    </h4>
+                    <div className={styles.vignetteMeta} style={{ color: 'var(--text-2)' }}>
+                      <span>SLA: 01:22:04</span>
+                      <span>3 of 5 active slots in use</span>
+                    </div>
+                  </>
+                )}
+
+                {role.id === 'admin' && (
+                  <>
+                    <div className={styles.vignetteMeta}>
+                      <span>DISPATCH RECOMMENDATION</span>
+                      <span style={{ color: 'var(--green)', fontWeight: 500 }}>98% match</span>
+                    </div>
+                    <h4 className={styles.vignetteTitle}>
+                      Elena Rostova (PostgreSQL L5)
+                    </h4>
+                    <div className={styles.vignetteMeta} style={{ color: 'var(--text-2)' }}>
+                      <span>Capacity: 2 of 5 slots</span>
+                      <span>Skill-first routing</span>
+                    </div>
+                  </>
+                )}
               </div>
-            </>
-          )}
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* ── 5. Capabilities: Editorial Hairline List (NOT CARDS) ── */}
-      <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <span className={styles.sectionEyebrow}>System Architecture</span>
-          <h2 className={styles.sectionTitle}>Capabilities engineered for resilience</h2>
-          <p className={styles.sectionDesc}>
-            Built from first principles for deterministic priority assessment, intelligent routing, and strict audit compliance.
-          </p>
-        </div>
+      {/* ── 6. SLA Moment (Calm, Large Mono Clock Numerals, Exactly One Red Element) ── */}
+      <section id="sla" className={styles.slaSection}>
+        <div className={styles.sectionEyebrow}>Deadline visibility</div>
+        <h2 className={styles.sectionTitle}>
+          Clocks run on elapsed time. When one slips, you see it.
+        </h2>
+        <p className={styles.sectionDesc}>
+          Deadlines are calculated from cycle opening and never pause. Proactive warnings
+          trigger at 80% elapsed time, and breaches escalate immediately to administrators.
+        </p>
 
-        <div className={styles.hairlineList}>
-          <div className={styles.hairlineItem}>
-            <span className={styles.itemIndex}>01</span>
-            <h3 className={styles.itemTitle}>Deterministic Priority Matrix</h3>
-            <p className={styles.itemSummary}>
-              Calculated automatically from impact (1–3), urgency (1–3), and service tier criticality.
-              Eliminates emotional escalation and ensures engineering focus lands on true P1 outages first.
+        <div className={styles.slaGrid}>
+          {/* Healthy SLA State (Silence is good, shows nothing special) */}
+          <div className={styles.slaBlock}>
+            <div className={styles.slaStatusHeader}>
+              <span className={styles.slaStateLabel}>P1 Resolution SLA • Healthy</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-micro)', color: 'var(--text-3)' }}>
+                Target: 2h 00m
+              </span>
+            </div>
+
+            <div className={styles.slaClockNumeral} aria-label="Healthy SLA countdown">
+              {healthyTimer.main}
+              <span className={styles.slaClockTail}>{healthyTimer.tail}</span>
+            </div>
+
+            <p className={styles.slaCaption}>
+              Silence is good. While milestones remain on schedule, the system operates
+              quietly without unnecessary alerts.
             </p>
           </div>
 
-          <div className={styles.hairlineItem}>
-            <span className={styles.itemIndex}>02</span>
-            <h3 className={styles.itemTitle}>Interchangeable Dispatch Routing</h3>
-            <p className={styles.itemSummary}>
-              Administrators switch seamlessly between skill-weighted capacity assignment and balanced
-              round-robin load balancing without taking the incident desk offline.
-            </p>
-          </div>
-
-          <div className={styles.hairlineItem}>
-            <span className={styles.itemIndex}>03</span>
-            <h3 className={styles.itemTitle}>Proactive SLA Enforcement</h3>
-            <p className={styles.itemSummary}>
-              Unobtrusive visual warnings trigger at 80% elapsed time, escalating immediately upon breach.
-              Keeps resolution clocks visible without generating continuous alert fatigue.
-            </p>
-          </div>
-
-          <div className={styles.hairlineItem}>
-            <span className={styles.itemIndex}>04</span>
-            <h3 className={styles.itemTitle}>Tamper-Evident Audit Trail</h3>
-            <p className={styles.itemSummary}>
-              Every state transition, assignment re-route, and resolution note is immutably timestamped
-              in the system ledger, providing airtight post-incident reviews.
-            </p>
-          </div>
-
-          <div className={styles.hairlineItem}>
-            <span className={styles.itemIndex}>05</span>
-            <h3 className={styles.itemTitle}>The Island Notification System</h3>
-            <p className={styles.itemSummary}>
-              A quiet, unobtrusive ambient instrument that stays calm during normal operations, peeking
-              only when critical updates arrive and expanding into a focused incident feed.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 6. The Island Strip Demo ── */}
-      <section className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <span className={styles.sectionEyebrow}>Ambient Notification Instrument</span>
-          <h2 className={styles.sectionTitle}>The Island</h2>
-          <p className={styles.sectionDesc}>
-            Notifications should inform, never overwhelm. The Island remains silent until action is required.
-          </p>
-        </div>
-
-        <div className={styles.islandDemoBox}>
-          <Segmented
-            name="island-state"
-            value={islandState}
-            onChange={(val) => setIslandState(val)}
-            options={[
-              { value: 'rest', label: 'Rest State' },
-              { value: 'peek', label: 'Peek Banner' },
-              { value: 'open', label: 'Open Feed' },
-            ]}
-          />
-
-          <div className={styles.islandDemoStage}>
-            {islandState === 'rest' && (
-              <div className={styles.demoRestPill}>
-                <Bell size={16} weight="light" />
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-meta)', fontWeight: 600 }}>
-                  3
-                </span>
+          {/* Breached SLA State (Single red signal on the page) */}
+          <div className={clsx(styles.slaBlock, styles.slaBlockBreached)}>
+            <div className={styles.slaStatusHeader}>
+              <span className={styles.slaStateLabel} style={{ color: 'var(--red)' }}>
+                Response SLA • Escalated
+              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', color: 'var(--red)', fontSize: 'var(--fs-micro)', fontWeight: 600 }}>
                 <span
                   style={{
                     width: 6,
                     height: 6,
                     borderRadius: '50%',
-                    backgroundColor: 'var(--red-fill)',
+                    backgroundColor: 'var(--red)',
                   }}
+                  aria-hidden="true"
                 />
-              </div>
-            )}
+                Breached
+              </span>
+            </div>
 
-            {islandState === 'peek' && (
-              <div className={styles.demoPeekBox}>
-                <div
-                  style={{
-                    width: '2rem',
-                    height: '2rem',
-                    borderRadius: 'var(--r-sm)',
-                    backgroundColor: 'var(--surface-2)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    border: '1px solid var(--line-1)',
-                  }}
-                >
-                  <PriorityMarker priority="P1" />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: 'var(--fs-micro)',
-                      color: 'var(--text-3)',
-                      textTransform: 'uppercase',
-                    }}
-                  >
-                    Priority Incident • 2m ago
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: 'var(--font-sans)',
-                      fontSize: 'var(--fs-body-s)',
-                      fontWeight: 600,
-                      color: 'var(--text-1)',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    Database replication connection timeout
-                  </div>
-                </div>
-                <ArrowRight size={16} weight="light" color="var(--text-2)" />
-              </div>
-            )}
+            <div
+              className={clsx(styles.slaClockNumeral, styles.slaClockNumeralBreached)}
+              aria-label="Breached SLA elapsed time"
+            >
+              +{breachedTimer.main}
+              <span className={styles.slaClockTailBreached}>{breachedTimer.tail}</span>
+            </div>
 
-            {islandState === 'open' && (
-              <div className={styles.demoOpenCard}>
-                <div className={styles.demoOpenHeader}>
-                  <span className={styles.demoOpenTitle}>Notifications (3 unread)</span>
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-mono)',
-                      fontSize: 'var(--fs-micro)',
-                      color: 'var(--text-3)',
-                    }}
-                  >
-                    All caught up
-                  </span>
-                </div>
-                <div className={styles.demoItemList}>
-                  <div className={styles.demoItem}>
-                    <span
-                      style={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: '50%',
-                        backgroundColor: 'var(--red)',
-                        marginTop: '0.4rem',
-                      }}
-                    />
-                    <div className={styles.demoItemContent}>
-                      <p className={styles.demoItemText}>
-                        INC-000142 assigned to Priya Nair
-                      </p>
-                      <div className={styles.demoItemMeta}>
-                        <span>2m ago</span>
-                        <span className={styles.demoEmailedBadge}>Also emailed</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className={styles.demoItem}>
-                    <span
-                      style={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: '50%',
-                        backgroundColor: 'var(--red)',
-                        marginTop: '0.4rem',
-                      }}
-                    />
-                    <div className={styles.demoItemContent}>
-                      <p className={styles.demoItemText}>
-                        Incident INC-000139 moved to In progress
-                      </p>
-                      <div className={styles.demoItemMeta}>
-                        <span>14m ago</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className={styles.demoItem}>
-                    <span
-                      style={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: '50%',
-                        backgroundColor: 'var(--red)',
-                        marginTop: '0.4rem',
-                      }}
-                    />
-                    <div className={styles.demoItemContent}>
-                      <p className={styles.demoItemText}>
-                        Resolution proposed for INC-000135
-                      </p>
-                      <div className={styles.demoItemMeta}>
-                        <span>1h ago</span>
-                        <span className={styles.demoEmailedBadge}>Also emailed</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+            <p className={styles.slaCaption}>
+              When a deadline passes, it escalates immediately to administrators.
+              Recorded violations are durable and never erased.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* ── 7. Closing CTA & Minimal Footer ── */}
+      {/* ── 7. Closing Section & Minimal Project Footer ── */}
       <section className={styles.closingSection}>
-        <h2 className={styles.closingHeadline}>Service management, refined.</h2>
+        <h2 className={styles.closingHeadline}>Ready when the next one comes in.</h2>
         <p className={styles.closingSubline}>
-          Zero noise, immediate clarity, and total accountability for your engineering services.
+          Zero noise, immediate clarity, and total accountability for your service desk.
         </p>
-        <div>
+
+        <div className={styles.closingCtas}>
           {user ? (
             <Link to={getWorkspaceUrl()}>
               <Button variant="primary" size="large">
@@ -569,38 +613,58 @@ export const LandingPage: React.FC = () => {
               </Button>
             </Link>
           ) : (
-            <Link to="/register">
-              <Button variant="primary" size="large">
-                Start reporting incidents
-              </Button>
-            </Link>
+            <>
+              <Link to="/register">
+                <Button variant="primary" size="large">
+                  Create account
+                </Button>
+              </Link>
+              <Link to="/signin">
+                <Button variant="ghost" size="large">
+                  Sign in
+                </Button>
+              </Link>
+            </>
           )}
         </div>
       </section>
 
       <footer className={styles.footer}>
-        <div className={styles.footerLeft}>
-          <BrandMark size={20} />
-          <div className={styles.footerStatus}>
-            <span className={styles.statusGreenDot} aria-hidden="true" />
-            <span>Systems operational</span>
+        <div className={styles.footerInner}>
+          <div className={styles.footerLeft}>
+            <Brand />
           </div>
+
+          <nav className={styles.footerLinks} aria-label="Footer navigation">
+            <a href="#how-it-works" className={styles.footerLink}>
+              How it works
+            </a>
+            <a href="#roles" className={styles.footerLink}>
+              Roles
+            </a>
+            <a href="#sla" className={styles.footerLink}>
+              SLA
+            </a>
+            {user ? (
+              <Link to={getWorkspaceUrl()} className={styles.footerLink}>
+                Workspace
+              </Link>
+            ) : (
+              <>
+                <Link to="/signin" className={styles.footerLink}>
+                  Sign in
+                </Link>
+                <Link to="/register" className={styles.footerLink}>
+                  Create account
+                </Link>
+              </>
+            )}
+          </nav>
+
+          <span className={styles.footerCourseTag}>
+            Course project, BITS Pilani Hyderabad
+          </span>
         </div>
-
-        <nav className={styles.footerLinks} aria-label="Footer navigation">
-          {user ? (
-            <Link to={getWorkspaceUrl()}>Workspace</Link>
-          ) : (
-            <>
-              <Link to="/signin">Sign in</Link>
-              <Link to="/register">Create account</Link>
-            </>
-          )}
-        </nav>
-
-        <p className={styles.footerCopy}>
-          © 2026 {PRODUCT_NAME}. All rights reserved.
-        </p>
       </footer>
     </div>
   );

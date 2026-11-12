@@ -87,8 +87,19 @@ def pairs():
     out.append(("dark glass over bright backdrop: t1", D["t1"], mix("#121214", "#E6F0F5", .64), 4.5))
     out.append(("light glass over black backdrop: t1", L["t1"], mix("#FFFFFF", "#000000", .88), 4.5))
     # hero: display text must sit in the deep part of the sky (0-44%)
-    for pos, c in [(0, "#03060C"), (16, "#04204A"), (30, "#002F6C"), (44, "#0E5FB0")]:
-        out.append((f"hero white text at horizon stop {pos}%", "#FFFFFF", c, 4.5))
+    for pos, c in [(0, "#020509"), (20, "#041B3D"), (36, "#073167"), (44, "#093F7D"), (50, "#0B498F")]:
+        out.append((f"hero white headline at dark horizon {pos}%", "#FFFFFF", c, 4.5))
+    for pos, c in [(0, "#020509"), (20, "#041B3D"), (36, "#073167")]:
+        out.append((f"hero subhead (t2) at dark horizon {pos}%", D["t2"], c, 4.5))
+    out.append(("hero light headline (t1) on paper bg", L["t1"], L["bg"], 4.5))
+    out.append(("hero light headline (t1) at horizon wash (worst case)", L["t1"], "#E2ECF5", 4.5))
+    out.append(("hero light subhead (t2) on paper bg", L["t2"], L["bg"], 4.5))
+    out.append(("hero light subhead (t2) at horizon wash (worst case)", L["t2"], "#E2ECF5", 4.5))
+    # SLA moment clock pairs
+    out.append(("SLA clock numerals on dark bg", D["t1"], D["bg"], 4.5))
+    out.append(("SLA breached clock numerals on dark bg", D["red"], D["bg"], 4.5))
+    out.append(("SLA clock numerals on light bg", L["t1"], L["bg"], 4.5))
+    out.append(("SLA breached clock numerals on light bg", L["red"], L["bg"], 4.5))
     return out
 
 

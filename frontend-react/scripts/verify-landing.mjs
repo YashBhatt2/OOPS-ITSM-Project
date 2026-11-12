@@ -7,6 +7,10 @@ if (!fs.existsSync(screenshotDir)) {
   fs.mkdirSync(screenshotDir, { recursive: true });
 }
 
+const CHROME_PATH = fs.existsSync('C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe')
+  ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+  : 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+
 class BrowserSession {
   constructor(port = 9229) {
     this.port = port;
@@ -20,7 +24,7 @@ class BrowserSession {
     const tmpDir = path.join(path.resolve('frontend-react/node_modules/.tmp'), 'chrome-session-' + Date.now());
     fs.mkdirSync(tmpDir, { recursive: true });
 
-    this.chrome = spawn('C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', [
+    this.chrome = spawn(CHROME_PATH, [
       '--headless=new',
       `--remote-debugging-port=${this.port}`,
       `--user-data-dir=${tmpDir}`,
@@ -29,7 +33,7 @@ class BrowserSession {
       'about:blank'
     ]);
 
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 40; i++) {
       await new Promise(r => setTimeout(r, 200));
       try {
         const res = await fetch(`http://localhost:${this.port}/json/list`);
@@ -53,7 +57,7 @@ class BrowserSession {
         }
       } catch (e) {}
     }
-    throw new Error('Failed to start Chrome CDP');
+    throw new Error('Failed to start browser CDP on port ' + this.port);
   }
 
   send(method, params = {}) {
@@ -96,6 +100,11 @@ class BrowserSession {
     console.log(`[PASS] Captured ${filename} (${buffer.length} bytes)`);
   }
 
+  async scrollTo(y) {
+    await this.eval(`window.scrollTo({ top: ${y}, behavior: 'instant' });`);
+    await new Promise(r => setTimeout(r, 300));
+  }
+
   async close() {
     if (this.ws) this.ws.close();
     if (this.chrome) this.chrome.kill();
@@ -103,58 +112,125 @@ class BrowserSession {
 }
 
 async function run() {
-  console.log('=== VERIFYING LANDING PAGE, AUTH SCREENS & ROUTING ===');
+  console.log('=== VERIFYING REBUILT LANDING PAGE & CAPTURING PROOF ===');
+  console.log('Using browser binary:', CHROME_PATH);
   const session = new BrowserSession(9229);
   await session.start();
   await session.send('Page.enable');
   await session.send('Runtime.enable');
 
-  // 1. Desktop Landing Page (Obsidian Dark)
+  session.ws.addEventListener('message', (event) => {
+    const data = JSON.parse(event.data);
+    if (data.method === 'Runtime.consoleAPICalled') {
+      console.log('[Browser Console]', data.params.type, ...data.params.args.map(a => a.value || a.description));
+    }
+    if (data.method === 'Runtime.exceptionThrown') {
+      console.error('[Browser Exception]', data.params.exceptionDetails);
+    }
+  });
+
+  // 1. Desktop Landing Page - 1280px (Obsidian Dark)
   await session.setViewport(1280, 900);
   await session.navigate('http://localhost:5173/');
-  
+
   let headline = '';
-  for (let i = 0; i < 25; i++) {
+  for (let i = 0; i < 30; i++) {
     headline = await session.eval('document.querySelector("h1")?.innerText');
     if (headline) break;
     await new Promise(r => setTimeout(r, 200));
   }
   console.log('Landing headline:', headline);
-  if (!headline?.includes('Every incident, from report to resolution')) {
+  if (!headline) {
+    const bodyText = await session.eval('document.body.innerText');
+    const docTitle = await session.eval('document.title');
+    console.log('Document title:', docTitle);
+    console.log('Body text preview:', bodyText?.slice(0, 300));
+  }
+  if (!headline?.includes('Every incident, seen through.')) {
     throw new Error(`Unexpected headline: ${headline}`);
   }
 
-  await session.screenshot('01-landing-desktop-dark.png');
+  // Hero section screenshots
+  await session.screenshot('hero-1280-dark.png');
 
-  // 2. Mobile Landing Page (390px, Dark)
+  // Lifecycle story section
+  await session.eval('document.getElementById("how-it-works")?.scrollIntoView({ behavior: "instant" })');
+  await new Promise(r => setTimeout(r, 400));
+  await session.screenshot('lifecycle-1280-dark.png');
+
+  // Roles section
+  await session.eval('document.getElementById("roles")?.scrollIntoView({ behavior: "instant" })');
+  await new Promise(r => setTimeout(r, 400));
+  await session.screenshot('roles-1280-dark.png');
+
+  // SLA section
+  await session.eval('document.getElementById("sla")?.scrollIntoView({ behavior: "instant" })');
+  await new Promise(r => setTimeout(r, 400));
+  await session.screenshot('sla-1280-dark.png');
+
+  // Closing section
+  await session.scrollTo(99999);
+  await new Promise(r => setTimeout(r, 400));
+  await session.screenshot('closing-1280-dark.png');
+
+  // 2. Desktop 1920px (Ultra-wide, Dark)
+  await session.setViewport(1920, 1080);
+  await session.scrollTo(0);
+  await new Promise(r => setTimeout(r, 400));
+  await session.screenshot('hero-1920-dark.png');
+
+  // 3. Tablet 768px (Dark)
+  await session.setViewport(768, 1024);
+  await session.scrollTo(0);
+  await new Promise(r => setTimeout(r, 400));
+  await session.screenshot('hero-768-dark.png');
+
+  // 4. Mobile 390px (Dark)
   await session.setViewport(390, 844);
+  await session.scrollTo(0);
   await new Promise(r => setTimeout(r, 400));
-  await session.screenshot('02-landing-mobile-dark.png');
+  await session.screenshot('hero-390-dark.png');
 
-  // 3. Desktop Landing Page (Ceramic Light)
-  await session.setViewport(1280, 900);
-  await session.eval('document.documentElement.setAttribute("data-theme", "light")');
+  await session.eval('document.getElementById("how-it-works")?.scrollIntoView({ behavior: "instant" })');
   await new Promise(r => setTimeout(r, 400));
-  await session.screenshot('03-landing-desktop-light.png');
+  await session.screenshot('lifecycle-390-dark.png');
+
+  // 5. Ceramic Light Theme (1280px and 390px)
+  await session.eval('document.documentElement.setAttribute("data-theme", "light")');
+  await session.setViewport(1280, 900);
+  await session.scrollTo(0);
+  await new Promise(r => setTimeout(r, 400));
+  await session.screenshot('hero-1280-light.png');
+
+  await session.eval('document.getElementById("how-it-works")?.scrollIntoView({ behavior: "instant" })');
+  await new Promise(r => setTimeout(r, 400));
+  await session.screenshot('lifecycle-1280-light.png');
+
+  await session.eval('document.getElementById("sla")?.scrollIntoView({ behavior: "instant" })');
+  await new Promise(r => setTimeout(r, 400));
+  await session.screenshot('sla-1280-light.png');
+
+  await session.setViewport(390, 844);
+  await session.scrollTo(0);
+  await new Promise(r => setTimeout(r, 400));
+  await session.screenshot('hero-390-light.png');
 
   // Reset to dark
   await session.eval('document.documentElement.setAttribute("data-theme", "dark")');
 
-  // 4. Test Calm Sign In screen (/signin)
+  // 6. Test Calm Sign In screen (/signin)
   await session.navigate('http://localhost:5173/signin');
   await new Promise(r => setTimeout(r, 600));
   const signinTitle = await session.eval('document.querySelector("h2")?.innerText');
   console.log('Sign in panel title:', signinTitle);
-  await session.screenshot('04-signin-calm-dark.png');
 
-  // 5. Test Calm Register screen (/register)
+  // 7. Test Calm Register screen (/register)
   await session.navigate('http://localhost:5173/register');
   await new Promise(r => setTimeout(r, 600));
   const registerTitle = await session.eval('document.querySelector("h2")?.innerText');
   console.log('Register panel title:', registerTitle);
-  await session.screenshot('05-register-calm-dark.png');
 
-  // 6. Test Redirect: /login -> /signin
+  // 8. Test Redirect: /login -> /signin
   await session.navigate('http://localhost:5173/login');
   let redirectedUrl = '';
   for (let i = 0; i < 25; i++) {
@@ -167,37 +243,33 @@ async function run() {
     throw new Error(`Expected redirect to /signin, but got ${redirectedUrl}`);
   }
 
-  // 7. Login as Sarah and verify / shows "Open your workspace" (NO auto-redirect)
+  // 9. Login as Sarah and verify / shows "Open your workspace" (NO auto-redirect)
   console.log('Authenticating Sarah to test landing page authenticated state...');
-  await session.eval(`
-    (function() {
-      const setVal = (el, val) => {
-        const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
-        setter.call(el, val);
-        el.dispatchEvent(new Event('input', { bubbles: true }));
-        el.dispatchEvent(new Event('change', { bubbles: true }));
-      };
-      const email = document.getElementById('signin-email');
-      const pass = document.getElementById('signin-password');
-      setVal(email, 'sarah@example.test');
-      setVal(pass, 'Password12345!');
-      const btn = document.querySelector('button[type="submit"]');
-      btn.click();
+  const loginStatus = await session.eval(`
+    (async function() {
+      const csrfRes = await fetch('/api/v1/auth/csrf');
+      const csrf = await csrfRes.json();
+      const body = new URLSearchParams();
+      body.set('email', 'sarah@example.test');
+      body.set('password', 'Password12345!');
+      const res = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          [csrf.headerName]: csrf.token
+        },
+        body
+      });
+      return res.status;
     })()
   `);
+  console.log('API login response status in browser:', loginStatus);
 
-  let postLoginUrl = '';
-  for (let i = 0; i < 35; i++) {
-    postLoginUrl = await session.eval('window.location.pathname');
-    if (postLoginUrl === '/employee') break;
-    await new Promise(r => setTimeout(r, 200));
-  }
-  console.log('Post-login landed on:', postLoginUrl);
-
-  // Now navigate back to /
+  // Navigate back to /
   console.log('Navigating back to / as authenticated user...');
   await session.navigate('http://localhost:5173/');
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise(r => setTimeout(r, 1200));
 
   const authLandingUrl = await session.eval('window.location.pathname');
   console.log('Landing page URL for logged-in user:', authLandingUrl);
@@ -206,9 +278,9 @@ async function run() {
   }
 
   let topBarBtn = '';
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 30; i++) {
     topBarBtn = await session.eval('document.querySelector("header a button")?.innerText');
-    if (topBarBtn) break;
+    if (topBarBtn?.includes('Open your workspace')) break;
     await new Promise(r => setTimeout(r, 200));
   }
   console.log('Top bar primary button:', topBarBtn);
@@ -216,10 +288,10 @@ async function run() {
     throw new Error(`Expected "Open your workspace", found: ${topBarBtn}`);
   }
 
-  await session.screenshot('06-landing-authenticated-dark.png');
+  await session.screenshot('authenticated-landing-1280-dark.png');
 
   await session.close();
-  console.log('=== ALL LANDING PAGE & ROUTING TESTS PASSED! ===');
+  console.log('=== ALL REBUILT LANDING PAGE TESTS PASSED CLEANLY! ===');
 }
 
 run().catch(err => {

@@ -110,3 +110,6 @@ export const GreetingHeader: React.FC<GreetingHeaderProps> = ({
     </header>
   );
 };
+
+export default GreetingHeader;
+

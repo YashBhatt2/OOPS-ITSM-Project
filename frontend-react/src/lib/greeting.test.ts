@@ -348,3 +348,4 @@ describe('Greeting Header Logic (getGreeting)', () => {
     });
   });
 });
+

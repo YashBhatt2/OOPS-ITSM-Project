@@ -113,9 +113,11 @@
   --bloom-day: radial-gradient(60% 50% at 50% 0%, rgb(50 140 215 / 0.20), transparent 70%);
   --bloom-evening: radial-gradient(60% 50% at 50% 0%, rgb(120 130 180 / 0.16), transparent 70%);
   --bloom-night: radial-gradient(60% 50% at 50% 0%, rgb(40 80 140 / 0.14), transparent 70%);
+  --horizon-core: radial-gradient(ellipse 75% 50% at 50% 40%, rgb(35 125 210 / 0.28) 0%, rgb(10 65 140 / 0.14) 45%, transparent 75%);
   --horizon: linear-gradient(180deg,
-    #03060c 0%, #04204a 16%, #002f6c 30%, #0e5fb0 44%, #2f93d8 56%,
-    #a9d4ee 68%, #e6f0f5 74%, #11151b 74.5%, #05070a 100%);
+    #020509 0%, #041b3d 20%, #073167 36%, #0b498f 50%, #0d3b70 65%,
+    #071f40 78%, #020b17 90%, #000000 100%);
+  --noise-grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
 }
 
 /* ── Ceramic (light) ── */
@@ -163,9 +165,10 @@
   --bloom-day: none;
   --bloom-evening: none;
   --bloom-night: none;
+  --horizon-core: radial-gradient(ellipse 75% 50% at 50% 40%, rgb(180 215 245 / 0.40) 0%, rgb(220 235 248 / 0.18) 45%, transparent 75%);
   --horizon: linear-gradient(180deg,
-    #ffffff 0%, #eef3f7 30%, #e3ebf1 56%, #dcd7d2 68%, #f6f4f1 74%,
-    #dcd7d2 74.5%, #d2ccc6 100%);
+    #f6f4f1 0%, #edf3f8 30%, #e2ecf5 55%, #edf3f8 75%, #f6f4f1 100%);
+  --noise-grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
 }
 
 :root[data-theme="dark"]  { color-scheme: dark; }

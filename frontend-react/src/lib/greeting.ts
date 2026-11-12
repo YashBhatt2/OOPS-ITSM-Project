@@ -460,3 +460,4 @@ export function getEmployeeSupportingSentence(data: EmployeeGreetingData): Suppo
     fullText: 'Nothing needs your attention.',
   };
 }
+
