@@ -13,6 +13,15 @@
   box-sizing: border-box;
 }
 
+.asciiBackground {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  opacity: 0.85;
+}
+
 .heroHeader {
   position: absolute;
   top: 0;

@@ -442,6 +442,103 @@
   position: relative;
   display: flex;
   gap: var(--space-4);
+  flex-direction: column;
+}
+
+.stickySurfaceInner {
+  display: flex;
+  gap: var(--space-4);
+  position: relative;
+}
+
+.stageTabsContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.25rem;
+  background-color: var(--surface-2);
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-pill);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.stageTabsContainer::-webkit-scrollbar {
+  display: none;
+}
+
+.stageTabBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--r-pill);
+  background: transparent;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: var(--fs-meta);
+  color: var(--text-2);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--dur-1) var(--ease-out);
+}
+
+.stageTabBtn:hover {
+  color: var(--text-1);
+  background-color: var(--surface-3);
+}
+
+.stageTabBtnActive {
+  background-color: var(--surface-1);
+  color: var(--text-1);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+}
+
+.stageTabNumber {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-3);
+}
+
+.stageTabBtnActive .stageTabNumber {
+  color: var(--text-1);
+}
+
+.formulaChip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--surface-2);
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-md);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-2);
+}
+
+.formulaHighlight {
+  color: var(--red);
+  font-weight: 600;
+}
+
+.stepRowInteractive {
+  cursor: pointer;
+  border-radius: var(--r-md);
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+  margin-left: calc(-1 * var(--space-3));
+  margin-right: calc(-1 * var(--space-3));
+  transition: background-color var(--dur-1) var(--ease-out), opacity var(--dur-2) var(--ease-out);
+}
+
+.stepRowInteractive:hover {
+  background-color: var(--surface-2);
+}
+
+.stepRowInteractiveActive {
+  background-color: color-mix(in srgb, var(--surface-2) 65%, transparent);
 }
 
 .progressRail {

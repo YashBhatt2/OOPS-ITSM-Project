@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'motion/react';
@@ -85,6 +86,29 @@ export const Island: React.FC = () => {
   const [syntheticNotifications, setSyntheticNotifications] = useState<NotificationItem[] | null>(null);
   const [isDevError, setIsDevError] = useState(false);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
+  const [cardPosition, setCardPosition] = useState<{ top: number; right: number } | null>(null);
+
+  // Measure anchor position for portaled open card
+  useEffect(() => {
+    if (isOpen && restButtonRef.current) {
+      const updatePosition = () => {
+        const rect = restButtonRef.current?.getBoundingClientRect();
+        if (rect) {
+          setCardPosition({
+            top: rect.bottom + 8,
+            right: Math.max(16, window.innerWidth - rect.right),
+          });
+        }
+      };
+      updatePosition();
+      window.addEventListener('resize', updatePosition);
+      window.addEventListener('scroll', updatePosition, true);
+      return () => {
+        window.removeEventListener('resize', updatePosition);
+        window.removeEventListener('scroll', updatePosition, true);
+      };
+    }
+  }, [isOpen]);
 
   // References
   const seenIdsRef = useRef<Set<string>>(new Set());
@@ -460,22 +484,6 @@ export const Island: React.FC = () => {
 
   return (
     <div className={styles.islandContainer}>
-      {/* Scrim overlay when Island is open */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            key="island-scrim"
-            className={styles.scrim}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            onClick={() => setIsOpen(false)}
-            aria-hidden="true"
-          />
-        )}
-      </AnimatePresence>
-
       {/* ── 1. Rest State (Glass Pill) ── */}
       <motion.button
         ref={restButtonRef}
@@ -517,31 +525,50 @@ export const Island: React.FC = () => {
         )}
       </motion.button>
 
-      {/* ── Floating Morphing Surface: Peek Banner or Open Card ── */}
-      <AnimatePresence mode="popLayout">
-        {isOpen ? (
-          /* ── 3. Open State (Full Frosted Glass Card) ── */
-          <motion.div
-            key="island-open-card"
-            ref={openCardRef}
-            tabIndex={-1}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Notifications"
-            className={clsx(styles.islandSurface, styles.openCardLayout)}
-            initial={{ scale: 0.94, opacity: 0, y: -8 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.94, opacity: 0, y: -6 }}
-            transition={isReducedMotion ? { duration: 0.1 } : ISLAND_SPRING}
-            drag="y"
-            dragConstraints={{ top: -60, bottom: 0 }}
-            dragElastic={0.25}
-            onDragEnd={(_, info) => {
-              if (info.offset.y < -25 || info.velocity.y < -200) {
-                setIsOpen(false);
-              }
-            }}
-          >
+      {/* ── 3. Modal Scrim & Open Card Portaled to document.body ── */}
+      {createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <>
+              <motion.div
+                key="island-modal-scrim"
+                className={styles.scrim}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+                onClick={() => setIsOpen(false)}
+                aria-hidden="true"
+              />
+              <motion.div
+                key="island-open-card"
+                ref={openCardRef}
+                tabIndex={-1}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Notifications"
+                className={clsx(styles.islandSurface, styles.openCardLayout)}
+                style={
+                  cardPosition
+                    ? {
+                        top: `${cardPosition.top}px`,
+                        right: `${cardPosition.right}px`,
+                      }
+                    : undefined
+                }
+                initial={{ scale: 0.94, opacity: 0, y: -10 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.94, opacity: 0, y: -8 }}
+                transition={isReducedMotion ? { duration: 0.1 } : ISLAND_SPRING}
+                drag="y"
+                dragConstraints={{ top: -60, bottom: 0 }}
+                dragElastic={0.25}
+                onDragEnd={(_, info) => {
+                  if (info.offset.y < -25 || info.velocity.y < -200) {
+                    setIsOpen(false);
+                  }
+                }}
+              >
             {/* Staged Header */}
             <motion.div
               className={styles.openHeader}
@@ -723,8 +750,15 @@ export const Island: React.FC = () => {
               )}
             </motion.div>
           </motion.div>
-        ) : peekNotification ? (
-          /* ── 2. Peek State (Floating Frosted Banner) ── */
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
+
+      {/* ── 2. Peek State (Floating Frosted Banner when not open) ── */}
+      <AnimatePresence mode="popLayout">
+        {peekNotification && !isOpen ? (
           <motion.div
             key="island-peek-banner"
             role="status"

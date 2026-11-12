@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { NavLink, useLocation } from 'react-router-dom';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'motion/react';
@@ -24,6 +25,30 @@ export const Nav: React.FC<NavProps> = ({
 }) => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [signOutConfirmOpen, setSignOutConfirmOpen] = useState(false);
+  const signOutButtonRef = useRef<HTMLDivElement | null>(null);
+  const [popoverPosition, setPopoverPosition] = useState<{ top: number; right: number } | null>(null);
+
+  // Measure sign out button for portaled popover
+  useEffect(() => {
+    if (signOutConfirmOpen && signOutButtonRef.current) {
+      const update = () => {
+        const rect = signOutButtonRef.current?.getBoundingClientRect();
+        if (rect) {
+          setPopoverPosition({
+            top: rect.bottom + 8,
+            right: Math.max(16, window.innerWidth - rect.right),
+          });
+        }
+      };
+      update();
+      window.addEventListener('resize', update);
+      window.addEventListener('scroll', update, true);
+      return () => {
+        window.removeEventListener('resize', update);
+        window.removeEventListener('scroll', update, true);
+      };
+    }
+  }, [signOutConfirmOpen]);
 
   // Close sign out confirm on Escape
   useEffect(() => {
@@ -110,7 +135,7 @@ export const Nav: React.FC<NavProps> = ({
             </Button>
 
             {onLogout && (
-              <div style={{ position: 'relative' }}>
+              <div ref={signOutButtonRef} style={{ position: 'relative' }}>
                 <Button
                   variant="ghost"
                   size="compact"
@@ -123,51 +148,66 @@ export const Nav: React.FC<NavProps> = ({
                   <span>Sign out</span>
                 </Button>
 
-                <AnimatePresence>
-                  {signOutConfirmOpen && (
-                    <>
-                      <div
-                        className={styles.popoverBackdrop}
-                        onClick={() => setSignOutConfirmOpen(false)}
-                        aria-hidden="true"
-                      />
-                      <motion.div
-                        className={styles.confirmPopover}
-                        initial={{ opacity: 0, scale: 0.92, y: -6 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.92, y: -6 }}
-                        transition={{ type: 'spring', stiffness: 420, damping: 28 }}
-                        role="dialog"
-                        aria-label="Sign out confirmation"
-                      >
-                        <h4 className={styles.confirmTitle}>Sign out</h4>
-                        <p className={styles.confirmDesc}>
-                          Are you sure you want to end your session?
-                        </p>
-                        <div className={styles.confirmActions}>
-                          <Button
-                            variant="ghost"
-                            size="compact"
-                            onClick={() => setSignOutConfirmOpen(false)}
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            variant="primary"
-                            size="compact"
-                            onClick={() => {
-                              setSignOutConfirmOpen(false);
-                              onLogout();
-                            }}
-                          >
-                            <SignOut size={16} weight="light" />
-                            <span>Confirm</span>
-                          </Button>
-                        </div>
-                      </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
+                {createPortal(
+                  <AnimatePresence>
+                    {signOutConfirmOpen && (
+                      <>
+                        <motion.div
+                          className={styles.popoverBackdrop}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.16 }}
+                          onClick={() => setSignOutConfirmOpen(false)}
+                          aria-hidden="true"
+                        />
+                        <motion.div
+                          className={styles.confirmPopover}
+                          style={
+                            popoverPosition
+                              ? {
+                                  top: `${popoverPosition.top}px`,
+                                  right: `${popoverPosition.right}px`,
+                                }
+                              : undefined
+                          }
+                          initial={{ opacity: 0, scale: 0.92, y: -8 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.92, y: -8 }}
+                          transition={{ type: 'spring', stiffness: 450, damping: 28 }}
+                          role="dialog"
+                          aria-label="Sign out confirmation"
+                        >
+                          <h4 className={styles.confirmTitle}>Sign out</h4>
+                          <p className={styles.confirmDesc}>
+                            Are you sure you want to end your session?
+                          </p>
+                          <div className={styles.confirmActions}>
+                            <Button
+                              variant="ghost"
+                              size="compact"
+                              onClick={() => setSignOutConfirmOpen(false)}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              variant="primary"
+                              size="compact"
+                              onClick={() => {
+                                setSignOutConfirmOpen(false);
+                                onLogout();
+                              }}
+                            >
+                              <SignOut size={16} weight="light" />
+                              <span>Confirm</span>
+                            </Button>
+                          </div>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>,
+                  document.body
+                )}
               </div>
             )}
           </div>

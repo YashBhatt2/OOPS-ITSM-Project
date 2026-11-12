@@ -31,7 +31,7 @@ export function AdminOverviewPage() {
     queryFn: () => apiRequest('/api/v1/incidents?status=NEW&page=0&size=10'),
   });
 
-  const { data: atRiskResult, isLoading: isAtRiskLoading } = useQuery<PagedResult<Incident>>({
+  const { data: atRiskResult } = useQuery<PagedResult<Incident>>({
     queryKey: ['incidents', 'atRisk'],
     queryFn: () => apiRequest('/api/v1/incidents?slaStatus=AT_RISK&page=0&size=1'),
   });

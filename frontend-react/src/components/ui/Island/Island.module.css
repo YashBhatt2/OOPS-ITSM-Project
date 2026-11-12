@@ -11,10 +11,16 @@
 .scrim {
   position: fixed;
   inset: 0;
-  background-color: rgb(0 0 0 / 0.55);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: rgb(0 0 0 / 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: var(--z-modal);
+}
+
+:root[data-theme="light"] .scrim {
+  background-color: rgb(11 11 12 / 0.38);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 /* ── Unified Morphing Surface ── */
@@ -279,25 +285,36 @@
   }
 }
 
-/* ── 3. Open State (Full Glass Card) ── */
+/* ── 3. Open State (Solid Opaque Instrument Card) ── */
 .openCardLayout {
-  position: absolute;
-  top: calc(100% + var(--space-2));
-  right: 0;
+  position: fixed;
   width: clamp(22rem, 92vw, 26.5rem);
   max-height: 72dvh;
   border-radius: var(--r-xl);
   z-index: calc(var(--z-modal) + 1);
   display: flex;
   flex-direction: column;
+  background-color: var(--surface-1) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+  border: 1px solid var(--line-2);
+  box-shadow: 0 24px 60px -8px rgb(0 0 0 / 0.75);
+}
+
+:root[data-theme="light"] .openCardLayout {
+  background-color: var(--surface-1) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 20px 48px -12px rgb(11 11 12 / 0.22);
 }
 
 @media (max-width: 600px) {
   .openCardLayout {
     position: fixed;
-    top: calc(3.75rem + env(safe-area-inset-top, 0px));
-    left: var(--space-3);
-    right: var(--space-3);
+    top: calc(3.75rem + env(safe-area-inset-top, 0px)) !important;
+    left: var(--space-3) !important;
+    right: var(--space-3) !important;
     width: auto;
     max-height: 80dvh;
   }

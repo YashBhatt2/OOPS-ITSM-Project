@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useScroll, useMotionValueEvent } from 'motion/react';
-import { List, ArrowRight } from '@phosphor-icons/react';
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'motion/react';
+import { List } from '@phosphor-icons/react';
 import clsx from 'clsx';
 import { Brand } from '@/components/ui/Brand/Brand';
 import { ThemeToggle } from '@/components/ui/ThemeToggle/ThemeToggle';
@@ -322,94 +322,145 @@ export const LandingPage: React.FC = () => {
           {/* Sticky Left Column: One Morphing Incident Surface */}
           <div className={styles.storyStickyColumn} aria-hidden="true">
             <div className={styles.stickySurfaceContainer}>
-              <div className={styles.progressRail}>
-                <div
-                  className={styles.railIndicator}
-                  style={{
-                    height: `${((activeStageIdx + 1) / INCIDENT_STORY.length) * 100}%`,
-                  }}
-                />
-                {INCIDENT_STORY.map((_, idx) => (
-                  <div
-                    key={idx}
-                    className={clsx(
-                      styles.railTick,
-                      idx <= activeStageIdx && styles.railTickActive
-                    )}
-                  />
-                ))}
+              {/* Interactive Stage Switcher Bar */}
+              <div className={styles.stageTabsContainer} role="tablist" aria-label="Incident stages">
+                {INCIDENT_STORY.map((stage, idx) => {
+                  const isActive = idx === activeStageIdx;
+                  return (
+                    <button
+                      key={stage.stepNumber}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      className={clsx(styles.stageTabBtn, isActive && styles.stageTabBtnActive)}
+                      onClick={() => setActiveStageIdx(idx)}
+                    >
+                      <span className={styles.stageTabNumber}>{stage.stepNumber}</span>
+                      <span>{stage.stageName}</span>
+                    </button>
+                  );
+                })}
               </div>
 
-              <div className={styles.storySurfaceCard}>
-                <div className={styles.surfaceMetaRow}>
-                  <span className={styles.cardRef}>{currentStage.reference}</span>
-                  <StatusLabel status={currentStage.status} />
+              <div className={styles.stickySurfaceInner}>
+                <div className={styles.progressRail}>
+                  <div
+                    className={styles.railIndicator}
+                    style={{
+                      height: `${((activeStageIdx + 1) / INCIDENT_STORY.length) * 100}%`,
+                    }}
+                  />
+                  {INCIDENT_STORY.map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={clsx(
+                        styles.railTick,
+                        idx <= activeStageIdx && styles.railTickActive
+                      )}
+                    />
+                  ))}
                 </div>
 
-                <div>
-                  <h3 className={styles.cardTitle}>{currentStage.title}</h3>
-                  <div className={styles.cardMetaRow}>
-                    <span>{currentStage.service}</span>
-                    <span className={styles.cardDividerDot}>•</span>
-                    <span>Reporter: {currentStage.reporter}</span>
-                  </div>
-                </div>
-
-                <LifecycleBar status={currentStage.status} />
-
-                <div className={styles.cardClockRow}>
-                  <span className={styles.clockLabel}>
-                    {currentStage.status === 'NEW'
-                      ? 'Target Deadline'
-                      : currentStage.status === 'VERIFIED'
-                      ? 'Total Elapsed Time'
-                      : 'Resolution SLA Remaining'}
-                  </span>
-                  <span className={styles.clockDigits}>
-                    {currentStage.status === 'VERIFIED'
-                      ? currentStage.slaElapsed
-                      : currentStage.slaRemaining}
-                  </span>
-                </div>
-
-                {currentStage.notes.length > 0 && (
-                  <div className={styles.surfaceNotesBox}>
-                    {currentStage.notes.map((n, i) => (
-                      <div key={i} className={styles.noteItem}>
-                        <div className={styles.noteHeader}>
-                          <span>{n.author}</span>
-                          {n.isInternal && (
-                            <span className={styles.internalBadge}>• Internal note</span>
-                          )}
-                          <span>• {n.time}</span>
-                        </div>
-                        <p className={styles.noteText}>{n.text}</p>
+                <div className={styles.storySurfaceCard}>
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={currentStage.stepNumber}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.18, ease: 'easeOut' }}
+                      style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)', flex: 1 }}
+                    >
+                      <div className={styles.surfaceMetaRow}>
+                        <span className={styles.cardRef}>{currentStage.reference}</span>
+                        <StatusLabel status={currentStage.status} />
                       </div>
-                    ))}
-                  </div>
-                )}
 
-                {currentStage.resolution && (
-                  <div className={styles.resolutionBox}>
-                    <div className={styles.resolutionLabel}>Resolution recorded</div>
-                    <p className={styles.resolutionText}>{currentStage.resolution}</p>
-                  </div>
-                )}
+                      <div>
+                        <h3 className={styles.cardTitle}>{currentStage.title}</h3>
+                        <div className={styles.cardMetaRow}>
+                          <span>{currentStage.service}</span>
+                          <span className={styles.cardDividerDot}>•</span>
+                          <span>Reporter: {currentStage.reporter}</span>
+                        </div>
+                      </div>
 
-                <div className={styles.cardFooterRow}>
-                  <span>
-                    {currentStage.assignee
-                      ? `${currentStage.assignee} (${currentStage.assigneeRole})`
-                      : 'Unassigned'}
-                  </span>
-                  <PriorityMarker priority={currentStage.priority} />
+                      <LifecycleBar status={currentStage.status} />
+
+                      <div className={styles.cardClockRow}>
+                        <span className={styles.clockLabel}>
+                          {currentStage.status === 'NEW'
+                            ? 'Target Deadline'
+                            : currentStage.status === 'VERIFIED'
+                            ? 'Total Elapsed Time'
+                            : 'Resolution SLA Remaining'}
+                        </span>
+                        <span className={styles.clockDigits}>
+                          {currentStage.status === 'VERIFIED'
+                            ? currentStage.slaElapsed
+                            : currentStage.slaRemaining}
+                        </span>
+                      </div>
+
+                      {/* Stage 01: Formula Chip */}
+                      {currentStage.status === 'NEW' && (
+                        <div className={styles.formulaChip}>
+                          <span>Impact: HIGH</span>
+                          <span>×</span>
+                          <span>Urgency: HIGH</span>
+                          <span>→</span>
+                          <span className={styles.formulaHighlight}>P1 CRITICAL (2h Target)</span>
+                        </div>
+                      )}
+
+                      {currentStage.notes.length > 0 && (
+                        <div className={styles.surfaceNotesBox}>
+                          {currentStage.notes.map((n, i) => (
+                            <div key={i} className={styles.noteItem}>
+                              <div className={styles.noteHeader}>
+                                <span>{n.author}</span>
+                                {n.isInternal && (
+                                  <span className={styles.internalBadge}>• Internal note</span>
+                                )}
+                                <span>• {n.time}</span>
+                              </div>
+                              <p className={styles.noteText}>{n.text}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {currentStage.resolution && (
+                        <div className={styles.resolutionBox}>
+                          <div className={styles.resolutionLabel}>Resolution recorded</div>
+                          <p className={styles.resolutionText}>{currentStage.resolution}</p>
+                        </div>
+                      )}
+
+                      <div className={styles.cardFooterRow}>
+                        <span>
+                          {currentStage.assignee
+                            ? `${currentStage.assignee} (${currentStage.assigneeRole})`
+                            : 'Unassigned'}
+                        </span>
+                        <PriorityMarker priority={currentStage.priority} />
+                      </div>
+
+                      {currentStage.auditBadge && (
+                        <div className={styles.auditBadgeBox}>
+                          {currentStage.auditBadge}
+                        </div>
+                      )}
+
+                      {/* Stage 06: Verification guarantee */}
+                      {currentStage.status === 'VERIFIED' && (
+                        <div className={styles.formulaChip} style={{ color: 'var(--green)' }}>
+                          <span>✓ Verified by reporter • 7-day reopening window guaranteed</span>
+                        </div>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
-
-                {currentStage.auditBadge && (
-                  <div className={styles.auditBadgeBox}>
-                    {currentStage.auditBadge}
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -421,7 +472,20 @@ export const LandingPage: React.FC = () => {
               return (
                 <div
                   key={stage.stepNumber}
-                  className={styles.stepRow}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setActiveStageIdx(idx)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setActiveStageIdx(idx);
+                    }
+                  }}
+                  className={clsx(
+                    styles.stepRow,
+                    styles.stepRowInteractive,
+                    isActive && styles.stepRowInteractiveActive
+                  )}
                   style={{
                     opacity: isReducedMotion ? 1 : isActive ? 1 : 0.45,
                   }}

@@ -181,22 +181,28 @@
   }
 }
 
-/* ── Sign out confirmation popover ── */
+/* ── Sign out confirmation popover (Solid Opaque Instrument Card) ── */
 .confirmPopover {
-  position: absolute;
-  top: calc(100% + var(--space-2));
-  right: 0;
+  position: fixed;
   width: 17.5rem;
   /* 280px */
-  background-color: var(--glass);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  background-color: var(--surface-1) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
   border: 1px solid var(--line-2);
   border-radius: var(--r-lg);
   padding: var(--space-4);
-  box-shadow: var(--shadow-float);
-  z-index: var(--z-modal);
+  box-shadow: 0 20px 48px -10px rgb(0 0 0 / 0.7);
+  z-index: calc(var(--z-modal) + 1);
   outline: none;
+}
+
+:root[data-theme="light"] .confirmPopover {
+  background-color: var(--surface-1) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 16px 40px -10px rgb(11 11 12 / 0.2);
 }
 
 .confirmTitle {
@@ -225,6 +231,14 @@
 .popoverBackdrop {
   position: fixed;
   inset: 0;
-  z-index: calc(var(--z-modal) - 1);
-  background: transparent;
+  z-index: var(--z-modal);
+  background-color: rgb(0 0 0 / 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+:root[data-theme="light"] .popoverBackdrop {
+  background-color: rgb(11 11 12 / 0.32);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }

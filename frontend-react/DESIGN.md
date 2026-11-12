@@ -1078,3 +1078,4 @@ Save the four CRED references in `design-refs/` with these names, and study them
 - **Nothing:** colors, grid rule, tone, and restraint principles from the community reference at nothing.wiki/nothing/brand_reference (an unofficial summary of Nothing's brand guidelines). The Nothing logotype, NType, NDot, Lettera Mono, and proprietary icons are not used.
 - **Apple:** editorial rules from the Apple Style Guide, June 2026 (supplied by the project owner), applied to interface text. This is a writing guide, not the Human Interface Guidelines; interaction conventions in this document (44 px targets, springs, glass chrome, appearance modes) are common Apple-platform practice, adapted. SF Pro is not used.
 - **Fonts:** Instrument Sans, Newsreader, and IBM Plex Mono are open-source (SIL Open Font License), self-hosted through Fontsource. **Icons:** Phosphor (MIT).
+n

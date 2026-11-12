@@ -77,3 +77,4 @@ describe('Landing Page Fixtures and Domain Verification', () => {
     expect(roleIds).toEqual(['employee', 'technician', 'admin']);
   });
 });
+

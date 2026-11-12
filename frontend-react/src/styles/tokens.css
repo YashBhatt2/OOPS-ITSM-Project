@@ -106,6 +106,21 @@
   --tint-amber: color-mix(in srgb, var(--amber) 16%, var(--surface-1));
   --tint-blue:  color-mix(in srgb, var(--blue) 16%, var(--surface-1));
 
+  --auth-blue-1: #041b3d;
+  --auth-blue-2: #002f6c;
+  --auth-blue-3: #0e5fb0;
+  --auth-blue-4: #5aa9ff;
+
+  --auth-purple-1: #1e1035;
+  --auth-purple-2: #3b1261;
+  --auth-purple-3: #6b21a8;
+  --auth-purple-4: #a855f7;
+
+  --auth-green-1: #022c22;
+  --auth-green-2: #064e3b;
+  --auth-green-3: #059669;
+  --auth-green-4: #34d27b;
+
   --shadow-float: 0 24px 64px -16px rgb(0 0 0 / 0.6);
   --glow-display: 0 0 40px rgb(255 255 255 / 0.18);
   --bloom: radial-gradient(60% 50% at 50% 0%, rgb(46 143 214 / 0.20), transparent 70%);
@@ -157,6 +172,21 @@
   --tint-red:   color-mix(in srgb, var(--red) 10%, var(--surface-1));
   --tint-amber: color-mix(in srgb, var(--amber-text) 14%, var(--surface-1));
   --tint-blue:  color-mix(in srgb, var(--blue) 10%, var(--surface-1));
+
+  --auth-blue-1: #e0edff;
+  --auth-blue-2: #b9d7fc;
+  --auth-blue-3: #70a9f4;
+  --auth-blue-4: #2563eb;
+
+  --auth-purple-1: #f3e8ff;
+  --auth-purple-2: #e9d5ff;
+  --auth-purple-3: #c084fc;
+  --auth-purple-4: #7e22ce;
+
+  --auth-green-1: #d1fae5;
+  --auth-green-2: #a7f3d0;
+  --auth-green-3: #34d399;
+  --auth-green-4: #059669;
 
   --shadow-float: 0 20px 48px -12px rgb(11 11 12 / 0.18);
   --glow-display: none;   /* no glow in Ceramic */
