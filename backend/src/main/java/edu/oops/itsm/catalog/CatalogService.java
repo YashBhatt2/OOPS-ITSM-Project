@@ -108,28 +108,33 @@ import java.util.*;
     }
     public UUID saveService(UUID id,ServiceInput r) {
         user.require(Role.ADMIN);
-        var e=id==null?db.add(new ItService()):db.lock(ItService.class,id);
+        // Set fields before persisting: Hibernate builds the INSERT from the state at persist time,
+        // so persisting an empty entity first violates the NOT NULL name constraint.
+        var e=id==null?new ItService():db.lock(ItService.class,id);
         e.name=r.name();
         e.description=r.description();
         e.criticality=r.criticality();
         e.active=r.active();
+        if(id==null)db.add(e);
         return e.id;
     }
     public UUID saveSkill(UUID id,NamedInput r) {
         user.require(Role.ADMIN);
-        var e=id==null?db.add(new Skill()):db.lock(Skill.class,id);
+        var e=id==null?new Skill():db.lock(Skill.class,id);
         e.name=r.name();
         e.active=r.active();
+        if(id==null)db.add(e);
         return e.id;
     }
     public UUID saveCategory(UUID id,CategoryInput r) {
         user.require(Role.ADMIN);
         skills(r.requirements());
-        var e=id==null?db.add(new Category()):db.lock(Category.class,id);
+        var e=id==null?new Category():db.lock(Category.class,id);
         e.name=r.name();
         e.active=r.active();
         e.requirements.clear();
         e.requirements.putAll(r.requirements());
+        if(id==null)db.add(e);
         return e.id;
     }
     public Map<String,Object> publish(UUID serviceId,PolicyInput r) {

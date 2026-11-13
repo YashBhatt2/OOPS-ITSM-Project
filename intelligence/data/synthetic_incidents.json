@@ -1,0 +1,145 @@
+{
+  "notice": "SYNTHETIC demonstration data written for evaluation. Not real incidents, people, or systems.",
+  "clusters": [
+    {
+      "cluster": "vpn-certificate",
+      "category": "Network",
+      "resolution": "Renewed the expired VPN client certificate from the certificate portal and restarted the VPN client.",
+      "incidents": [
+        ["VPN will not connect", "The VPN client says my certificate has expired when I try to connect from home."],
+        ["Cannot connect to VPN from home", "Getting a certificate expired error in the VPN app since this morning."],
+        ["VPN certificate error", "Remote access fails, the client shows an expired certificate message."],
+        ["Remote access not working", "Working from home and the VPN rejects me with a certificate problem."],
+        ["vpn cert expired", "cant conect to the vpn, popup says certifcate expired"],
+        ["Unable to establish VPN tunnel", "VPN authentication fails with message: client certificate is no longer valid."]
+      ]
+    },
+    {
+      "cluster": "password-reset",
+      "category": "Access",
+      "resolution": "Verified the user's identity, reset the password and cleared the account lockout in the directory.",
+      "incidents": [
+        ["Locked out of my account", "I entered the wrong password too many times and now my account is locked."],
+        ["Password reset needed", "Forgot my password and cannot log in to my workstation."],
+        ["Account lockout", "My login says the account is locked after several failed attempts."],
+        ["Can't log in, password expired", "Windows says my password expired and the reset page does not work."],
+        ["forgot pwd", "need my password reset please, cannot sign in"],
+        ["User account locked", "Employee cannot sign in, account locked due to failed password attempts."]
+      ]
+    },
+    {
+      "cluster": "email-sync",
+      "category": "Email",
+      "resolution": "Rebuilt the Outlook profile and cleared the offline cache so the mailbox synchronised again.",
+      "incidents": [
+        ["Outlook not receiving emails", "No new mail has arrived in Outlook since yesterday afternoon."],
+        ["Email stuck, inbox not updating", "My inbox does not update; colleagues say they sent me messages."],
+        ["Mailbox not syncing", "Outlook shows 'trying to connect' and the mailbox does not synchronise."],
+        ["Emails not arriving", "I am not getting any emails in my inbox, sending still works."],
+        ["outlook disconnected", "outlook says disconnected at the bottom and no new mails come in"],
+        ["Inbox frozen", "Mail client stopped receiving messages, folders not refreshing."]
+      ]
+    },
+    {
+      "cluster": "printer",
+      "category": "Hardware",
+      "resolution": "Cleared the paper jam, removed the stuck jobs from the print queue and restarted the print spooler.",
+      "incidents": [
+        ["Printer not printing", "The printer on floor 3 accepts jobs but nothing comes out."],
+        ["Printer paper jam", "Office printer shows a paper jam error even after removing the paper."],
+        ["Print jobs stuck in queue", "Documents stay in the print queue and never print."],
+        ["Cannot print to floor 3 printer", "Sending documents to the shared printer fails, queue is full of stuck jobs."],
+        ["printer jammed again", "the big printer by the kitchen is jammed and wont print"],
+        ["Shared printer offline", "Printer shows as offline and print jobs are piling up."]
+      ]
+    },
+    {
+      "cluster": "wifi",
+      "category": "Network",
+      "resolution": "Re-registered the laptop on the corporate wireless network and updated the wireless adapter driver.",
+      "incidents": [
+        ["WiFi keeps disconnecting", "My laptop drops off the office wireless network every few minutes."],
+        ["No wireless connection in meeting room", "Cannot connect to the corporate WiFi in meeting room B."],
+        ["Wireless network unstable", "Wi-Fi connection is very slow and keeps dropping on my laptop."],
+        ["Cannot join office WiFi", "Laptop says it cannot connect to the corporate wireless network."],
+        ["wifi drops", "wifi keeps cutting out on my laptop, have to reconnect all the time"],
+        ["Intermittent wireless connectivity", "Corporate wireless connection drops intermittently on the third floor."]
+      ]
+    },
+    {
+      "cluster": "payment-checkout",
+      "category": "Payments",
+      "resolution": "Restarted the payment gateway connector and rotated the expired API credential for the card processor.",
+      "incidents": [
+        ["Payment service unavailable", "Checkout fails when submitting a payment."],
+        ["Checkout error", "Payment request fails during checkout."],
+        ["Customers cannot pay online", "Card payments fail at checkout with a gateway error."],
+        ["Payment gateway timeout", "Submitting an order times out at the payment step."],
+        ["checkout broken", "payments failing on the website, customers complaining"],
+        ["Card transactions declined", "All card transactions in the online shop are failing with a processor error."]
+      ]
+    },
+    {
+      "cluster": "shared-drive",
+      "category": "Storage",
+      "resolution": "Remapped the network drive and restored the user's permissions on the shared folder.",
+      "incidents": [
+        ["Shared drive missing", "My mapped S: drive disappeared from File Explorer."],
+        ["Cannot access shared folder", "Access denied when opening the team shared folder."],
+        ["Network drive not available", "The finance network drive is not showing after login."],
+        ["Lost access to team drive", "I no longer have permission to open files on the shared drive."],
+        ["s drive gone", "my s drive isnt there anymore after restart"],
+        ["Mapped drive disconnected", "Network share shows a red X and cannot be opened."]
+      ]
+    },
+    {
+      "cluster": "software-install",
+      "category": "Software",
+      "resolution": "Installed the approved application through the software center using an administrator account.",
+      "incidents": [
+        ["Need software installed", "Please install the data analysis tool on my laptop, I do not have admin rights."],
+        ["Installation blocked", "Trying to install an application but it asks for administrator rights."],
+        ["Request to install application", "I need the PDF editor installed for a project."],
+        ["Software installation fails", "The installer stops with an access denied error at the end."],
+        ["install program pls", "cant install the program, says need admin permission"],
+        ["Admin rights required for install", "Application setup requires administrator privileges I don't have."]
+      ]
+    },
+    {
+      "cluster": "laptop-screen",
+      "category": "Hardware",
+      "resolution": "Replaced the faulty laptop display panel under warranty.",
+      "incidents": [
+        ["Laptop screen flickering", "My laptop display flickers constantly and has lines across it."],
+        ["Display broken", "Laptop screen shows horizontal lines and goes black randomly."],
+        ["Screen goes black", "The laptop display turns black but the computer is still running."],
+        ["Monitor flicker on laptop", "Built-in screen flickering makes it impossible to work."],
+        ["screen lines", "weird coloured lines on my laptop screen since i dropped it"],
+        ["Cracked laptop display", "Laptop screen is cracked and partly unreadable."]
+      ]
+    },
+    {
+      "cluster": "erp-login",
+      "category": "Access",
+      "resolution": "Re-enabled the user's ERP role assignment and synchronised the single sign-on account.",
+      "incidents": [
+        ["Cannot log in to ERP", "The ERP system says my user is not authorised after the update."],
+        ["ERP access denied", "Single sign-on to the ERP portal fails with 'no role assigned'."],
+        ["SAP login error", "Getting an authorisation error when logging into SAP."],
+        ["ERP says user not authorised", "I can sign in but ERP shows I have no roles."],
+        ["erp wont let me in", "erp keeps saying access denied since monday"],
+        ["Lost ERP permissions", "My ERP roles disappeared and I cannot post invoices."]
+      ]
+    }
+  ],
+  "singletons": [
+    {"category": "Facilities", "title": "Air conditioning in server room", "description": "Server room temperature alarm is going off.", "resolution": "Facilities repaired the cooling unit."},
+    {"category": "Hardware", "title": "Keyboard keys sticking", "description": "Several keys on my desk keyboard are sticky.", "resolution": "Replaced the keyboard."},
+    {"category": "Software", "title": "Excel crashes when opening large file", "description": "Spreadsheet application closes when I open the quarterly report.", "resolution": "Repaired the Office installation."},
+    {"category": "Telephony", "title": "Desk phone has no dial tone", "description": "The IP phone on my desk shows no service.", "resolution": "Re-patched the phone network port."},
+    {"category": "Access", "title": "New starter needs badge", "description": "A new team member needs building badge access.", "resolution": "Issued a building access badge."},
+    {"category": "Software", "title": "Teams camera not detected", "description": "Video calls do not detect my webcam.", "resolution": "Reinstalled the camera driver."},
+    {"category": "Storage", "title": "Backup job failed overnight", "description": "Nightly backup report shows a failed job for the file server.", "resolution": "Freed backup storage and re-ran the job."},
+    {"category": "Hardware", "title": "Docking station no power", "description": "Laptop does not charge on the docking station.", "resolution": "Replaced the dock power adapter."}
+  ]
+}

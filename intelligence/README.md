@@ -26,8 +26,9 @@ Then start Spring Boot with `INTELLIGENCE_URL=http://localhost:8000` and the sam
 | Variable | Default | Meaning |
 |---|---|---|
 | `INTELLIGENCE_TOKEN` | empty | Shared secret with Spring (`Authorization: Bearer …`). Empty disables auth; a warning is logged. |
-| `DUPLICATE_MIN_SCORE` | `0.25` | Duplicate candidates scoring below this are not returned. |
-| `RESOLUTION_MIN_SCORE` | `0.15` | Resolution candidates scoring below this are not returned. |
+| `DUPLICATE_MIN_SCORE` | `0.15` | Duplicate candidates scoring below this are not returned. |
+| `RESOLUTION_MIN_SCORE` | `0.08` | Resolution candidates scoring below this are not returned. |
+| `RANKER` | `tfidf` | `tfidf` or `overlap` (dependency-free baseline, for comparison). |
 | `ENABLE_DOCS` | `true` | Serve `/docs` and `/openapi.json`. Set `false` outside development. |
 
 ## Endpoints
@@ -45,12 +46,41 @@ Request and response shapes: see `tests/fixtures/*.json` and `app/schemas.py`. R
 
 `app/rankers/` uses the Strategy pattern: routes depend on the abstract `Ranker`, so models can be swapped without touching the API.
 
+All rankers share the same preprocessing (`app/text.py`): Unicode normalisation, lower case, emails/IPs/URLs/UUIDs/long numbers masked, a small IT synonym map (`pwd→password`, `outlook→email`, `logon→login`…), stop words removed. The title is counted twice.
+
 | `modelVersion` | Status | Method |
 |---|---|---|
-| `overlap-baseline-v1` | current (Day 1) | Weighted token overlap after normalisation (IT synonyms, identifiers masked, stop words removed); title counted twice; +0.1 for the same category. Resolutions: 0.8 × problem similarity + 0.2 × similarity to the resolution text. |
-| TF-IDF word + char n-grams | next | scikit-learn; better with paraphrases and word forms ("fails"/"failing") |
+| `tfidf-wc-v1` | **default** | scikit-learn TF-IDF fitted per request on query + candidates. Text similarity = 0.6 × cosine(word 1–2-grams) + 0.4 × cosine(char_wb 3–5-grams). Duplicates: 0.9 × text + 0.1 if same category. Resolutions: 0.8 × problem similarity + 0.2 × word similarity between the query and the resolution text. |
+| `overlap-baseline-v1` | baseline | Weighted token overlap (Jaccard) with the same weighting scheme. No scikit-learn. |
 
-Score bands will be documented here after the evaluation set is built.
+Change `modelVersion` whenever preprocessing, weights or ranking behaviour change.
+
+### Evaluation
+
+`python -m scripts.evaluate` runs a leave-one-out test on `data/synthetic_incidents.json`: 68 **synthetic** incidents (10 clusters of 6 paraphrases with typos and abbreviations, plus 8 singletons with no true match). Each incident is ranked against all the others in one service; same cluster = relevant. `--pool 20` simulates smaller candidate sets.
+
+| Route | Ranker | P@1 | MRR | Recall@5 | Precision / recall at default threshold | Singletons with a false suggestion |
+|---|---|---|---|---|---|---|
+| duplicates | overlap | 0.983 | 0.984 | 0.853 | 0.89 / 0.85 (best t=0.13) | 4 of 8 |
+| duplicates | **tfidf** | **1.000** | **1.000** | **0.917** | **0.94 / 0.88** (t=0.15) | **1 of 8** |
+| resolutions | overlap | 0.967 | 0.973 | 0.827 | 0.84 / 0.79 (best t=0.05) | 5 of 8 |
+| resolutions | **tfidf** | 0.950 | 0.972 | **0.867** | **0.89 / 0.82** (t=0.08) | 1 of 8 |
+
+Also tried: word unigrams only, other word/char weights (TF-IDF settings above had the best duplicate F1 and fewest false alarms), and a fixed background corpus for IDF (no improvement). Latency: about 140 ms p95 for 100 long candidates, versus Spring's 2-second timeout. `tests/test_evaluation.py` fails if quality drops below these levels.
+
+### What scores mean (`tfidf-wc-v1`)
+
+Scores are cosine-based ranking signals, **not probabilities**, and are naturally low for short paraphrased reports.
+
+| Duplicate score | Meaning on the synthetic set |
+|---|---|
+| ≥ 0.30 | Strong match; usually the same issue described with shared key terms |
+| 0.15 – 0.30 | Likely related; typical range for paraphrases (median for true duplicates ≈ 0.25) |
+| < 0.15 | Not returned. 99% of unrelated pairs score below 0.15 |
+
+For resolutions, true matches have a median of about 0.16 and unrelated pairs are below 0.09 in 99% of cases; the cut-off is 0.08.
+
+Limits: the evaluation data is small and written by the team, so these numbers show the method works, not production accuracy. Re-run the evaluation and revisit thresholds once real (approved) incident history exists.
 
 ## Privacy
 
@@ -64,3 +94,30 @@ Logs record only request ID, kind, candidate/result counts, top score and latenc
 ```
 
 Tests cover the contract Spring enforces (echoed IDs, ordering, limits, unique supplied IDs, score bounds, size, camelCase, validation errors), bearer auth, and ranker behaviour.
+
+## End-to-end with Spring Boot (Docker only)
+
+`compose.e2e.yaml` in the repository root runs a throwaway PostgreSQL, this service, and Spring Boot (built in a JDK 21 / Maven container), so no Java, Maven or PostgreSQL install is needed. Put throwaway values in an env file outside the repository, for example:
+
+```text
+INTELLIGENCE_TOKEN=<random string>
+BOOTSTRAP_ADMIN_EMAIL=e2e-admin@example.test
+BOOTSTRAP_ADMIN_PASSWORD=<random, 12+ characters>
+```
+
+From the repository root:
+
+```sh
+docker compose -p itsm-e2e --env-file <your e2e.env> -f compose.e2e.yaml up -d --build
+```
+
+When `http://localhost:8080/api/v1/auth/csrf` answers (about 45 s; longer the first time while Maven downloads), run the checks from `intelligence/` with the same variables exported:
+
+```sh
+.venv/Scripts/python -m scripts.e2e_spring
+docker compose -p itsm-e2e --env-file <your e2e.env> -f compose.e2e.yaml stop intelligence
+.venv/Scripts/python -m scripts.e2e_spring --outage
+docker compose -p itsm-e2e --env-file <your e2e.env> -f compose.e2e.yaml down
+```
+
+The script seeds synthetic incidents through the REST API only, then checks duplicate and resolution suggestions for each role and the behaviour when Python is down. The database is in memory, so `down` (or recreating the `db` container) discards it. The seeded stack is also usable for the demo recording.

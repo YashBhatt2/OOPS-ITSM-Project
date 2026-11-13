@@ -1,12 +1,19 @@
 from uuid import uuid4
 
-from app.rankers import OverlapRanker
+import pytest
+
+from app.rankers import OverlapRanker, TfidfRanker
 from app.rankers.base import ScoredCandidate, select_top
 from app.schemas import Candidate, Query, ResolutionCandidate
 from app.text import normalise, tokens
 
 SERVICE, CATEGORY, OTHER_CATEGORY = uuid4(), uuid4(), uuid4()
-ranker = OverlapRanker()
+THRESHOLD = 0.15
+
+
+@pytest.fixture(params=[OverlapRanker, TfidfRanker], ids=["overlap", "tfidf"])
+def ranker(request):
+    return request.param()
 
 
 def query(title, description=""):
@@ -18,54 +25,67 @@ def cand(title, description="", category=CATEGORY):
                      service_id=SERVICE, category_id=category)
 
 
-def scores(q, candidates):
+def res(title, resolution, description=""):
+    return ResolutionCandidate(incident_id=uuid4(), title=title, description=description, service_id=SERVICE,
+                               category_id=CATEGORY, resolution_text=resolution)
+
+
+def scores(ranker, q, candidates):
     return [s.score for s in ranker.score_duplicates(q, candidates)]
 
 
-def test_paraphrase_beats_unrelated():
+def test_paraphrase_beats_unrelated(ranker):
     q = query("Cannot connect to VPN", "VPN connection drops when working from home")
-    related, unrelated = scores(q, [
+    related, unrelated = scores(ranker, q, [
         cand("VPN not connecting", "Home VPN connection keeps dropping"),
         cand("Printer jam", "Paper stuck in the printer"),
     ])
-    assert related > unrelated
-    assert unrelated == 0.0
+    assert related > THRESHOLD > unrelated
 
 
-def test_synonyms_are_normalised():
-    a, b = scores(query("Outlook pwd reset"), [cand("Email password reset"), cand("Monitor flicker")])
+def test_synonyms_are_normalised(ranker):
+    a, b = scores(ranker, query("Outlook pwd reset"), [cand("Email password reset"), cand("Monitor flicker")])
     assert a > 0.5 > b
 
 
-def test_same_category_breaks_text_ties():
-    same, other = scores(query("Wifi down"), [cand("Wifi down"), cand("Wifi down", category=OTHER_CATEGORY)])
+def test_same_category_breaks_text_ties(ranker):
+    same, other = scores(ranker, query("Wifi down"),
+                         [cand("Wifi down"), cand("Wifi down", category=OTHER_CATEGORY)])
     assert same > other
 
 
-def test_scores_are_bounded_and_deterministic():
+def test_scores_are_bounded_and_deterministic(ranker):
     q = query("Shared drive missing", "Mapped drive S: disappeared")
     candidates = [cand("Shared drive missing", "Mapped drive S: disappeared"), cand(""), cand("drive")]
-    first = scores(q, candidates)
-    assert first == scores(q, candidates)
-    assert all(0.0 <= s <= 1.0 for s in first)
-    assert first[0] == 1.0
+    first = scores(ranker, q, candidates)
+    assert first == scores(ranker, q, candidates)
+    assert all(0.0 <= s <= 1.0 + 1e-9 for s in first)
+    assert first[0] == pytest.approx(1.0)
 
 
-def test_resolution_text_contributes():
-    q = query("Error 0x80070005 installing update")
-    with_fix, without_fix = ranker.score_resolutions(q, [
-        ResolutionCandidate(incident_id=uuid4(), title="Update fails", description="", service_id=SERVICE,
-                            category_id=CATEGORY, resolution_text="Fixed 0x80070005 by resetting permissions"),
-        ResolutionCandidate(incident_id=uuid4(), title="Update fails", description="", service_id=SERVICE,
-                            category_id=CATEGORY, resolution_text="Rebooted"),
+def test_blank_texts_score_zero(ranker):
+    assert scores(ranker, query("", "!!!"), [cand(""), cand("???")]) == [0.0, 0.0]
+
+
+def test_resolution_text_contributes(ranker):
+    with_fix, without_fix = ranker.score_resolutions(query("Error 0x80070005 installing update"), [
+        res("Update fails", "Fixed 0x80070005 by resetting permissions"),
+        res("Update fails", "Rebooted"),
     ])
     assert with_fix.score > without_fix.score
 
 
-def test_explanation_lists_shared_terms():
+def test_explanation_lists_shared_terms(ranker):
     [result] = ranker.score_duplicates(query("Payment checkout failing"), [cand("Checkout payment error")])
     assert result.explanation.startswith("Shared terms:")
     assert "payment" in result.explanation and "checkout" in result.explanation
+
+
+def test_tfidf_matches_word_variants_better_than_overlap():
+    """Character n-grams catch typos and word forms the baseline misses."""
+    q = query("Printer jammed", "cant print, paper jams constantly")
+    c = [cand("Printer jam", "printing fails because of a paper jam")]
+    assert scores(TfidfRanker(), q, c)[0] > scores(OverlapRanker(), q, c)[0]
 
 
 def test_select_top_filters_and_orders():
@@ -76,6 +96,11 @@ def test_select_top_filters_and_orders():
         limit=5, min_score=0.25,
     )
     assert [m.incident_id for m in picked] == [b, a]
+
+
+def test_select_top_clamps_float_noise_above_one():
+    [m] = select_top([ScoredCandidate(uuid4(), 1.0000000002)], limit=5, min_score=0.1)
+    assert m.similarity_score == 1.0
 
 
 def test_normalise_masks_identifiers():

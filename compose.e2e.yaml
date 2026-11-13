@@ -1,0 +1,54 @@
+# Throwaway end-to-end stack: PostgreSQL (temporary storage) + Python intelligence + Spring Boot.
+# Needs only Docker. Spring is built inside a JDK 21 / Maven container.
+#
+#   INTELLIGENCE_TOKEN=... BOOTSTRAP_ADMIN_EMAIL=... BOOTSTRAP_ADMIN_PASSWORD=... \
+#     docker compose -f compose.e2e.yaml up -d --build
+#   intelligence/.venv/Scripts/python -m scripts.e2e_spring      (from intelligence/)
+#   docker compose -f compose.e2e.yaml down
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: itsm
+      POSTGRES_USER: itsm
+      POSTGRES_PASSWORD: ${E2E_DB_PASSWORD:-local-e2e-only}
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U itsm -d itsm"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  intelligence:
+    build: ./intelligence
+    environment:
+      INTELLIGENCE_TOKEN: ${INTELLIGENCE_TOKEN:?set INTELLIGENCE_TOKEN}
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  backend:
+    image: maven:3.9.9-eclipse-temurin-21
+    working_dir: /src
+    command: ["sh", "-c", "mvn -q -B -DskipTests package && exec java -jar backend/target/itsm-backend-0.1.0-SNAPSHOT.jar"]
+    volumes:
+      - .:/src
+      - m2:/root/.m2
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/itsm
+      DB_USER: itsm
+      DB_PASSWORD: ${E2E_DB_PASSWORD:-local-e2e-only}
+      BOOTSTRAP_ADMIN_EMAIL: ${BOOTSTRAP_ADMIN_EMAIL:?set BOOTSTRAP_ADMIN_EMAIL}
+      BOOTSTRAP_ADMIN_PASSWORD: ${BOOTSTRAP_ADMIN_PASSWORD:?set BOOTSTRAP_ADMIN_PASSWORD}
+      INTELLIGENCE_URL: http://intelligence:8000
+      INTELLIGENCE_TOKEN: ${INTELLIGENCE_TOKEN:?set INTELLIGENCE_TOKEN}
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      intelligence:
+        condition: service_healthy
+
+volumes:
+  m2:

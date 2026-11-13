@@ -10,7 +10,7 @@ from uuid import UUID
 from fastapi import FastAPI
 
 from app.config import Settings, get_settings
-from app.rankers import OverlapRanker, Ranker
+from app.rankers import Ranker, build_ranker
 from app.routes import public, v1
 from app.schemas import Candidate, Query
 
@@ -45,7 +45,7 @@ def create_app(ranker: Ranker | None = None, settings: Settings | None = None) -
         redoc_url=None,
         openapi_url="/openapi.json" if docs else None,
     )
-    app.state.ranker = ranker or OverlapRanker()
+    app.state.ranker = ranker or build_ranker(settings.ranker)
     app.include_router(public)
     app.include_router(v1)
     app.dependency_overrides[get_settings] = lambda: settings

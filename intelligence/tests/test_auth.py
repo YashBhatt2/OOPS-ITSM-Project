@@ -38,6 +38,12 @@ def test_no_token_configured_allows_local_calls(client, duplicate_request):
     assert client.post("/v1/duplicates/rank", json=duplicate_request).status_code == 200
 
 
+@pytest.mark.parametrize("name,version", [("tfidf", "tfidf-wc-v1"), ("overlap", "overlap-baseline-v1")])
+def test_ranker_is_selected_by_setting(name, version):
+    with make_client(ranker=name) as c:
+        assert c.get("/v1/model-info").json()["modelVersion"] == version
+
+
 def test_docs_can_be_disabled():
     with make_client(enable_docs=False) as c:
         assert c.get("/docs").status_code == 404

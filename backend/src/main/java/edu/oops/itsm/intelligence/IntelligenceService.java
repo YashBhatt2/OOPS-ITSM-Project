@@ -38,14 +38,15 @@ import java.util.*;
         var actor=user.get();
         if(actor.role==Role.EMPLOYEE)throw new DomainException("FORBIDDEN","Resolution suggestions are for support staff.");
         var incident=incidents.visible(id);
-        var args=new ArrayList<Object>(List.of("service",incident.serviceId,"category",incident.categoryId,"closed",IncidentStatus.CLOSED));
+        // Exclude the incident itself: a closed incident would otherwise match its own resolution.
+        var args=new ArrayList<Object>(List.of("service",incident.serviceId,"category",incident.categoryId,"closed",IncidentStatus.CLOSED,"self",incident.id));
         String restriction="";
         if(actor.role==Role.TECHNICIAN) {
             restriction=" and i.assigneeId=:actor";
             args.add("actor");
             args.add(actor.id);
         }
-        var rows=db.query(Incident.class,"select i from Incident i where i.serviceId=:service and i.categoryId=:category and i.status=:closed"+restriction+" order by i.createdAt desc",args.toArray()).setMaxResults(100).getResultList();
+        var rows=db.query(Incident.class,"select i from Incident i where i.serviceId=:service and i.categoryId=:category and i.status=:closed and i.id<>:self"+restriction+" order by i.createdAt desc",args.toArray()).setMaxResults(100).getResultList();
         var candidates=new ArrayList<Map<String,Object>>();
         var text=new HashMap<UUID,String>();
         for(var i:rows) {
