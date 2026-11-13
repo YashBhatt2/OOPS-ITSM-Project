@@ -1,0 +1,27 @@
+{
+  "requestId": "75d7f34a-3ca9-4d74-82d7-c084438b3935",
+  "schemaVersion": "1",
+  "query": {
+    "title": "Payment service unavailable",
+    "description": "Checkout fails when submitting a payment",
+    "serviceId": "7c2db402-8772-4520-946a-e2e08e2e75ca",
+    "categoryId": "1cf73b70-a76d-4c45-9901-8172356add1d"
+  },
+  "candidates": [
+    {
+      "incidentId": "50226b5b-d2e3-4eb2-b275-843a8d17f60b",
+      "title": "Checkout error",
+      "description": "Payment request fails during checkout",
+      "serviceId": "7c2db402-8772-4520-946a-e2e08e2e75ca",
+      "categoryId": "1cf73b70-a76d-4c45-9901-8172356add1d"
+    },
+    {
+      "incidentId": "0b6a9a8e-1f6e-4a5c-9d61-3a7f0c2b9e11",
+      "title": "Printer on floor 3 jammed",
+      "description": "The office printer shows a paper jam error",
+      "serviceId": "7c2db402-8772-4520-946a-e2e08e2e75ca",
+      "categoryId": "2a1f1e7c-6c55-4b8e-8f0b-5d3c1b2a9f00"
+    }
+  ],
+  "limit": 5
+}
