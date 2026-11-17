@@ -64,6 +64,7 @@ export const SignInPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading || isSuccess) return;
     setError(null);
     setIsLoading(true);
 
@@ -165,9 +166,24 @@ export const SignInPage: React.FC = () => {
                   </div>
                 )}
 
-                <form className={styles.form} onSubmit={handleSubmit} noValidate>
+                <form
+                  className={styles.form}
+                  onSubmit={handleSubmit}
+                  onKeyDown={(e) => {
+                    if (
+                      e.key !== 'Enter' ||
+                      e.nativeEvent.isComposing ||
+                      e.shiftKey || e.ctrlKey || e.altKey || e.metaKey ||
+                      !(e.target instanceof HTMLInputElement)
+                    ) return;
+                    e.preventDefault();
+                    if (!e.repeat && !isLoading && !isSuccess) e.currentTarget.requestSubmit();
+                  }}
+                  noValidate
+                >
                   <Input
                     id="signin-email"
+                    name="email"
                     label="Email"
                     type="email"
                     autoComplete="email"
@@ -179,6 +195,7 @@ export const SignInPage: React.FC = () => {
 
                   <Input
                     id="signin-password"
+                    name="password"
                     label="Password"
                     type="password"
                     autoComplete="current-password"

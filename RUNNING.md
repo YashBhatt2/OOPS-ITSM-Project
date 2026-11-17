@@ -35,14 +35,17 @@ Spring Boot does not load `.env` automatically. Set these variables in the envir
 
 ## 3. Build and start Spring Boot
 
-From the repository root:
+With the required database environment variables set, run this from the repository root:
 
 ```sh
-mvn -DskipTests package
-java -jar backend/target/itsm-backend-0.1.0-SNAPSHOT.jar
+./scripts/run.sh
 ```
 
-Keep this process running. On first startup, Flyway creates or updates the database schema. The backend listens at `http://localhost:8080`.
+The script creates `intelligence/.venv` if needed, installs Python dependencies on the first run or when requirements change, builds the backend, starts the Python intelligence service, waits for its health check, and starts Spring Boot. Python 3.11–3.13 is recommended for the pinned dependencies. The initial dependency installation requires internet access.
+
+Keep this terminal running. The backend listens at `http://localhost:8080`; Python listens at `http://127.0.0.1:8000`. The script sets `INTELLIGENCE_URL` for Spring automatically and gives both services the same optional `INTELLIGENCE_TOKEN`. Use `INTELLIGENCE_PORT` to select another local Python port. PostgreSQL must already be running.
+
+On first startup, Flyway creates or updates the database schema. Ctrl+C stops both Spring Boot and Python.
 
 ## 4. Create demo setup and accounts
 
@@ -68,7 +71,7 @@ Open `http://localhost:5173`. Vite forwards `/api` requests to the backend on po
 
 ## 6. Optional: run the Python intelligence service
 
-Start the Python service on a reachable local port, such as `8000`. Set `INTELLIGENCE_URL=http://localhost:8000` and the optional `INTELLIGENCE_TOKEN` in the backend environment, then restart Spring Boot. Suggestions are returned through Spring Boot; the browser does not call Python directly.
+When using `./scripts/run.sh`, Python is already running. No extra command is needed. Check `http://localhost:8000/health` for `{"status":"ok"}`. Suggestions are returned through Spring Boot; the browser does not call Python directly.
 
 Without the Python service, core reporting and incident lifecycle actions remain usable. Suggestion requests return an unavailable response. The React branch still needs the API path and payload alignment listed in [the integration plan](docs/backend-react-integration-plan.md) before all suggestion and lifecycle controls work.
 
