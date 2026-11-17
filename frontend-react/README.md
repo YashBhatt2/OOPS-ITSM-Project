@@ -88,9 +88,9 @@ For a local account and database reference, open `demo-data.local.json` in this 
 | Role | Email | Password |
 |---|---|---|
 | Administrator | `admin@example.test` | `L2AyL3x3ksDu1c4ibMGNZr55Aa1!` |
-| Technician | `priya@example.test` | `Password12345!` |
-| Technician | `marcus@example.test` | `Password12345!` |
-| Technician | `elena@example.test` | `Password12345!` |
-| Employee | `sarah@example.test` | `Password12345!` |
-| Employee | `david@example.test` | `Password12345!` |
+| Technician | `yash@example.test` | `Password12345!` |
+| Technician | `gnana@example.test` | `Password12345!` |
+| Technician | `harshith@example.test` | `Password12345!` |
+| Employee | `shreyas@example.test` | `Password12345!` |
+| Employee | `vatsal@example.test` | `Password12345!` |
 

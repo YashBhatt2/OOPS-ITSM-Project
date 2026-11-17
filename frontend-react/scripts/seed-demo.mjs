@@ -323,15 +323,15 @@ async function main() {
   const demoAccounts = [
     {
       role: 'ADMIN',
-      displayName: 'Administrator',
+      displayName: 'Admin',
       email: adminEmail,
       password: adminPassword,
       details: 'System administrator'
     },
     {
       role: 'TECHNICIAN',
-      displayName: 'Priya Nair',
-      email: 'priya@example.test',
+      displayName: 'Yash',
+      email: 'yash@example.test',
       password: defaultPassword,
       techProfile: {
         available: true,
@@ -343,8 +343,8 @@ async function main() {
     },
     {
       role: 'TECHNICIAN',
-      displayName: 'Marcus Vance',
-      email: 'marcus@example.test',
+      displayName: 'Gnana',
+      email: 'gnana@example.test',
       password: defaultPassword,
       techProfile: {
         available: true,
@@ -356,8 +356,8 @@ async function main() {
     },
     {
       role: 'TECHNICIAN',
-      displayName: 'Elena Rostova',
-      email: 'elena@example.test',
+      displayName: 'Harshith',
+      email: 'harshith@example.test',
       password: defaultPassword,
       techProfile: {
         available: true,
@@ -369,15 +369,15 @@ async function main() {
     },
     {
       role: 'EMPLOYEE',
-      displayName: 'Sarah Chen',
-      email: 'sarah@example.test',
+      displayName: 'Shreyas',
+      email: 'shreyas@example.test',
       password: defaultPassword,
       details: 'Standard employee / incident reporter'
     },
     {
       role: 'EMPLOYEE',
-      displayName: 'David Kim',
-      email: 'david@example.test',
+      displayName: 'Vatsal',
+      email: 'vatsal@example.test',
       password: defaultPassword,
       details: 'Standard employee / incident reporter'
     }
@@ -432,21 +432,21 @@ async function main() {
 
   // Test Technician
   const testTech = new ApiClient(baseUrl);
-  await testTech.login('priya@example.test', defaultPassword);
+  await testTech.login('yash@example.test', defaultPassword);
   const meTech = await testTech.getMe();
   if (meTech.role !== 'TECHNICIAN') throw new Error(`Expected TECHNICIAN role, got ${meTech.role}`);
   console.log(`✓ Technician sign-in verified: ${meTech.displayName} (${meTech.email})`);
 
   // Test Employee
   const testEmp = new ApiClient(baseUrl);
-  await testEmp.login('sarah@example.test', defaultPassword);
+  await testEmp.login('shreyas@example.test', defaultPassword);
   const meEmp = await testEmp.getMe();
   if (meEmp.role !== 'EMPLOYEE') throw new Error(`Expected EMPLOYEE role, got ${meEmp.role}`);
   console.log(`✓ Employee sign-in verified: ${meEmp.displayName} (${meEmp.email})`);
 
   console.log('\nEnsuring example incidents...');
   const networkTech = new ApiClient(baseUrl);
-  await networkTech.login('marcus@example.test', defaultPassword);
+  await networkTech.login('gnana@example.test', defaultPassword);
   const networkTechAccount = await networkTech.getMe();
   const examples = [
     { title: '[Demo] VPN certificate expired', description: 'VPN connection fails because the client certificate has expired.', close: true },
