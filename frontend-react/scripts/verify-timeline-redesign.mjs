@@ -267,7 +267,7 @@ async function run() {
     }
 
     // 7. Test Technician Flow (Marcus Vance)
-    console.log('7. Logging out and logging in as Technician (marcus@example.test)...');
+    console.log('7. Logging out and logging in as Technician (gnana@example.test)...');
     await session.send('Page.navigate', { url: 'http://localhost:5173/signin' });
     await new Promise(r => setTimeout(r, 1000));
     await session.eval(`
@@ -278,7 +278,7 @@ async function run() {
           el.dispatchEvent(new Event('input', { bubbles: true }));
           el.dispatchEvent(new Event('change', { bubbles: true }));
         };
-        setVal(document.getElementById('signin-email'), 'marcus@example.test');
+        setVal(document.getElementById('signin-email'), 'gnana@example.test');
         setVal(document.getElementById('signin-password'), 'Password12345!');
         document.querySelector('button[type="submit"]').click();
       })()
@@ -321,7 +321,7 @@ async function run() {
     }
 
     // 8. Test Employee Flow (Sarah Chen)
-    console.log('8. Logging out and logging in as Employee (sarah@example.test)...');
+    console.log('8. Logging out and logging in as Employee (shreyas@example.test)...');
     await session.send('Page.navigate', { url: 'http://localhost:5173/signin' });
     await new Promise(r => setTimeout(r, 1000));
     await session.eval(`
@@ -332,7 +332,7 @@ async function run() {
           el.dispatchEvent(new Event('input', { bubbles: true }));
           el.dispatchEvent(new Event('change', { bubbles: true }));
         };
-        setVal(document.getElementById('signin-email'), 'sarah@example.test');
+        setVal(document.getElementById('signin-email'), 'shreyas@example.test');
         setVal(document.getElementById('signin-password'), 'Password12345!');
         document.querySelector('button[type="submit"]').click();
       })()

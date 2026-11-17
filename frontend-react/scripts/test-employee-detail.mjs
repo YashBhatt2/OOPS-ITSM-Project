@@ -101,7 +101,7 @@ async function test() {
           el.dispatchEvent(new Event('input', { bubbles: true }));
           el.dispatchEvent(new Event('change', { bubbles: true }));
         };
-        setVal(document.getElementById('signin-email'), 'sarah@example.test');
+        setVal(document.getElementById('signin-email'), 'shreyas@example.test');
         setVal(document.getElementById('signin-password'), 'Password12345!');
         document.querySelector('button[type="submit"]').click();
       })()

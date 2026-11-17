@@ -112,13 +112,13 @@ async function run() {
     await session.screenshot('01-signin-page.png');
 
     // 2. Perform Employee Login
-    console.log('\n[2/5] Performing Employee sign in (sarah@example.test)...');
+    console.log('\n[2/5] Performing Employee sign in (shreyas@example.test)...');
     await session.eval(`
       (function() {
         const emailInput = document.getElementById('signin-email');
         const passInput = document.getElementById('signin-password');
         const form = document.querySelector('form');
-        emailInput.value = 'sarah@example.test';
+        emailInput.value = 'shreyas@example.test';
         emailInput.dispatchEvent(new Event('input', { bubbles: true }));
         passInput.value = 'Password12345!';
         passInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -152,7 +152,7 @@ async function run() {
     await session.screenshot('04-report-form-filled.png');
 
     // 4. Technician Queue & Workbench
-    console.log('\n[4/5] Testing Technician Portal (priya@example.test)...');
+    console.log('\n[4/5] Testing Technician Portal (yash@example.test)...');
     // Clear cookies/localStorage and log in as Priya
     await session.eval(`localStorage.clear()`);
     await session.navigate('http://localhost:5173/login');
@@ -161,7 +161,7 @@ async function run() {
         const emailInput = document.getElementById('signin-email');
         const passInput = document.getElementById('signin-password');
         const form = document.querySelector('form');
-        emailInput.value = 'priya@example.test';
+        emailInput.value = 'yash@example.test';
         emailInput.dispatchEvent(new Event('input', { bubbles: true }));
         passInput.value = 'Password12345!';
         passInput.dispatchEvent(new Event('input', { bubbles: true }));

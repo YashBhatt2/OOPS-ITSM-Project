@@ -113,7 +113,7 @@ async function run() {
         const csrfRes = await fetch('/api/v1/auth/csrf');
         const csrf = await csrfRes.json();
         const body = new URLSearchParams();
-        body.set('email', 'sarah@example.test');
+        body.set('email', 'shreyas@example.test');
         body.set('password', 'Password12345!');
         await fetch('/api/v1/auth/login', {
           method: 'POST',
