@@ -78,7 +78,6 @@ export async function apiRequest<T = unknown>(
   const method = (options.method || 'GET').toUpperCase();
   const headers = new Headers(options.headers || {});
 
-  // For state-changing requests, ensure CSRF token is attached
   if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(method)) {
     const csrf = await fetchCsrf();
     headers.set(csrf.headerName, csrf.token);
@@ -119,7 +118,6 @@ export async function apiRequest<T = unknown>(
     throw new ApiError(response.status, errorData);
   }
 
-  // Handle empty responses (like 204 No Content)
   const contentType = response.headers.get('content-type');
   if (contentType && contentType.includes('application/json')) {
     return (await response.json()) as T;
@@ -136,10 +134,8 @@ export interface UserAccount {
 }
 
 export async function loginApi(email: string, password: string): Promise<UserAccount> {
-  // 1. Establish session and get initial CSRF
   const csrf = await fetchCsrf(true);
 
-  // 2. Form-encoded POST to /api/v1/auth/login
   const body = new URLSearchParams();
   body.set('email', email);
   body.set('password', password);
@@ -168,10 +164,8 @@ export async function loginApi(email: string, password: string): Promise<UserAcc
     throw new ApiError(res.status, errData);
   }
 
-  // 3. Rotate CSRF after login
   await fetchCsrf(true);
 
-  // 4. Fetch current user
   return await apiRequest<UserAccount>('/api/v1/auth/me');
 }
 
@@ -186,10 +180,8 @@ export async function logoutApi(): Promise<void> {
       },
     });
   } catch {
-    // Ignore network errors on logout
   }
   currentCsrf = null;
-  // Refresh anonymous CSRF
   await fetchCsrf(true);
 }
 

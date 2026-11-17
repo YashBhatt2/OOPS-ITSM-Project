@@ -29,7 +29,6 @@ export const SlaMeter: React.FC<SlaMeterProps> = ({
     const dueTime = new Date(dueAt).getTime();
     const remainingMs = dueTime - Date.now();
 
-    // Tick every second if under 1 hour remains; otherwise every minute
     const intervalMs = remainingMs < 3600 * 1000 ? 1000 : 60000;
     const timer = setInterval(() => {
       if (document.visibilityState === 'visible') {

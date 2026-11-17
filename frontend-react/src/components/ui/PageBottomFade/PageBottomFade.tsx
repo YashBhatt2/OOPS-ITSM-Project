@@ -19,9 +19,7 @@ export const PageBottomFade: React.FC<PageBottomFadeProps> = ({ className, hide 
       const innerHeight = window.innerHeight;
       const scrollY = window.scrollY;
 
-      // Page must be at least 80 px taller than viewport
       const isTallEnough = scrollHeight >= innerHeight + 80;
-      // Not within 24 px of the end
       const notAtEnd = scrollHeight - (scrollY + innerHeight) > 24;
 
       setVisible(isTallEnough && notAtEnd);

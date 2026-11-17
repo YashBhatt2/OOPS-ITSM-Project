@@ -6,8 +6,9 @@ import { Nav } from '@/components/ui/Nav/Nav';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Field/Field';
 import { useToast } from '@/components/ui/Toast/Toast';
-import { apiRequest } from '@/lib/api';
+import { apiRequest, ApiError } from '@/lib/api';
 import { Category, Skill, Dashboard } from '../types';
+import { validateCategoryName } from '../admin-actions';
 import { SetupNav } from './SetupNav';
 import { BackButton } from '@/components/ui/BackButton/BackButton';
 import styles from './setup.module.css';
@@ -40,7 +41,6 @@ export function CategoriesSetupPage() {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      // Filter requirements to level > 0
       const filteredReqs: Record<string, number> = {};
       Object.entries(requirements).forEach(([sId, lvl]) => {
         if (lvl > 0) filteredReqs[sId] = lvl;
@@ -65,8 +65,15 @@ export function CategoriesSetupPage() {
       setIsCreating(false);
       refetch();
     },
-    onError: () => {
-      showToast({ title: 'Failed to save category.', type: 'error' });
+    onError: (err: unknown) => {
+      if (err instanceof ApiError) {
+        const nameError = err.fieldErrors.find((fieldError) => fieldError.field === 'name');
+        if (nameError) setNameError(nameError.message);
+        const requestId = err.requestId ? ` Request ID: ${err.requestId}.` : '';
+        showToast({ title: `${err.message}${requestId}`, type: 'error' });
+        return;
+      }
+      showToast({ title: 'Could not save the category. Check the connection and try again.', type: 'error' });
     },
   });
 
@@ -90,8 +97,9 @@ export function CategoriesSetupPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
-      setNameError('Category name is required.');
+    const error = validateCategoryName(name, categories, selectedCat?.id);
+    if (error) {
+      setNameError(error);
       return;
     }
     setNameError('');

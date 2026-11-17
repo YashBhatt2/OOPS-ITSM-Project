@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 @SpringBootTest(properties= {
-    "spring.datasource.url=${TEST_DB_URL:jdbc:postgresql://localhost:5433/itsm_test}","spring.datasource.username=${TEST_DB_USER:itsm_test}","spring.datasource.password=${TEST_DB_PASSWORD}","itsm.bootstrap.email=","itsm.scheduling.enabled=false","itsm.intelligence.url="
+    "spring.datasource.url=${TEST_DB_URL:jdbc:postgresql://localhost:5432/itsm_test}","spring.datasource.username=${TEST_DB_USER:itsm_test}","spring.datasource.password=${TEST_DB_PASSWORD}","itsm.bootstrap.email=","itsm.scheduling.enabled=false","itsm.intelligence.url="
 }
 ) @AutoConfigureMockMvc @Transactional class BackendIT {
     @Autowired Store db;

@@ -14,10 +14,13 @@ import { Textarea, Select } from '@/components/ui/Field/Field';
 import { Button } from '@/components/ui/Button/Button';
 import { Dialog } from '@/components/ui/Dialog/Dialog';
 import { useToast } from '@/components/ui/Toast/Toast';
-import { apiRequest, ApiConflictError } from '@/lib/api';
+import { apiRequest, ApiConflictError, ApiError } from '@/lib/api';
 import { Priority, IncidentStatus, SlaStatus } from '@/lib/constants';
 import { Incident, IncidentComment, HistoryEvent, Dashboard } from './types';
 import { AssignmentDrawer } from './AssignmentDrawer';
+import { priorityRecalculationAction } from './admin-actions';
+import { createCommentPayload } from '@/lib/commentPayload';
+import { commentAuthor } from '@/lib/commentAuthor';
 import styles from './admin.module.css';
 
 export function AdminIncidentDetailPage() {
@@ -31,6 +34,9 @@ export function AdminIncidentDetailPage() {
   const [overridePriority, setOverridePriority] = useState<Priority>('P1');
   const [overrideReason, setOverrideReason] = useState('');
   const [overrideError, setOverrideError] = useState('');
+  const [recalcDialogOpen, setRecalcDialogOpen] = useState(false);
+  const [recalcReason, setRecalcReason] = useState('');
+  const [recalcError, setRecalcError] = useState('');
 
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
   const [targetIncidentId, setTargetIncidentId] = useState('');
@@ -39,7 +45,6 @@ export function AdminIncidentDetailPage() {
   const [commentText, setCommentText] = useState('');
   const [conflictMessage, setConflictMessage] = useState<string | null>(null);
 
-  // 1. Incident details
   const {
     data: incident,
     isLoading: isIncidentLoading,
@@ -50,14 +55,12 @@ export function AdminIncidentDetailPage() {
     enabled: Boolean(id),
   });
 
-  // 2. Comments
   const { data: comments = [], refetch: refetchComments } = useQuery<IncidentComment[]>({
     queryKey: ['incident-comments', id],
     queryFn: () => apiRequest(`/api/v1/incidents/${id}/comments`),
     enabled: Boolean(id),
   });
 
-  // 3. History
   const { data: history = [] } = useQuery<HistoryEvent[]>({
     queryKey: ['incident-history', id],
     queryFn: () => apiRequest(`/api/v1/incidents/${id}/history`),
@@ -69,7 +72,11 @@ export function AdminIncidentDetailPage() {
     queryFn: () => apiRequest('/api/v1/dashboards/me'),
   });
 
-  // Priority Override Mutation
+  const { data: commentUsers = [] } = useQuery<Array<{ id: string; displayName: string }>>({
+    queryKey: ['admin-users'],
+    queryFn: () => apiRequest('/api/v1/admin/users'),
+  });
+
   const overrideMutation = useMutation({
     mutationFn: async () => {
       if (!incident) return;
@@ -100,18 +107,20 @@ export function AdminIncidentDetailPage() {
     },
   });
 
-  // Recalculate Priority Mutation
   const recalcMutation = useMutation({
     mutationFn: async () => {
       if (!incident) return;
       return await apiRequest(`/api/v1/incidents/${id}/priority-recalculation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ version: incident.version }),
+        body: JSON.stringify(priorityRecalculationAction(incident.version, recalcReason)),
       });
     },
     onSuccess: () => {
       showToast({ title: 'Priority recalculated.', type: 'success' });
+      setRecalcDialogOpen(false);
+      setRecalcReason('');
+      setRecalcError('');
       setConflictMessage(null);
       refetchIncident();
     },
@@ -120,12 +129,13 @@ export function AdminIncidentDetailPage() {
         setConflictMessage("This incident changed while you were viewing it. We've loaded the latest version.");
         refetchIncident();
       } else {
-        showToast({ title: 'Failed to recalculate priority.', type: 'error' });
+        const message = err instanceof ApiError ? err.message : 'Could not reach the server. Check the connection and try again.';
+        const requestId = err instanceof ApiError && err.requestId ? ` Request ID: ${err.requestId}.` : '';
+        showToast({ title: `${message}${requestId}`, type: 'error' });
       }
     },
   });
 
-  // Link Incident Mutation
   const linkMutation = useMutation({
     mutationFn: async () => {
       if (!incident) return;
@@ -157,17 +167,12 @@ export function AdminIncidentDetailPage() {
     },
   });
 
-  // Post Internal Note
   const postNoteMutation = useMutation({
     mutationFn: async () => {
       return await apiRequest(`/api/v1/incidents/${id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          body: commentText.trim(),
-          kind: 'INTERNAL_NOTE',
-          visibility: 'INTERNAL',
-        }),
+        body: JSON.stringify(createCommentPayload(commentText, 'INTERNAL_NOTE')),
       });
     },
     onSuccess: () => {
@@ -176,8 +181,10 @@ export function AdminIncidentDetailPage() {
       refetchComments();
       queryClient.invalidateQueries({ queryKey: ['incident-history', id] });
     },
-    onError: () => {
-      showToast({ title: 'Failed to post note.', type: 'error' });
+    onError: (err: unknown) => {
+      const message = err instanceof ApiError ? err.message : 'Could not reach the server. Check the connection and try again.';
+      const requestId = err instanceof ApiError && err.requestId ? ` Request ID: ${err.requestId}.` : '';
+      showToast({ title: `${message}${requestId}`, type: 'error' });
     },
   });
 
@@ -264,7 +271,12 @@ export function AdminIncidentDetailPage() {
             variant="ghost"
             size="compact"
             isLoading={recalcMutation.isPending}
-            onClick={() => recalcMutation.mutate()}
+            disabled={!['NEW', 'ASSIGNED', 'ACKNOWLEDGED', 'IN_PROGRESS'].includes(incident.status)}
+            onClick={() => {
+              setRecalcReason('');
+              setRecalcError('');
+              setRecalcDialogOpen(true);
+            }}
           >
             <ArrowsClockwise size={16} weight="light" />
             <span>Recalculate</span>
@@ -313,10 +325,10 @@ export function AdminIncidentDetailPage() {
                 <Comment
                   key={c.id}
                   id={c.id}
-                  authorName={c.authorName || 'Staff'}
+                  authorName={commentAuthor(c, incident, user, commentUsers)}
                   createdAt={c.createdAt}
                   body={c.body}
-                  kind={c.kind}
+                  kind={c.visibility === 'INTERNAL' ? 'INTERNAL_NOTE' : c.kind}
                 />
               ))}
 
@@ -468,6 +480,51 @@ export function AdminIncidentDetailPage() {
               if (e.target.value.trim()) setOverrideError('');
             }}
             error={overrideError}
+            required
+          />
+        </div>
+      </Dialog>
+
+      {/* Priority Recalculation Dialog */}
+      <Dialog
+        open={recalcDialogOpen}
+        onOpenChange={setRecalcDialogOpen}
+        title="Recalculate incident priority"
+        description="Review related reports and record why the calculated priority should be refreshed."
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end', width: '100%' }}>
+            <Button variant="ghost" size="compact" onClick={() => setRecalcDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="compact"
+              isLoading={recalcMutation.isPending}
+              onClick={() => {
+                if (!recalcReason.trim()) {
+                  setRecalcError('A reason for recalculation is required.');
+                  return;
+                }
+                recalcMutation.mutate();
+              }}
+            >
+              Recalculate priority
+            </Button>
+          </div>
+        }
+      >
+        <div style={{ marginTop: 'var(--space-3)' }}>
+          <Textarea
+            id="recalculation-reason"
+            label="Reason"
+            placeholder="e.g. Related reports were reviewed and confirmed."
+            rows={3}
+            value={recalcReason}
+            onChange={(e) => {
+              setRecalcReason(e.target.value);
+              if (e.target.value.trim()) setRecalcError('');
+            }}
+            error={recalcError}
             required
           />
         </div>

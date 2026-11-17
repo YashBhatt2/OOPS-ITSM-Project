@@ -32,7 +32,6 @@ interface IncidentPeekData {
   slaStatus?: string;
 }
 
-// Spring parameters tuned for the Island container morph
 export const ISLAND_SPRING = {
   type: 'spring',
   stiffness: 410,
@@ -42,7 +41,6 @@ export const ISLAND_SPRING = {
 
 export const EASING_SPRING = [0.16, 1, 0.3, 1] as const;
 
-// Rolling Number component for vertical odometer animation
 const RollingNumber: React.FC<{ value: number; isReducedMotion: boolean }> = ({
   value,
   isReducedMotion,
@@ -82,13 +80,11 @@ export const Island: React.FC = () => {
   const [peekDuration, setPeekDuration] = useState(5000);
   const [peekRemainingTime, setPeekRemainingTime] = useState(5000);
 
-  // Dev overrides & error simulation
   const [syntheticNotifications, setSyntheticNotifications] = useState<NotificationItem[] | null>(null);
   const [isDevError, setIsDevError] = useState(false);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
   const [cardPosition, setCardPosition] = useState<{ top: number; right: number } | null>(null);
 
-  // Measure anchor position for portaled open card
   useEffect(() => {
     if (isOpen && restButtonRef.current) {
       const updatePosition = () => {
@@ -110,7 +106,6 @@ export const Island: React.FC = () => {
     }
   }, [isOpen]);
 
-  // References
   const seenIdsRef = useRef<Set<string>>(new Set());
   const initialLoadDone = useRef(false);
   const peekTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -120,7 +115,6 @@ export const Island: React.FC = () => {
   const openCardRef = useRef<HTMLDivElement | null>(null);
   const wasTabHiddenRef = useRef(false);
 
-  // Check reduced motion
   useEffect(() => {
     const checkMotion = () => {
       const reduced =
@@ -134,7 +128,6 @@ export const Island: React.FC = () => {
     return () => media.removeEventListener('change', checkMotion);
   }, []);
 
-  // Helper to get role-based incident detail link
   const getIncidentPath = useCallback(
     (incidentId: string) => {
       if (user?.role === 'ADMIN') return `/admin/incidents/${incidentId}`;
@@ -144,7 +137,6 @@ export const Island: React.FC = () => {
     [user?.role]
   );
 
-  // Load seen IDs from localStorage
   useEffect(() => {
     try {
       const stored = localStorage.getItem('oops-seen-notification-ids');
@@ -155,7 +147,6 @@ export const Island: React.FC = () => {
         }
       }
     } catch {
-      // Ignore
     }
   }, []);
 
@@ -167,11 +158,9 @@ export const Island: React.FC = () => {
         JSON.stringify(Array.from(seenIdsRef.current).slice(-200))
       );
     } catch {
-      // Ignore
     }
   }, []);
 
-  // Polling with TanStack Query
   const [isVisible, setIsVisible] = useState(!document.hidden);
   useEffect(() => {
     const handleVis = () => {
@@ -199,11 +188,9 @@ export const Island: React.FC = () => {
   const unreadList = notifications.filter((n) => !n.readAt);
   const unreadCount = unreadList.length;
 
-  // Split into "New" and "Earlier"
   const newNotifications = notifications.filter((n) => !n.readAt);
   const earlierNotifications = notifications.filter((n) => !!n.readAt);
 
-  // Clear peek timer
   const clearPeekTimer = useCallback(() => {
     if (peekTimerRef.current) {
       clearTimeout(peekTimerRef.current);
@@ -211,7 +198,6 @@ export const Island: React.FC = () => {
     }
   }, []);
 
-  // Start or resume peek auto-collapse timer
   const startPeekTimer = useCallback(
     (durationMs: number) => {
       clearPeekTimer();
@@ -247,7 +233,6 @@ export const Island: React.FC = () => {
     startPeekTimer(peekRemainingTime);
   }, [peekRemainingTime, startPeekTimer]);
 
-  // Trigger Peek presentation
   const triggerPeek = useCallback(
     (item: NotificationItem, moreCount: number, priority?: Priority, slaStatus?: string) => {
       setPeekNotification(item);
@@ -257,12 +242,10 @@ export const Island: React.FC = () => {
       const isBreach = slaStatus === 'BREACHED';
       if (isBreach) {
         setHasBreachPulse(true);
-        // Haptic feedback for breach if supported
         if (!isReducedMotion && typeof navigator !== 'undefined' && 'vibrate' in navigator) {
           try {
             navigator.vibrate(10);
           } catch {
-            // Ignore
           }
         }
         startPeekTimer(8000);
@@ -274,7 +257,6 @@ export const Island: React.FC = () => {
     [isReducedMotion, startPeekTimer]
   );
 
-  // Subscribe to Dev Playground events
   useEffect(() => {
     const unsubscribe = subscribeIslandDevAction((action) => {
       if (action.type === 'FIRE_NOTIFICATION') {
@@ -318,7 +300,6 @@ export const Island: React.FC = () => {
     return unsubscribe;
   }, [liveNotifications, refetch, saveSeenIds, triggerPeek]);
 
-  // Live polling notification arrival detection & tab hidden-to-visible coalescing
   useEffect(() => {
     if (!notifications || notifications.length === 0) return;
 
@@ -329,11 +310,9 @@ export const Island: React.FC = () => {
       return;
     }
 
-    // Check for unseen notifications
     const unseen = notifications.filter((n) => !seenIdsRef.current.has(n.id));
     if (unseen.length === 0) return;
 
-    // If tab was hidden and now shown, coalesce everything missed into one summary peek
     const newest = unseen[0];
     saveSeenIds(unseen.map((n) => n.id));
 
@@ -359,7 +338,6 @@ export const Island: React.FC = () => {
     wasTabHiddenRef.current = false;
   }, [notifications, queryClient, saveSeenIds, triggerPeek]);
 
-  // Keyboard shortcut: Pressing 'N' toggles, 'Escape' closes
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
@@ -384,7 +362,6 @@ export const Island: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, clearPeekTimer]);
 
-  // Focus trap / management
   useEffect(() => {
     if (isOpen) {
       openCardRef.current?.focus();
@@ -393,7 +370,6 @@ export const Island: React.FC = () => {
     }
   }, [isOpen]);
 
-  // Mark single notification read
   const markRead = async (id: string, incidentId?: string) => {
     if (syntheticNotifications) {
       setSyntheticNotifications((prev) =>
@@ -407,7 +383,6 @@ export const Island: React.FC = () => {
         refetch();
         queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       } catch {
-        // Ignore
       }
     }
 
@@ -418,7 +393,6 @@ export const Island: React.FC = () => {
     }
   };
 
-  // Mark all as read optimistically
   const markAllRead = async () => {
     const unread = notifications.filter((n) => !n.readAt);
     if (unread.length === 0) return;
@@ -435,7 +409,6 @@ export const Island: React.FC = () => {
         refetch();
         queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       } catch {
-        // Ignore
       }
     }
   };
@@ -457,7 +430,6 @@ export const Island: React.FC = () => {
   const isPeekP1 = peekIncident?.priority === 'P1' || peekIncident?.slaStatus === 'BREACHED';
   const isPeekP2 = peekIncident?.priority === 'P2' || peekIncident?.slaStatus === 'AT_RISK';
 
-  // Staging variants: fades out before shrinking, fades and unblurs in only after container has grown ~70%
   const stagedContentVariants = {
     initial: {
       opacity: 0,

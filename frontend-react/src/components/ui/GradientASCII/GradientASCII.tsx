@@ -179,7 +179,6 @@ void main() {
     }
   }
 
-  // tone function mapping
   float x0 = smoothstep(0.3, 1.0, clamp(shape.x * mix(0.7, 1.0, reveal), 0.0, 1.0)) * float(uCount - 1);
   int idx0 = int(floor(x0));
   vec4 tone0 = vec4(mix(uRamp[idx0], uRamp[min(idx0 + 1, uCount - 1)], fract(x0)), smoothstep(0.0, 0.38, shape.x));

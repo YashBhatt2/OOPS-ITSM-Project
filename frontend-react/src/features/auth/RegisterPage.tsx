@@ -76,7 +76,6 @@ export const RegisterPage: React.FC = () => {
 
     try {
       await register(displayName, email, password);
-      // Automatically log the new employee in
       await login(email, password);
       setIsSuccess(true);
       setTimeout(() => {

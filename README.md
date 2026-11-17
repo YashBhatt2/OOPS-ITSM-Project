@@ -9,9 +9,12 @@ Spring Boot REST backend and PostgreSQL schema for incident reporting, administr
 - `domain/`: plain Java priority, lifecycle, assignment, and SLA rules; independently testable.
 - `backend/`: Spring HTTP/security, application services, JPA persistence, migrations, scheduler, and intelligence adapter.
 - `docs/phase-1/`: original design package. [Implementation decisions](docs/implementation.md) records concrete choices and differences.
-- `compose.yaml`: development PostgreSQL and an isolated optional test database.
+- `frontend-react/`: React web interface.
+- `intelligence/`: Python service for duplicate and resolution suggestions.
 
 The two Maven modules produce one deployable backend application; they are not microservices.
+
+For portable setup and run steps, see [RUNNING.md](RUNNING.md). For known React/backend contract mismatches and the integration sequence, see [the integration plan](docs/backend-react-integration-plan.md).
 
 ## Requirements and setup
 
@@ -79,7 +82,7 @@ For database/API integration tests, set these variables to use the separate `its
 mvn -Pintegration verify
 ```
 
-Start the local PostgreSQL service before running tests. Tests run migrations and use transaction rollback for isolation. To use the optional Docker test service instead, run `docker compose -f compose.test.yaml up -d db-test`, then leave `TEST_DB_URL` and `TEST_DB_USER` unset; that service listens on port 5433 and uses temporary storage.
+Start the local PostgreSQL service before running tests. Tests use `itsm_test` on port 5432 by default, run migrations, and use transaction rollback for isolation. Set `TEST_DB_URL` if your PostgreSQL installation uses a different port.
 
 `mvn test` runs unit tests; `mvn -Pintegration verify` runs the PostgreSQL-backed `BackendIT` tests through Maven Surefire. Integration tests are not silently skipped when the database is missing—they fail. Test results are under each module's `target/surefire-reports`.
 

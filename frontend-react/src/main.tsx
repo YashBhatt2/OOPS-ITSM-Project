@@ -20,7 +20,6 @@ try {
     document.documentElement.setAttribute('data-reduced-motion', 'true');
   }
 } catch {
-  // Ignore
 }
 
 import { App } from './App';

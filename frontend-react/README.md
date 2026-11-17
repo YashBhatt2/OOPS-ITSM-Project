@@ -15,7 +15,7 @@ The React frontend for the OOPS IT Service Management (ITSM) platform, engineere
 ### Prerequisites
 
 - Node.js 20+ (recommended 22+)
-- Running backend on `http://localhost:8080` (or Docker PostgreSQL container)
+- Running Spring Boot backend on `http://localhost:8080`, connected to local PostgreSQL
 
 ### Setup & Run
 
@@ -42,7 +42,26 @@ The React frontend for the OOPS IT Service Management (ITSM) platform, engineere
    python design-tools/contrast.py --check
    ```
 
+### Prepare demo accounts and catalogs
+
+After the backend is running and the bootstrap administrator exists, run this from `frontend-react/`:
+
+```bash
+npm run seed:demo
+```
+
+The script reads the root `.env` for `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD`, then ensures the sample skills, categories, services, technician profiles, employee accounts, and VPN incidents exist. It also checks administrator, technician, and employee sign-in. Existing matching records are reused; each run resets the three demo technician profiles to their sample skills, capacity, and availability. Existing user passwords are not changed.
+
+Run the frontend checks with:
+
+```bash
+npm test
+npm run build
+```
+
 ## Roles and Routes
+
+For a local account and database reference, open `demo-data.local.json` in this folder. It lists known test passwords and their verification status. With the backend running, `npm run demo:refresh` updates it with the live users, skills, categories, services, technician profiles, and incidents, including closed ones. This command reads records and checks sign-in; it does not reset passwords or create records. Passwords for other accounts remain unknown unless you enter a known testing password in the file. The file is ignored by Git and must stay outside `src/`, `public/`, and `dist/`.
 
 - **Authentication**:
   - `/login`, `/signin`: Atmospheric horizon sign-in page.

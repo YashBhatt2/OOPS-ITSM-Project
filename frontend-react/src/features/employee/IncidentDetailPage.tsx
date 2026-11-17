@@ -10,10 +10,13 @@ import { IncidentDetailsCard } from '@/features/incident/IncidentDetailsCard';
 import { SlaMeter } from '@/components/ui/SlaMeter/SlaMeter';
 import { Comment } from '@/components/ui/Comment/Comment';
 import { Timeline } from '@/components/ui/Timeline/Timeline';
+import { Dialog } from '@/components/ui/Dialog/Dialog';
 import { Input, Textarea } from '@/components/ui/Field/Field';
 import { Button } from '@/components/ui/Button/Button';
 import { useToast } from '@/components/ui/Toast/Toast';
-import { apiRequest, ApiConflictError } from '@/lib/api';
+import { apiRequest, ApiConflictError, ApiError } from '@/lib/api';
+import { createCommentPayload } from '@/lib/commentPayload';
+import { commentAuthor } from '@/lib/commentAuthor';
 import { Priority, IncidentStatus, SlaStatus } from '@/lib/constants';
 import { Incident, IncidentComment, HistoryEvent, Service, Category, Dashboard } from './types';
 import styles from './employee.module.css';
@@ -32,8 +35,10 @@ export function IncidentDetailPage() {
   const [feedbackComment, setFeedbackComment] = useState('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [conflictMessage, setConflictMessage] = useState<string | null>(null);
+  const [reopenDialogOpen, setReopenDialogOpen] = useState(false);
+  const [reopenReason, setReopenReason] = useState('');
+  const [reopenError, setReopenError] = useState('');
 
-  // 1. Incident details
   const {
     data: incident,
     isLoading: isIncidentLoading,
@@ -44,21 +49,18 @@ export function IncidentDetailPage() {
     enabled: Boolean(id),
   });
 
-  // 2. Comments
   const { data: comments = [], refetch: refetchComments } = useQuery<IncidentComment[]>({
     queryKey: ['incident-comments', id],
     queryFn: () => apiRequest(`/api/v1/incidents/${id}/comments`),
     enabled: Boolean(id),
   });
 
-  // 3. History
   const { data: history = [] } = useQuery<HistoryEvent[]>({
     queryKey: ['incident-history', id],
     queryFn: () => apiRequest(`/api/v1/incidents/${id}/history`),
     enabled: Boolean(id),
   });
 
-  // 4. Services & Categories for names
   const { data: services = [] } = useQuery<Service[]>({
     queryKey: ['services'],
     queryFn: () => apiRequest('/api/v1/services'),
@@ -77,7 +79,6 @@ export function IncidentDetailPage() {
   const serviceName = services.find((s) => s.id === incident?.serviceId)?.name || 'Service';
   const categoryName = categories.find((c) => c.id === incident?.categoryId)?.name || 'General';
 
-  // Edit while NEW
   const editMutation = useMutation({
     mutationFn: async () => {
       if (!incident) return;
@@ -107,17 +108,12 @@ export function IncidentDetailPage() {
     },
   });
 
-  // Add Public Comment
   const commentMutation = useMutation({
     mutationFn: async () => {
       return await apiRequest(`/api/v1/incidents/${id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          body: commentText.trim(),
-          kind: 'COMMENT',
-          visibility: 'PUBLIC',
-        }),
+        body: JSON.stringify(createCommentPayload(commentText, 'COMMENT')),
       });
     },
     onSuccess: () => {
@@ -126,23 +122,27 @@ export function IncidentDetailPage() {
       refetchComments();
       queryClient.invalidateQueries({ queryKey: ['incident-history', id] });
     },
-    onError: () => {
-      showToast({ title: 'Failed to add comment.', type: 'error' });
+    onError: (err: unknown) => {
+      const message = err instanceof ApiError ? err.message : 'Could not reach the server. Check the connection and try again.';
+      const requestId = err instanceof ApiError && err.requestId ? ` Request ID: ${err.requestId}.` : '';
+      showToast({ title: `${message}${requestId}`, type: 'error' });
     },
   });
 
-  // Reopen
   const reopenMutation = useMutation({
     mutationFn: async () => {
       if (!incident) return;
-      return await apiRequest(`/api/v1/incidents/${id}/reopens`, {
+      return await apiRequest(`/api/v1/incidents/${id}/reopen`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ version: incident.version }),
+        body: JSON.stringify({ version: incident.version, reason: reopenReason.trim() }),
       });
     },
     onSuccess: () => {
       showToast({ title: 'Incident reopened.', type: 'success' });
+      setReopenDialogOpen(false);
+      setReopenReason('');
+      setReopenError('');
       setConflictMessage(null);
       refetchIncident();
     },
@@ -156,7 +156,6 @@ export function IncidentDetailPage() {
     },
   });
 
-  // Feedback
   const feedbackMutation = useMutation({
     mutationFn: async () => {
       return await apiRequest(`/api/v1/incidents/${id}/feedback`, {
@@ -205,13 +204,11 @@ export function IncidentDetailPage() {
     );
   }
 
-  // Check if reopenable within 7 days
   const isReopenable =
     incident.status === 'CLOSED' &&
     incident.closedAt &&
     Date.now() - new Date(incident.closedAt).getTime() < 7 * 24 * 60 * 60 * 1000;
 
-  // Filter public comments only
   const publicComments = Array.isArray(comments)
     ? comments.filter((c) => !c.visibility || c.visibility === 'PUBLIC')
     : [];
@@ -324,7 +321,7 @@ export function IncidentDetailPage() {
                     variant="secondary"
                     size="compact"
                     isLoading={reopenMutation.isPending}
-                    onClick={() => reopenMutation.mutate()}
+                    onClick={() => setReopenDialogOpen(true)}
                   >
                     <ArrowsCounterClockwise size={16} weight="light" />
                     <span>Reopen request</span>
@@ -401,7 +398,7 @@ export function IncidentDetailPage() {
                   <Comment
                     key={c.id}
                     id={c.id}
-                    authorName={c.authorName || 'Staff'}
+                    authorName={commentAuthor(c, incident, user)}
                     createdAt={c.createdAt}
                     body={c.body}
                     kind={c.kind === 'INFORMATION_REQUEST' ? 'INFORMATION_REQUEST' : 'PUBLIC'}
@@ -470,6 +467,48 @@ export function IncidentDetailPage() {
             </div>
           </aside>
         </div>
+        <Dialog
+          open={reopenDialogOpen}
+          onOpenChange={setReopenDialogOpen}
+          title="Reopen this incident?"
+          description="The incident starts a new service cycle. Explain what is still unresolved."
+          actions={
+            <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end', width: '100%' }}>
+              <Button variant="ghost" size="compact" onClick={() => setReopenDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="compact"
+                isLoading={reopenMutation.isPending}
+                onClick={() => {
+                  if (!reopenReason.trim()) {
+                    setReopenError('Enter a reason to reopen this incident.');
+                    return;
+                  }
+                  reopenMutation.mutate();
+                }}
+              >
+                Reopen
+              </Button>
+            </div>
+          }
+        >
+          <div style={{ marginTop: 'var(--space-3)' }}>
+            <Textarea
+              id="reopen-reason"
+              label="Reason for reopening"
+              value={reopenReason}
+              onChange={(event) => {
+                setReopenReason(event.target.value);
+                if (event.target.value.trim()) setReopenError('');
+              }}
+              error={reopenError}
+              required
+              rows={4}
+            />
+          </div>
+        </Dialog>
       </main>
     </div>
   );

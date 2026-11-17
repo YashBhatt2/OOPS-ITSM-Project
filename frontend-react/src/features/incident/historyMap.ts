@@ -54,7 +54,6 @@ export interface HumanizedHistoryItem {
   priorityBefore?: string | null;
   priorityAfter?: string | null;
   isViolation?: boolean;
-  // Grouped SLA properties
   isGroupSummary?: boolean;
   groupedChildren?: HumanizedHistoryItem[];
 }
@@ -134,7 +133,6 @@ export function parseAssignmentDetails(
     rawStrategy = match[2] || 'MANUAL';
     reason = match[3] || '';
   } else {
-    // Defensive extraction of UUID if pattern differed slightly
     const uuidMatch = rawDesc.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/i);
     if (uuidMatch) techId = uuidMatch[0];
     if (rawDesc.toUpperCase().includes('SKILL_FIRST')) rawStrategy = 'SKILL_FIRST';
@@ -205,7 +203,6 @@ export function humanizeHistoryItem(
   const rawDesc = entry.description || entry.details || '';
   const isEmployee = ctx.userRole === 'EMPLOYEE';
 
-  // Base item
   const item: HumanizedHistoryItem = {
     id: entry.id,
     rawAction: action,
@@ -449,7 +446,6 @@ export function groupConsecutiveSlaEvents(items: HumanizedHistoryItem[]): Humani
   while (i < items.length) {
     const current = items[i];
 
-    // Check if this item is an SLA event
     if (current.rawAction.startsWith('SLA_')) {
       const slaGroup: HumanizedHistoryItem[] = [current];
       let j = i + 1;
@@ -460,7 +456,6 @@ export function groupConsecutiveSlaEvents(items: HumanizedHistoryItem[]): Humani
       }
 
       if (slaGroup.length > 1) {
-        // We have multiple consecutive SLA events
         const hasEscalation = slaGroup.some((e) => e.rawAction === 'SLA_ESCALATION');
         const hasViolation = slaGroup.some((e) => e.rawAction === 'SLA_VIOLATION');
         const hasWarning = slaGroup.some((e) => e.rawAction === 'SLA_WARNING');

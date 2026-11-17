@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowUpRight } from '@phosphor-icons/react';
 import { Dialog } from '@/components/ui/Dialog/Dialog';
 import { Input, Textarea, Select } from '@/components/ui/Field/Field';
 import { Segmented } from '@/components/ui/Segmented/Segmented';
 import { Button } from '@/components/ui/Button/Button';
 import { useToast } from '@/components/ui/Toast/Toast';
 import { apiRequest, ApiError } from '@/lib/api';
-import { Service, Category, SimilarReport, Incident } from './types';
+import { fetchDuplicateSuggestions, DuplicateSuggestion } from '@/lib/intelligence';
+import { Service, Category, Incident } from './types';
 import styles from './employee.module.css';
 
 export interface ReportIncidentDialogProps {
@@ -28,22 +28,19 @@ export function ReportIncidentDialog({ open, onOpenChange, onSuccess }: ReportIn
   const [urgency, setUrgency] = useState<number>(1);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [similarReports, setSimilarReports] = useState<SimilarReport[]>([]);
+  const [similarReports, setSimilarReports] = useState<DuplicateSuggestion[]>([]);
   const [isSimilarUnavailable, setIsSimilarUnavailable] = useState(false);
 
-  // Services
   const { data: services = [] } = useQuery<Service[]>({
     queryKey: ['services'],
     queryFn: () => apiRequest('/api/v1/services'),
   });
 
-  // Categories
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['categories'],
     queryFn: () => apiRequest('/api/v1/categories'),
   });
 
-  // Set default service and category
   useEffect(() => {
     if (services.length > 0 && !serviceId) {
       const activeService = services.find((s) => s.active) || services[0];
@@ -58,37 +55,42 @@ export function ReportIncidentDialog({ open, onOpenChange, onSuccess }: ReportIn
     }
   }, [categories, categoryId]);
 
-  // Debounced Similar Reports Check
   useEffect(() => {
     const combined = `${title} ${description}`.trim();
-    if (combined.length < 10) {
+    if (!open || combined.length < 10 || !serviceId || !categoryId) {
       setSimilarReports([]);
       setIsSimilarUnavailable(false);
       return;
     }
 
+    let cancelled = false;
+    const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const results = await apiRequest<SimilarReport[]>('/api/v1/incidents/similar-reports', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, description }),
-        });
-        setSimilarReports(results || []);
-        setIsSimilarUnavailable(false);
+        const results = await fetchDuplicateSuggestions(
+          { title: title.trim(), description: description.trim(), serviceId, categoryId },
+          controller.signal
+        );
+        if (!cancelled) {
+          setSimilarReports(results);
+          setIsSimilarUnavailable(false);
+        }
       } catch (err: unknown) {
+        if (cancelled) return;
+        setSimilarReports([]);
         if (err instanceof ApiError && err.status === 503) {
           setIsSimilarUnavailable(true);
-        } else {
-          setIsSimilarUnavailable(false);
         }
       }
     }, 400);
 
-    return () => clearTimeout(timer);
-  }, [title, description]);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [open, title, description, serviceId, categoryId]);
 
-  // Create Incident Mutation
   const createMutation = useMutation({
     mutationFn: async () => {
       return await apiRequest<Incident>('/api/v1/incidents', {
@@ -109,7 +111,6 @@ export function ReportIncidentDialog({ open, onOpenChange, onSuccess }: ReportIn
         title: `Incident ${newIncident.reference} reported.`,
         type: 'success',
       });
-      // Reset form
       setTitle('');
       setDescription('');
       setErrors({});
@@ -193,7 +194,7 @@ export function ReportIncidentDialog({ open, onOpenChange, onSuccess }: ReportIn
             isLoading={createMutation.isPending}
             onClick={handleSubmit}
           >
-            Submit request
+            Report incident
           </Button>
         </div>
       }
@@ -223,26 +224,19 @@ export function ReportIncidentDialog({ open, onOpenChange, onSuccess }: ReportIn
         {/* Debounced Similar Reports Panel */}
         {similarReports.length > 0 && (
           <div className={styles.similarPanel}>
-            <span className={styles.similarHeader}>Similar existing reports</span>
+            <span className={styles.similarHeader}>Similar reports</span>
             {similarReports.slice(0, 2).map((sr) => (
-              <a
-                key={sr.id}
-                href={`/employee/incidents/${sr.id}`}
-                target="_blank"
-                rel="noreferrer"
-                className={styles.similarItem}
-              >
-                <span>
-                  <strong style={{ fontFamily: 'var(--font-mono)' }}>{sr.reference}</strong> — {sr.title}
-                </span>
-                <ArrowUpRight size={14} weight="light" />
-              </a>
+              <p key={`${sr.message}-${sr.similarityScore}`} className={styles.similarItem}>
+                {sr.message}
+              </p>
             ))}
           </div>
         )}
 
         {isSimilarUnavailable && (
-          <p className={styles.similarQuietNotice}>Similar reports unavailable right now.</p>
+          <p className={styles.similarQuietNotice}>
+            Suggestions aren't available right now. You can still send your report.
+          </p>
         )}
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-3)' }}>

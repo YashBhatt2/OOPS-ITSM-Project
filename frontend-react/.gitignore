@@ -3,4 +3,5 @@ dist
 dist-ssr
 *.local
 screenshots
+demo-data.local.json
 

@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readReference, refreshReference } from './demo-reference.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,12 +30,21 @@ function loadEnv() {
 loadEnv();
 
 const baseUrl = process.env.BASE_URL || 'http://localhost:8080';
-const adminEmail = process.env.ADMIN_EMAIL || process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@example.test';
-const adminPassword = process.env.ADMIN_PASSWORD || process.env.BOOTSTRAP_ADMIN_PASSWORD;
+const savedAdmin = readReference().accounts?.find(account => account.role === 'ADMIN' && account.password);
+const adminEmail = process.env.ADMIN_EMAIL || savedAdmin?.email || process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@example.test';
+const adminPassword = process.env.ADMIN_PASSWORD || (adminEmail === savedAdmin?.email ? savedAdmin.password : undefined) || process.env.BOOTSTRAP_ADMIN_PASSWORD;
 
 if (!adminPassword) {
   console.error('Error: ADMIN_PASSWORD or BOOTSTRAP_ADMIN_PASSWORD is required in environment or .env');
   process.exit(1);
+}
+
+class ApiResponseError extends Error {
+  constructor(method, path, status, body) {
+    super(`${method} ${path} failed (${status}): ${body}`);
+    this.name = 'ApiResponseError';
+    this.status = status;
+  }
 }
 
 class ApiClient {
@@ -129,7 +139,7 @@ class ApiClient {
     });
     if (!res.ok) {
       const err = await res.text();
-      throw new Error(`POST ${urlPath} failed (${res.status}): ${err}`);
+      throw new ApiResponseError('POST', urlPath, res.status, err);
     }
     return res.json();
   }
@@ -148,6 +158,36 @@ class ApiClient {
   }
 }
 
+function nameKey(name) {
+  return name.trim().toLocaleLowerCase();
+}
+
+async function ensureNamedResource(client, endpoint, records, name, payload) {
+  const key = nameKey(name);
+  const existing = records.find(record => nameKey(record.name) === key);
+  if (existing) return existing;
+
+  try {
+    const created = await client.post(endpoint, payload);
+    const record = { ...payload, ...created, name: payload.name };
+    records.push(record);
+    return record;
+  } catch (error) {
+    if (!(error instanceof ApiResponseError) || error.status !== 409) throw error;
+
+    const refreshed = await client.get(endpoint);
+    const concurrentRecord = refreshed.find(record => nameKey(record.name) === key);
+    if (!concurrentRecord) {
+      const visibleNames = refreshed.map(record => record.name).join(', ') || '(none)';
+      throw new Error(`${error.message}\nThe catalog still does not show "${name}" after refreshing. Visible names: ${visibleNames}`);
+    }
+
+    records.push(concurrentRecord);
+    console.log(`Found existing record after conflict: "${concurrentRecord.name}" (${concurrentRecord.id})`);
+    return concurrentRecord;
+  }
+}
+
 async function main() {
   console.log(`\n--- Seeding Demo Data on ${baseUrl} ---`);
   const adminClient = new ApiClient(baseUrl);
@@ -156,24 +196,30 @@ async function main() {
   await adminClient.login(adminEmail, adminPassword);
   const adminMe = await adminClient.getMe();
   console.log(`Authenticated as: ${adminMe.displayName} (${adminMe.role})`);
+  if (process.argv.includes('--snapshot')) {
+    await refreshReference(adminClient, ApiClient, baseUrl, [
+      { ...adminMe, password: adminPassword },
+    ]);
+    return;
+  }
 
   // 1. SKILLS
   console.log('\n[1/5] Ensuring skills...');
   const existingSkills = await adminClient.get('/api/v1/admin/skills');
   const skillMap = new Map();
-  for (const s of existingSkills) {
-    skillMap.set(s.name, s.id);
-  }
-
   const targetSkills = ['Application support', 'Network', 'Database'];
   for (const name of targetSkills) {
-    if (!skillMap.has(name)) {
-      console.log(`Creating skill: "${name}"`);
-      const created = await adminClient.post('/api/v1/admin/skills', { name, active: true });
-      skillMap.set(name, created.id);
-    } else {
-      console.log(`Skill exists: "${name}" (${skillMap.get(name)})`);
-    }
+    const existedBefore = existingSkills.some(skill => nameKey(skill.name) === nameKey(name));
+    if (!existedBefore) console.log(`Ensuring skill: "${name}"`);
+    const skill = await ensureNamedResource(
+      adminClient,
+      '/api/v1/admin/skills',
+      existingSkills,
+      name,
+      { name, active: true }
+    );
+    skillMap.set(name, skill.id);
+    if (existedBefore) console.log(`Skill exists: "${name}" (${skill.id})`);
   }
 
   const appSkillId = skillMap.get('Application support');
@@ -184,9 +230,6 @@ async function main() {
   console.log('\n[2/5] Ensuring categories...');
   const existingCats = await adminClient.get('/api/v1/admin/categories');
   const catMap = new Map();
-  for (const c of existingCats) {
-    catMap.set(c.name, c.id);
-  }
 
   const targetCats = [
     { name: 'Application', requirements: { [appSkillId]: 3 } },
@@ -195,26 +238,23 @@ async function main() {
   ];
 
   for (const c of targetCats) {
-    if (!catMap.has(c.name)) {
-      console.log(`Creating category: "${c.name}"`);
-      const created = await adminClient.post('/api/v1/admin/categories', {
-        name: c.name,
-        active: true,
-        requirements: c.requirements
-      });
-      catMap.set(c.name, created.id);
-    } else {
-      console.log(`Category exists: "${c.name}" (${catMap.get(c.name)})`);
-    }
+    const existedBefore = existingCats.some(category => nameKey(category.name) === nameKey(c.name));
+    if (!existedBefore) console.log(`Ensuring category: "${c.name}"`);
+    const category = await ensureNamedResource(
+      adminClient,
+      '/api/v1/admin/categories',
+      existingCats,
+      c.name,
+      { name: c.name, active: true, requirements: c.requirements }
+    );
+    catMap.set(c.name, category.id);
+    if (existedBefore) console.log(`Category exists: "${c.name}" (${category.id})`);
   }
 
   // 3. SERVICES & SLA POLICIES
   console.log('\n[3/5] Ensuring services...');
   const existingServices = await adminClient.get('/api/v1/admin/services');
   const svcMap = new Map();
-  for (const s of existingServices) {
-    svcMap.set(s.name, s.id);
-  }
 
   const targetServices = [
     { name: 'Identity and Access', description: 'SSO, credentials, and directory services', criticality: 2 },
@@ -223,18 +263,17 @@ async function main() {
   ];
 
   for (const svc of targetServices) {
-    if (!svcMap.has(svc.name)) {
-      console.log(`Creating service: "${svc.name}"`);
-      const created = await adminClient.post('/api/v1/admin/services', {
-        name: svc.name,
-        description: svc.description,
-        criticality: svc.criticality,
-        active: true
-      });
-      svcMap.set(svc.name, created.id);
-    } else {
-      console.log(`Service exists: "${svc.name}" (${svcMap.get(svc.name)})`);
-    }
+    const existedBefore = existingServices.some(service => nameKey(service.name) === nameKey(svc.name));
+    if (!existedBefore) console.log(`Ensuring service: "${svc.name}"`);
+    const service = await ensureNamedResource(
+      adminClient,
+      '/api/v1/admin/services',
+      existingServices,
+      svc.name,
+      { ...svc, active: true }
+    );
+    svcMap.set(svc.name, service.id);
+    if (existedBefore) console.log(`Service exists: "${svc.name}" (${service.id})`);
   }
 
   // Publish short SLA policy for "Demo service"
@@ -255,11 +294,12 @@ async function main() {
     console.log(`SLA policy already exists for Demo service (rev ${demoPolicies[0].revision}).`);
   }
 
-  // Ensure standard policy for Payment Gateway and Identity if needed
-  const paymentSvcId = svcMap.get('Payment Gateway');
-  const payPolicies = await adminClient.get(`/api/v1/admin/services/${paymentSvcId}/sla-policies`);
-  if (payPolicies.length === 0) {
-    await adminClient.post(`/api/v1/admin/services/${paymentSvcId}/sla-policies`, {
+  // Ensure standard policies for the remaining demo services.
+  for (const serviceName of ['Payment Gateway', 'Identity and Access']) {
+    const serviceId = svcMap.get(serviceName);
+    const policies = await adminClient.get(`/api/v1/admin/services/${serviceId}/sla-policies`);
+    if (policies.length !== 0) continue;
+    await adminClient.post(`/api/v1/admin/services/${serviceId}/sla-policies`, {
       targets: {
         P1: { responseSeconds: 300, resolutionSeconds: 1800 },
         P2: { responseSeconds: 900, resolutionSeconds: 7200 },
@@ -267,7 +307,7 @@ async function main() {
         P4: { responseSeconds: 14400, resolutionSeconds: 86400 }
       }
     });
-    console.log('Published default SLA policy for Payment Gateway.');
+    console.log(`Published default SLA policy for ${serviceName}.`);
   }
 
   // 4. USERS (3 Technicians + 2 Employees)
@@ -375,7 +415,7 @@ async function main() {
       'Role': a.role,
       'Display Name': a.displayName,
       'Email': a.email,
-      'Password': a.password,
+      'Password': a.role === 'ADMIN' ? '(provided through environment)' : a.password,
       'Details': a.details
     }))
   );
@@ -404,6 +444,58 @@ async function main() {
   if (meEmp.role !== 'EMPLOYEE') throw new Error(`Expected EMPLOYEE role, got ${meEmp.role}`);
   console.log(`✓ Employee sign-in verified: ${meEmp.displayName} (${meEmp.email})`);
 
+  console.log('\nEnsuring example incidents...');
+  const networkTech = new ApiClient(baseUrl);
+  await networkTech.login('marcus@example.test', defaultPassword);
+  const networkTechAccount = await networkTech.getMe();
+  const examples = [
+    { title: '[Demo] VPN certificate expired', description: 'VPN connection fails because the client certificate has expired.', close: true },
+    { title: '[Demo] VPN certificate connection error', description: 'The VPN client cannot connect and reports an expired certificate.', assign: true },
+    { title: '[Demo] VPN login fails after certificate expiration', description: 'VPN login fails with a certificate expired error.', assign: false },
+  ];
+  const allIncidents = [];
+  let page = 0;
+  let totalPages;
+  do {
+    const result = await adminClient.get(`/api/v1/incidents?includeClosed=true&size=100&page=${page}`);
+    allIncidents.push(...result.items);
+    totalPages = result.totalPages;
+    page++;
+  } while (page < totalPages);
+
+  const action = async (client, incident, route, fields = {}) => {
+    const current = await adminClient.get(`/api/v1/incidents/${incident.id}`);
+    return client.post(`/api/v1/incidents/${incident.id}/${route}`, { version: current.version, ...fields });
+  };
+  for (const example of examples) {
+    let incident = allIncidents.find(item => item.title === example.title && item.reporterId === meEmp.id);
+    if (!incident) {
+      incident = await testEmp.post('/api/v1/incidents', {
+        title: example.title, description: example.description,
+        serviceId: demoSvcId, categoryId: catMap.get('Network'), impact: 2, urgency: 2,
+      });
+      console.log(`Created ${incident.reference}: ${example.title}`);
+    } else {
+      console.log(`Reusing ${incident.reference}: ${example.title}`);
+    }
+    if (incident.status === 'NEW' && (example.close || example.assign)) {
+      incident = await action(adminClient, incident, 'assignments', {
+        technicianId: networkTechAccount.id, strategy: 'SKILL_FIRST', reason: 'Demo network support assignment',
+      });
+    }
+    if (example.close && incident.status === 'ASSIGNED') incident = await action(networkTech, incident, 'acknowledge');
+    if (example.close && incident.status === 'ACKNOWLEDGED') incident = await action(networkTech, incident, 'start-investigation');
+    if (example.close && incident.status === 'IN_PROGRESS') {
+      incident = await action(networkTech, incident, 'resolutions', {
+        details: 'Renewed the expired VPN client certificate and restarted the VPN client.',
+      });
+    }
+    if (example.close && incident.status === 'RESOLVED') incident = await action(adminClient, incident, 'verify', { note: 'Confirmed the VPN connection works.' });
+    if (example.close && incident.status === 'VERIFIED') incident = await action(adminClient, incident, 'close', { note: 'Demo issue resolved and verified.' });
+    console.log(`  Status: ${incident.status}`);
+  }
+
+  await refreshReference(adminClient, ApiClient, baseUrl, demoAccounts);
   console.log('\n✓ Demo data seeding and role login checks completed successfully!\n');
 }
 

@@ -5,7 +5,6 @@
 export function formatDate(dateInput: string | number | Date): string {
   const d = new Date(dateInput);
   if (Number.isNaN(d.getTime())) return '';
-  // Format: "November 9, 2026"
   return new Intl.DateTimeFormat('en-US', {
     month: 'long',
     day: 'numeric',
@@ -16,7 +15,6 @@ export function formatDate(dateInput: string | number | Date): string {
 export function formatTime(dateInput: string | number | Date): string {
   const d = new Date(dateInput);
   if (Number.isNaN(d.getTime())) return '';
-  // Format: "10:45 a.m."
   const parts = new Intl.DateTimeFormat('en-US', {
     hour: 'numeric',
     minute: '2-digit',
@@ -72,14 +70,11 @@ export function formatRelativeTime(dateInput: string | number | Date): string {
 export function formatReference(refOrId?: string | null): string {
   if (!refOrId) return 'INC-000000';
   const str = refOrId.trim();
-  // If already standard INC-123456
   if (/^INC-\d{4,6}$/i.test(str)) {
     return str.toUpperCase();
   }
-  // If it contains a UUID
   const clean = str.replace(/^INC-/i, '');
   if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}/i.test(clean)) {
-    // Generate deterministic 6-digit reference from hex
     const hexSlice = clean.replace(/-/g, '').slice(0, 8);
     const num = (parseInt(hexSlice, 16) % 900000) + 100000;
     return `INC-${num}`;

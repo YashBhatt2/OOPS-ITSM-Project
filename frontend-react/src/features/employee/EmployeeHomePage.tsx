@@ -27,13 +27,11 @@ export function EmployeeHomePage() {
   const [includeClosed, setIncludeClosed] = useState(false);
   const [reportModalOpen, setReportModalOpen] = useState(false);
 
-  // 1. Dashboard summary
   const { data: dashboard } = useQuery<Dashboard>({
     queryKey: ['dashboard', 'me'],
     queryFn: () => apiRequest('/api/v1/dashboards/me'),
   });
 
-  // 2. Services list (for resolving serviceId -> name)
   const { data: services = [] } = useQuery<Service[]>({
     queryKey: ['services'],
     queryFn: () => apiRequest('/api/v1/services'),
@@ -42,7 +40,6 @@ export function EmployeeHomePage() {
   const serviceMap = new Map<string, string>();
   services.forEach((s) => serviceMap.set(s.id, s.name));
 
-  // 3. User's reported incidents
   const buildQuery = () => {
     const params = new URLSearchParams();
     params.set('page', page.toString());
@@ -70,7 +67,6 @@ export function EmployeeHomePage() {
   const totalElements = incidentsResult?.totalElements ?? 0;
   const totalPages = incidentsResult?.totalPages ?? 0;
 
-  // Active incidents = total - CLOSED (or from byStatus)
   const activeCount =
     (dashboard?.byStatus?.NEW ?? 0) +
     (dashboard?.byStatus?.ASSIGNED ?? 0) +

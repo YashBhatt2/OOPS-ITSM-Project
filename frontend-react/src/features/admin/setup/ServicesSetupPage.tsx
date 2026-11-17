@@ -21,6 +21,13 @@ interface SlaPolicyPayload {
   targets: Record<string, SlaTarget>;
 }
 
+const defaultSlaTargets = (): Record<string, SlaTarget> => ({
+  P1: { responseSeconds: 900, resolutionSeconds: 14400 },
+  P2: { responseSeconds: 3600, resolutionSeconds: 28800 },
+  P3: { responseSeconds: 14400, resolutionSeconds: 86400 },
+  P4: { responseSeconds: 28800, resolutionSeconds: 172800 },
+});
+
 export function ServicesSetupPage() {
   const { user, logout } = useAuth();
   const { showToast } = useToast();
@@ -33,13 +40,7 @@ export function ServicesSetupPage() {
   const [active, setActive] = useState(true);
   const [nameError, setNameError] = useState('');
 
-  // SLA Targets State (in seconds)
-  const [slaTargets, setSlaTargets] = useState<Record<string, SlaTarget>>({
-    P1: { responseSeconds: 900, resolutionSeconds: 14400 },
-    P2: { responseSeconds: 3600, resolutionSeconds: 28800 },
-    P3: { responseSeconds: 14400, resolutionSeconds: 86400 },
-    P4: { responseSeconds: 28800, resolutionSeconds: 172800 },
-  });
+  const [slaTargets, setSlaTargets] = useState<Record<string, SlaTarget>>(defaultSlaTargets);
 
   const { data: dashboard } = useQuery<Dashboard>({
     queryKey: ['dashboard', 'admin'],
@@ -48,19 +49,18 @@ export function ServicesSetupPage() {
 
   const { data: services = [], refetch } = useQuery<Service[]>({
     queryKey: ['admin-services'],
-    queryFn: () => apiRequest('/api/v1/services'),
+    queryFn: () => apiRequest('/api/v1/admin/services'),
   });
 
-  // Fetch SLA policy when service selected
-  const { data: slaData } = useQuery<SlaPolicyPayload>({
+  const { data: slaData, isLoading: slaLoading, isError: slaError, refetch: refetchSla } = useQuery<SlaPolicyPayload[]>({
     queryKey: ['sla-policy', selectedService?.id],
     queryFn: () => apiRequest(`/api/v1/admin/services/${selectedService!.id}/sla-policies`),
     enabled: Boolean(selectedService?.id),
   });
 
   useEffect(() => {
-    if (slaData?.targets) {
-      setSlaTargets(slaData.targets);
+    if (slaData) {
+      setSlaTargets(slaData[0]?.targets ?? defaultSlaTargets());
     }
   }, [slaData]);
 
@@ -111,6 +111,7 @@ export function ServicesSetupPage() {
     },
     onSuccess: () => {
       showToast({ title: 'SLA policy targets saved.', type: 'success' });
+      refetchSla();
     },
     onError: () => {
       showToast({ title: 'Failed to update SLA policy.', type: 'error' });
@@ -118,6 +119,7 @@ export function ServicesSetupPage() {
   });
 
   const handleSelect = (service: Service) => {
+    if (service.id !== selectedService?.id) setSlaTargets(defaultSlaTargets());
     setSelectedService(service);
     setIsCreating(false);
     setName(service.name);
@@ -232,7 +234,6 @@ export function ServicesSetupPage() {
                     id="srv-criticality"
                     label="Criticality tier"
                     options={[
-                      { value: 0, label: '0 — Low' },
                       { value: 1, label: '1 — Standard' },
                       { value: 2, label: '2 — High' },
                       { value: 3, label: '3 — Mission Critical' },
@@ -280,13 +281,22 @@ export function ServicesSetupPage() {
                         variant="secondary"
                         size="compact"
                         isLoading={saveSlaMutation.isPending}
+                        disabled={slaLoading || slaError}
                         onClick={() => saveSlaMutation.mutate()}
                       >
                         Save SLA targets
                       </Button>
                     </div>
 
-                    <table className={styles.slaTable}>
+                    {slaLoading && <p role="status">Loading SLA targets…</p>}
+                    {slaError && (
+                      <div role="alert">
+                        <p>Couldn’t load SLA targets.</p>
+                        <Button variant="ghost" size="compact" onClick={() => refetchSla()}>Try again</Button>
+                      </div>
+                    )}
+
+                    {!slaLoading && !slaError && <table className={styles.slaTable}>
                       <thead>
                         <tr>
                           <th className={styles.slaTh}>Priority</th>
@@ -306,12 +316,14 @@ export function ServicesSetupPage() {
                                 <input
                                   type="number"
                                   min={1}
-                                  value={Math.round(target.responseSeconds / 60)}
+                                  step="any"
+                                  aria-label={`${p} response target in minutes`}
+                                  value={target.responseSeconds / 60}
                                   onChange={(e) => {
                                     const mins = Number(e.target.value);
                                     setSlaTargets({
                                       ...slaTargets,
-                                      [p]: { ...target, responseSeconds: mins * 60 },
+                                      [p]: { ...target, responseSeconds: Math.round(mins * 60) },
                                     });
                                   }}
                                   style={{
@@ -328,9 +340,10 @@ export function ServicesSetupPage() {
                               <td className={styles.slaTd}>
                                 <input
                                   type="number"
-                                  min={0.5}
-                                  step={0.5}
-                                  value={Number((target.resolutionSeconds / 3600).toFixed(1))}
+                                  min={1 / 3600}
+                                  step="any"
+                                  aria-label={`${p} resolution target in hours`}
+                                  value={target.resolutionSeconds / 3600}
                                   onChange={(e) => {
                                     const hrs = Number(e.target.value);
                                     setSlaTargets({
@@ -353,7 +366,7 @@ export function ServicesSetupPage() {
                           );
                         })}
                       </tbody>
-                    </table>
+                    </table>}
                   </div>
                 )}
               </div>

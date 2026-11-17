@@ -22,7 +22,6 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onOpenChan
       const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       setReducedMotion(storedMotion === 'true' || (storedMotion === null && prefersReduced));
     } catch {
-      // Default fallback
     }
   }, [open]);
 
@@ -31,7 +30,6 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onOpenChan
     try {
       localStorage.setItem('theme-preference', newTheme);
     } catch {
-      // Ignore
     }
 
     const isReduced =
@@ -55,7 +53,6 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ open, onOpenChan
     try {
       localStorage.setItem('oops-reduced-motion', nextVal ? 'true' : 'false');
     } catch {
-      // Ignore
     }
     if (nextVal) {
       document.documentElement.setAttribute('data-reduced-motion', 'true');

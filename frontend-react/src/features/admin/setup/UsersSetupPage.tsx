@@ -37,7 +37,6 @@ export function UsersSetupPage() {
     queryFn: () => apiRequest('/api/v1/admin/users'),
   });
 
-  // Provision user mutation
   const provisionMutation = useMutation({
     mutationFn: async () => {
       return await apiRequest('/api/v1/admin/users', {
@@ -65,7 +64,6 @@ export function UsersSetupPage() {
     },
   });
 
-  // Deactivate user mutation
   const deactivateMutation = useMutation({
     mutationFn: async (u: AdminUser) => {
       return await apiRequest(`/api/v1/admin/users/${u.id}`, {

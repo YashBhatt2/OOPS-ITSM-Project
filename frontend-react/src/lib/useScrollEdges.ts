@@ -63,7 +63,6 @@ export function useScrollEdges(
 
     el.addEventListener('scroll', onScroll, { passive: true });
 
-    // Initial check and on resize
     checkEdges();
 
     const resizeObserver = new ResizeObserver(() => {

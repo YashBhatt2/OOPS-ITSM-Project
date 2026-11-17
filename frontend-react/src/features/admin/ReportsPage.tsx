@@ -38,7 +38,6 @@ export function ReportsPage() {
   const serviceMap = new Map<string, string>();
   services.forEach((s) => serviceMap.set(s.id, s.name));
 
-  // Compute overview metrics
   const totalVolume = overview?.total ?? 0;
   const byStatusList = overview?.byStatus ?? [];
   const statusMap = new Map<string, number>();
@@ -51,7 +50,6 @@ export function ReportsPage() {
   const breachCount = overview?.historicallyBreachedIncidents ?? 0;
   const breachRate = totalVolume > 0 ? breachCount / totalVolume : 0;
 
-  // Calculate SVG charts
   const maxTechWorkload = Math.max(...techWorkload.map((t) => t.activeWorkload || 0), 1);
   const maxSrvCount = Math.max(...serviceReports.map((s) => s.count || 0), 1);
 

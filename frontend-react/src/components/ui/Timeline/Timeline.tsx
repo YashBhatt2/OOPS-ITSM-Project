@@ -63,7 +63,6 @@ export const Timeline: React.FC<TimelineProps> = ({
     }
   };
 
-  // 1. Fetch history if incidentId provided and no explicit entries
   const queryResult = useQuery<RawHistoryEvent[]>({
     queryKey: ['incident-history', incidentId],
     queryFn: () => apiRequest(`/api/v1/incidents/${incidentId}/history`),
@@ -75,14 +74,12 @@ export const Timeline: React.FC<TimelineProps> = ({
   const isError = propError ?? queryResult.isError;
   const errorObj = propErrorObj ?? queryResult.error;
 
-  // 2. Fetch technicians for Admin name resolution
   const { data: technicians = [] } = useQuery<{ id: string; displayName?: string; name?: string }[]>({
     queryKey: ['admin-technicians'],
     queryFn: () => apiRequest('/api/v1/admin/technicians'),
     enabled: user?.role === 'ADMIN',
   });
 
-  // 3. Fetch services and categories for resolving classification changes
   const { data: services = [] } = useQuery<{ id: string; name: string }[]>({
     queryKey: ['services'],
     queryFn: () => apiRequest('/api/v1/services'),
@@ -116,31 +113,24 @@ export const Timeline: React.FC<TimelineProps> = ({
     };
   }, [technicians, services, categories, user]);
 
-  // Determine earliest event for "since report" calculation
   const calculatedCycleStart = useMemo(() => {
     if (cycleStartIso) return cycleStartIso;
     if (rawList.length === 0) return new Date().toISOString();
-    // Raw list from backend is in ascending order
     return rawList[0].createdAt || new Date().toISOString();
   }, [cycleStartIso, rawList]);
 
-  // Process, humanize, group SLA, and sort newest first
   const processedItems = useMemo(() => {
     if (!rawList || rawList.length === 0) return [];
 
-    // Map each raw item
     const humanized = rawList.map((entry) => humanizeHistoryItem(entry, resolutionContext));
 
-    // Sort newest first
     const newestFirst = [...humanized].sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
-    // Group consecutive SLA events
     return groupConsecutiveSlaEvents(newestFirst);
   }, [rawList, resolutionContext]);
 
-  // Track new top entry animation after action refetch
   useEffect(() => {
     if (processedItems.length > 0) {
       setHasLoadedOnce(true);
@@ -160,18 +150,15 @@ export const Timeline: React.FC<TimelineProps> = ({
     });
   };
 
-  // Filter items
   const filteredItems = useMemo(() => {
     if (activeFilter === 'All') return processedItems;
     return processedItems.filter((item) => item.filterCategory === activeFilter);
   }, [processedItems, activeFilter]);
 
-  // Group by day for visual separation
   const dayGroups = useMemo(() => {
     return groupItemsByDay(filteredItems);
   }, [filteredItems]);
 
-  // Track hidden count of items below fold
   useEffect(() => {
     const el = viewportRef.current;
     if (!el) return;
@@ -202,7 +189,6 @@ export const Timeline: React.FC<TimelineProps> = ({
     };
   }, [moreAfter, filteredItems]);
 
-  // Handle Loading Skeleton (4 rows)
   if (isLoading) {
     return (
       <div className={clsx(styles.timelineWrapper, className)}>
@@ -224,7 +210,6 @@ export const Timeline: React.FC<TimelineProps> = ({
     );
   }
 
-  // Handle Error State
   if (isError) {
     const requestId =
       errorObj && typeof errorObj === 'object' && 'requestId' in errorObj
@@ -256,7 +241,6 @@ export const Timeline: React.FC<TimelineProps> = ({
     );
   }
 
-  // Handle Empty State
   if (processedItems.length === 0) {
     return (
       <div className={clsx(styles.timelineWrapper, className)}>
@@ -271,7 +255,6 @@ export const Timeline: React.FC<TimelineProps> = ({
   const isEmployee = user?.role === 'EMPLOYEE';
   const showFilters = !isEmployee && processedItems.length > 6;
 
-  // Flatten items for connector line logic
   const allFilteredItems = filteredItems;
   const totalItemCount = allFilteredItems.length;
 
@@ -315,15 +298,12 @@ export const Timeline: React.FC<TimelineProps> = ({
 
               <ol className={styles.timelineList}>
                 {group.items.map((item) => {
-                  // Find global index among all filtered items
                   const globalIdx = allFilteredItems.findIndex((it) => it.id === item.id);
                   const isVeryFirstOverall = globalIdx === 0;
                   const isVeryLastOverall = globalIdx === totalItemCount - 1;
 
-                  // Motion stagger delay on initial load (max 6 items)
                   const staggerDelay = !hasLoadedOnce && globalIdx < 6 ? globalIdx * 0.04 : 0;
 
-                  // Tone & node styling
                   const isViolation = item.isViolation;
                   let nodeStyle = styles.nodeNeutral;
                   if (isVeryFirstOverall && item.tone === 'neutral') {
@@ -338,7 +318,6 @@ export const Timeline: React.FC<TimelineProps> = ({
                   const { numeral, tail } = formatSinceReport(item.createdAt, calculatedCycleStart);
                   const isGroupExpanded = expandedGroups.has(item.id);
 
-                  // Detect cycle change from next item in sequence
                   const nextItem = globalIdx < totalItemCount - 1 ? allFilteredItems[globalIdx + 1] : null;
                   const showCycleDivider =
                     item.cycleId && nextItem?.cycleId && item.cycleId !== nextItem.cycleId;

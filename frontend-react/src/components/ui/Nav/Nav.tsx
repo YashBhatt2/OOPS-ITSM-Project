@@ -28,7 +28,6 @@ export const Nav: React.FC<NavProps> = ({
   const signOutButtonRef = useRef<HTMLDivElement | null>(null);
   const [popoverPosition, setPopoverPosition] = useState<{ top: number; right: number } | null>(null);
 
-  // Measure sign out button for portaled popover
   useEffect(() => {
     if (signOutConfirmOpen && signOutButtonRef.current) {
       const update = () => {
@@ -50,7 +49,6 @@ export const Nav: React.FC<NavProps> = ({
     }
   }, [signOutConfirmOpen]);
 
-  // Close sign out confirm on Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && signOutConfirmOpen) {

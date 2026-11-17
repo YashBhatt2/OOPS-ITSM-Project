@@ -6,21 +6,17 @@ import { ToastProvider } from '@/components/ui/Toast/Toast';
 import { initPageScrollHelper } from '@/lib/pageScroll';
 import { PageBottomFade } from '@/components/ui/PageBottomFade/PageBottomFade';
 
-// Auth
 import { SignInPage } from '@/features/auth/SignInPage';
 import { RegisterPage } from '@/features/auth/RegisterPage';
 import { LandingPage } from '@/features/landing/LandingPage';
 
-// Employee
 import { EmployeeHomePage } from '@/features/employee/EmployeeHomePage';
 import { ReportIncidentPage } from '@/features/employee/ReportIncidentPage';
 import { IncidentDetailPage } from '@/features/employee/IncidentDetailPage';
 
-// Technician
 import { TechnicianQueuePage } from '@/features/technician/TechnicianQueuePage';
 import { TechnicianIncidentDetailPage } from '@/features/technician/TechnicianIncidentDetailPage';
 
-// Admin
 import { AdminOverviewPage } from '@/features/admin/AdminOverviewPage';
 import { AdminIncidentDetailPage } from '@/features/admin/AdminIncidentDetailPage';
 import { VerificationQueuePage } from '@/features/admin/VerificationQueuePage';
@@ -31,7 +27,6 @@ import { ServicesSetupPage } from '@/features/admin/setup/ServicesSetupPage';
 import { TechniciansSetupPage } from '@/features/admin/setup/TechniciansSetupPage';
 import { UsersSetupPage } from '@/features/admin/setup/UsersSetupPage';
 
-// Shared
 import { AllIncidentsPage } from '@/features/incidents/AllIncidentsPage';
 import { NotificationsPage } from '@/features/notifications/NotificationsPage';
 

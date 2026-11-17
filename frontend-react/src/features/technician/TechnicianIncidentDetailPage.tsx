@@ -16,6 +16,9 @@ import { Button } from '@/components/ui/Button/Button';
 import { Dialog } from '@/components/ui/Dialog/Dialog';
 import { useToast } from '@/components/ui/Toast/Toast';
 import { apiRequest, ApiConflictError, ApiError } from '@/lib/api';
+import { fetchResolutionSuggestions } from '@/lib/intelligence';
+import { createCommentPayload } from '@/lib/commentPayload';
+import { commentAuthor } from '@/lib/commentAuthor';
 import { Priority, IncidentStatus, SlaStatus } from '@/lib/constants';
 import { Incident, IncidentComment, HistoryEvent, ResolutionSuggestion, Dashboard } from './types';
 import styles from './technician.module.css';
@@ -35,7 +38,6 @@ export function TechnicianIncidentDetailPage() {
   const [resolutionError, setResolutionError] = useState('');
   const [conflictMessage, setConflictMessage] = useState<string | null>(null);
 
-  // 1. Incident details
   const {
     data: incident,
     isLoading: isIncidentLoading,
@@ -46,47 +48,47 @@ export function TechnicianIncidentDetailPage() {
     enabled: Boolean(id),
   });
 
-  // 2. Comments (all comments including internal)
   const { data: comments = [], refetch: refetchComments } = useQuery<IncidentComment[]>({
     queryKey: ['incident-comments', id],
     queryFn: () => apiRequest(`/api/v1/incidents/${id}/comments`),
     enabled: Boolean(id),
   });
 
-  // 3. History
   const { data: history = [] } = useQuery<HistoryEvent[]>({
     queryKey: ['incident-history', id],
     queryFn: () => apiRequest(`/api/v1/incidents/${id}/history`),
     enabled: Boolean(id),
   });
 
-  // 4. Advisory resolution suggestions
-  const { data: suggestions = [], isError: isSuggestionsError } = useQuery<ResolutionSuggestion[]>({
+  const { data: suggestionResult, isError: isSuggestionsError, isLoading: isSuggestionsLoading } = useQuery<{
+    suggestions: ResolutionSuggestion[];
+    available: boolean;
+  }>({
     queryKey: ['resolution-suggestions', id],
     queryFn: async () => {
       try {
-        return await apiRequest(`/api/v1/incidents/${id}/resolution-suggestions`);
+        return { suggestions: await fetchResolutionSuggestions(id!), available: true };
       } catch (err: unknown) {
         if (err instanceof ApiError && err.status === 503) {
-          return [];
+          return { suggestions: [], available: false };
         }
         throw err;
       }
     },
-    enabled: Boolean(id && incident?.status !== 'CLOSED' && incident?.status !== 'VERIFIED'),
+    enabled: Boolean(id && incident && incident.status !== 'CLOSED' && incident.status !== 'VERIFIED'),
     retry: false,
   });
+  const suggestions = suggestionResult?.suggestions ?? [];
 
   const { data: dashboard } = useQuery<Dashboard>({
     queryKey: ['dashboard', 'me'],
     queryFn: () => apiRequest('/api/v1/dashboards/me'),
   });
 
-  // Action Mutations
   const ackMutation = useMutation({
     mutationFn: async () => {
       if (!incident) return;
-      return await apiRequest(`/api/v1/incidents/${id}/acknowledgments`, {
+      return await apiRequest(`/api/v1/incidents/${id}/acknowledge`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ version: incident.version }),
@@ -160,18 +162,12 @@ export function TechnicianIncidentDetailPage() {
     },
   });
 
-  // Post Comment Mutation
   const postCommentMutation = useMutation({
     mutationFn: async () => {
-      const visibility = commentKind === 'INTERNAL_NOTE' ? 'INTERNAL' : 'PUBLIC';
       return await apiRequest(`/api/v1/incidents/${id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          body: commentText.trim(),
-          kind: commentKind,
-          visibility,
-        }),
+        body: JSON.stringify(createCommentPayload(commentText, commentKind)),
       });
     },
     onSuccess: () => {
@@ -183,8 +179,14 @@ export function TechnicianIncidentDetailPage() {
       refetchComments();
       queryClient.invalidateQueries({ queryKey: ['incident-history', id] });
     },
-    onError: () => {
-      showToast({ title: 'Failed to post comment.', type: 'error' });
+    onError: (err: unknown) => {
+      if (err instanceof ApiConflictError) {
+        refetchIncident();
+        refetchComments();
+      }
+      const message = err instanceof ApiError ? err.message : 'Could not reach the server. Check the connection and try again.';
+      const requestId = err instanceof ApiError && err.requestId ? ` Request ID: ${err.requestId}.` : '';
+      showToast({ title: `${message}${requestId}`, type: 'error' });
     },
   });
 
@@ -296,9 +298,17 @@ export function TechnicianIncidentDetailPage() {
                   Advisory suggestions
                 </h3>
               </div>
-              {isSuggestionsError ? (
+              {isSuggestionsLoading && incident.status !== 'CLOSED' && incident.status !== 'VERIFIED' ? (
+                <p role="status" style={{ fontSize: 'var(--fs-body-s)', color: 'var(--text-3)', margin: 0 }}>
+                  Looking for similar resolutions…
+                </p>
+              ) : isSuggestionsError ? (
                 <p style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-3)', margin: 0 }}>
                   Suggestions unavailable.
+                </p>
+              ) : suggestionResult?.available === false ? (
+                <p style={{ fontSize: 'var(--fs-body-s)', color: 'var(--text-3)', margin: 0 }}>
+                  Suggestions aren't available right now. You can continue investigating.
                 </p>
               ) : suggestions.length === 0 ? (
                 <p style={{ fontSize: 'var(--fs-body-s)', color: 'var(--text-3)', margin: 0 }}>
@@ -308,13 +318,12 @@ export function TechnicianIncidentDetailPage() {
                 suggestions.map((sug) => (
                   <div key={sug.incidentId} className={styles.suggestionCard}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span className={styles.suggestionRef}>{sug.reference}</span>
+                      <span className={styles.suggestionRef}>Past resolution</span>
                       <span style={{ fontSize: 'var(--fs-meta)', color: 'var(--text-3)' }}>
-                        {Math.round(sug.confidenceScore * 100)}% match
+                        Similarity score: {sug.similarityScore.toFixed(2)}
                       </span>
                     </div>
-                    <p className={styles.suggestionTitle}>{sug.title}</p>
-                    <p className={styles.suggestionText}>{sug.resolutionDetails}</p>
+                    <p className={styles.suggestionText}>{sug.resolutionText}</p>
                   </div>
                 ))
               )}
@@ -328,10 +337,10 @@ export function TechnicianIncidentDetailPage() {
                 <Comment
                   key={c.id}
                   id={c.id}
-                  authorName={c.authorName || 'Staff'}
+                  authorName={commentAuthor(c, incident, user)}
                   createdAt={c.createdAt}
                   body={c.body}
-                  kind={c.kind}
+                  kind={c.visibility === 'INTERNAL' ? 'INTERNAL_NOTE' : c.kind}
                 />
               ))}
 

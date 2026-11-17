@@ -6,8 +6,9 @@ import { Nav } from '@/components/ui/Nav/Nav';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Field/Field';
 import { useToast } from '@/components/ui/Toast/Toast';
-import { apiRequest } from '@/lib/api';
+import { apiRequest, ApiError } from '@/lib/api';
 import { Skill, Dashboard } from '../types';
+import { validateSkillName } from '../admin-actions';
 import { SetupNav } from './SetupNav';
 import { BackButton } from '@/components/ui/BackButton/BackButton';
 import styles from './setup.module.css';
@@ -53,8 +54,15 @@ export function SkillsSetupPage() {
       setIsCreating(false);
       refetch();
     },
-    onError: () => {
-      showToast({ title: 'Failed to save skill.', type: 'error' });
+    onError: (err: unknown) => {
+      if (err instanceof ApiError) {
+        const nameError = err.fieldErrors.find((fieldError) => fieldError.field === 'name');
+        if (nameError) setNameError(nameError.message);
+        const requestId = err.requestId ? ` Request ID: ${err.requestId}.` : '';
+        showToast({ title: `${err.message}${requestId}`, type: 'error' });
+        return;
+      }
+      showToast({ title: 'Could not save the skill. Check the connection and try again.', type: 'error' });
     },
   });
 
@@ -76,8 +84,9 @@ export function SkillsSetupPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!skillName.trim()) {
-      setNameError('Skill name is required.');
+    const error = validateSkillName(skillName, skills, selectedSkill?.id);
+    if (error) {
+      setNameError(error);
       return;
     }
     setNameError('');

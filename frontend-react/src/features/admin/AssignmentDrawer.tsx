@@ -29,7 +29,6 @@ export function AssignmentDrawer({ incidentId, incidentVersion, onClose, onAssig
   const [reasonError, setReasonError] = useState('');
   const [conflictMessage, setConflictMessage] = useState('');
 
-  // Load saved strategy on mount
   useQuery({
     queryKey: ['assignment-settings'],
     queryFn: async () => {
@@ -39,7 +38,6 @@ export function AssignmentDrawer({ incidentId, incidentVersion, onClose, onAssig
     },
   });
 
-  // Load technicians to map IDs to display names
   const { data: technicians = [] } = useQuery<Technician[]>({
     queryKey: ['admin-technicians'],
     queryFn: () => apiRequest('/api/v1/admin/technicians'),

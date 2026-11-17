@@ -40,7 +40,6 @@ export function initPageScrollHelper(): () => void {
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll, { passive: true });
 
-  // Initial calculation
   updateScroll();
 
   return () => {

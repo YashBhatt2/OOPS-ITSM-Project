@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { ArrowUpRight } from '@phosphor-icons/react';
 import { useAuth } from '@/features/auth/AuthContext';
 import { Nav } from '@/components/ui/Nav/Nav';
 import { BackButton } from '@/components/ui/BackButton/BackButton';
@@ -10,7 +9,8 @@ import { Segmented } from '@/components/ui/Segmented/Segmented';
 import { Button } from '@/components/ui/Button/Button';
 import { useToast } from '@/components/ui/Toast/Toast';
 import { apiRequest, ApiError } from '@/lib/api';
-import { Service, Category, SimilarReport, Incident, Dashboard } from './types';
+import { fetchDuplicateSuggestions, DuplicateSuggestion } from '@/lib/intelligence';
+import { Service, Category, Incident, Dashboard } from './types';
 import styles from './employee.module.css';
 
 export function ReportIncidentPage() {
@@ -26,28 +26,24 @@ export function ReportIncidentPage() {
   const [urgency, setUrgency] = useState<number>(1);
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [similarReports, setSimilarReports] = useState<SimilarReport[]>([]);
+  const [similarReports, setSimilarReports] = useState<DuplicateSuggestion[]>([]);
   const [isSimilarUnavailable, setIsSimilarUnavailable] = useState(false);
 
-  // Dashboard for unread notifications count
   const { data: dashboard } = useQuery<Dashboard>({
     queryKey: ['dashboard', 'me'],
     queryFn: () => apiRequest('/api/v1/dashboards/me'),
   });
 
-  // Services
   const { data: services = [] } = useQuery<Service[]>({
     queryKey: ['services'],
     queryFn: () => apiRequest('/api/v1/services'),
   });
 
-  // Categories
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ['categories'],
     queryFn: () => apiRequest('/api/v1/categories'),
   });
 
-  // Set default service and category
   useEffect(() => {
     if (services.length > 0 && !serviceId) {
       const activeService = services.find((s) => s.active) || services[0];
@@ -62,37 +58,42 @@ export function ReportIncidentPage() {
     }
   }, [categories, categoryId]);
 
-  // Debounced Similar Reports Check
   useEffect(() => {
     const combined = `${title} ${description}`.trim();
-    if (combined.length < 10) {
+    if (combined.length < 10 || !serviceId || !categoryId) {
       setSimilarReports([]);
       setIsSimilarUnavailable(false);
       return;
     }
 
+    let cancelled = false;
+    const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const results = await apiRequest<SimilarReport[]>('/api/v1/incidents/similar-reports', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, description }),
-        });
-        setSimilarReports(results || []);
-        setIsSimilarUnavailable(false);
+        const results = await fetchDuplicateSuggestions(
+          { title: title.trim(), description: description.trim(), serviceId, categoryId },
+          controller.signal
+        );
+        if (!cancelled) {
+          setSimilarReports(results);
+          setIsSimilarUnavailable(false);
+        }
       } catch (err: unknown) {
+        if (cancelled) return;
+        setSimilarReports([]);
         if (err instanceof ApiError && err.status === 503) {
           setIsSimilarUnavailable(true);
-        } else {
-          setIsSimilarUnavailable(false);
         }
       }
     }, 400);
 
-    return () => clearTimeout(timer);
-  }, [title, description]);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [title, description, serviceId, categoryId]);
 
-  // Create Incident Mutation
   const createMutation = useMutation({
     mutationFn: async () => {
       return await apiRequest<Incident>('/api/v1/incidents', {
@@ -223,26 +224,19 @@ export function ReportIncidentPage() {
             {/* Debounced Similar Reports Panel */}
             {similarReports.length > 0 && (
               <div className={styles.similarPanel}>
-                <span className={styles.similarHeader}>Similar existing reports</span>
+                <span className={styles.similarHeader}>Similar reports</span>
                 {similarReports.slice(0, 3).map((sr) => (
-                  <Link
-                    key={sr.id}
-                    to={`/employee/incidents/${sr.id}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={styles.similarItem}
-                  >
-                    <span>
-                      <strong style={{ fontFamily: 'var(--font-mono)' }}>{sr.reference}</strong> — {sr.title}
-                    </span>
-                    <ArrowUpRight size={14} weight="light" />
-                  </Link>
+                  <p key={`${sr.message}-${sr.similarityScore}`} className={styles.similarItem}>
+                    {sr.message}
+                  </p>
                 ))}
               </div>
             )}
 
             {isSimilarUnavailable && (
-              <p className={styles.similarQuietNotice}>Similar reports unavailable right now.</p>
+              <p className={styles.similarQuietNotice}>
+                Suggestions aren't available right now. You can still send your report.
+              </p>
             )}
 
             <Select
@@ -297,7 +291,7 @@ export function ReportIncidentPage() {
                 isLoading={createMutation.isPending}
                 style={{ width: '100%' }}
               >
-                Submit request
+                Report incident
               </Button>
             </div>
           </form>

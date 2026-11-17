@@ -1,5 +1,9 @@
 /* ── Landing Page Styles ── */
 
+:global(html.landingSmoothScroll) {
+  scroll-behavior: smooth;
+}
+
 .pageContainer {
   min-height: 100dvh;
   background-color: var(--bg);

@@ -21,10 +21,14 @@ export const LandingPage: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isReducedMotion, setIsReducedMotion] = useState(false);
 
-  // SLA Ticking Clocks (Transform-free pure text updates without aria-live)
   const [heroSeconds, setHeroSeconds] = useState(82 * 60 + 4); // 01:22:04
   const [healthySeconds, setHealthySeconds] = useState(74 * 60 + 10); // 01:14:10
   const [breachedSeconds, setBreachedSeconds] = useState(18 * 60 + 42); // +00:18:42
+
+  useEffect(() => {
+    document.documentElement.classList.add('landingSmoothScroll');
+    return () => document.documentElement.classList.remove('landingSmoothScroll');
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -42,7 +46,6 @@ export const LandingPage: React.FC = () => {
     return { main: `${h}:${m}:`, tail: s };
   };
 
-  // Check reduced motion
   useEffect(() => {
     const checkMotion = () => {
       const reduced =
@@ -59,7 +62,6 @@ export const LandingPage: React.FC = () => {
     return () => media.removeEventListener('change', checkMotion);
   }, []);
 
-  // Lifecycle Story scroll tracking
   const storyRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     target: storyRef,

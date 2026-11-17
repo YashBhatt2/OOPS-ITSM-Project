@@ -46,13 +46,6 @@ export interface HistoryEvent {
   actorId?: string;
 }
 
-export interface SimilarReport {
-  id: string;
-  reference: string;
-  title: string;
-  similarity: number;
-}
-
 export interface PagedResult<T> {
   items: T[];
   page: number;

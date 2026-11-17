@@ -30,13 +30,11 @@ export function TechnicianQueuePage() {
   const [resolutionError, setResolutionError] = useState('');
   const [conflictMessage, setConflictMessage] = useState<string | null>(null);
 
-  // 1. Dashboard data (for capacity and unread count)
   const { data: dashboard } = useQuery<Dashboard>({
     queryKey: ['dashboard', 'me'],
     queryFn: () => apiRequest('/api/v1/dashboards/me'),
   });
 
-  // 2. Technician assigned queue
   const {
     data: queueResult,
     isLoading,
@@ -48,7 +46,6 @@ export function TechnicianQueuePage() {
     refetchInterval: 60000,
   });
 
-  // Acknowledge Mutation
   const ackMutation = useMutation({
     mutationFn: async (inc: Incident) => {
       return await apiRequest(`/api/v1/incidents/${inc.id}/acknowledge`, {
@@ -73,7 +70,6 @@ export function TechnicianQueuePage() {
     },
   });
 
-  // Start Investigation Mutation
   const startMutation = useMutation({
     mutationFn: async (inc: Incident) => {
       return await apiRequest(`/api/v1/incidents/${inc.id}/start-investigation`, {
@@ -98,7 +94,6 @@ export function TechnicianQueuePage() {
     },
   });
 
-  // Resolve Mutation
   const resolveMutation = useMutation({
     mutationFn: async () => {
       if (!resolvingIncident) return;
@@ -131,7 +126,6 @@ export function TechnicianQueuePage() {
 
   const rawItems = queueResult?.items ?? [];
 
-  // Sort by nearest deadline
   const sortedItems = [...rawItems].sort((a, b) => {
     const timeA = a.resolutionDueAt
       ? new Date(a.resolutionDueAt).getTime()
@@ -146,8 +140,8 @@ export function TechnicianQueuePage() {
     return timeA - timeB;
   });
 
-  const capacity = dashboard?.capacity || 5;
-  const activeWorkload = dashboard?.activeWorkload || sortedItems.length;
+  const capacity = dashboard?.capacity ?? 0;
+  const activeWorkload = dashboard?.activeWorkload ?? 0;
 
   const breachedCount = sortedItems.filter((i) => i.slaStatus === 'BREACHED').length;
   const atRiskCount = sortedItems.filter((i) => i.slaStatus === 'AT_RISK').length;

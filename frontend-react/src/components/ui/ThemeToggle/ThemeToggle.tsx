@@ -23,7 +23,6 @@ export const ThemeToggle: React.FC = () => {
     try {
       localStorage.setItem('theme-preference', nextChoice);
     } catch {
-      // Ignore
     }
 
     document.documentElement.setAttribute('data-theme', nextChoice);

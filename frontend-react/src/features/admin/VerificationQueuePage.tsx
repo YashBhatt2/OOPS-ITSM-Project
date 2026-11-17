@@ -26,26 +26,29 @@ export function VerificationQueuePage() {
   const [rejectError, setRejectError] = useState('');
   const [conflictMessage, setConflictMessage] = useState<string | null>(null);
 
-  // 1. Dashboard
   const { data: dashboard } = useQuery<Dashboard>({
     queryKey: ['dashboard', 'admin'],
     queryFn: () => apiRequest('/api/v1/dashboards/me'),
   });
 
-  // 2. Incidents with status=RESOLVED
   const {
-    data: resolvedResult,
+    data: queueIncidents,
     isLoading,
     refetch,
-  } = useQuery<PagedResult<Incident>>({
+  } = useQuery<Incident[]>({
     queryKey: ['incidents-verification-queue'],
-    queryFn: () => apiRequest('/api/v1/incidents?status=RESOLVED&page=0&size=50'),
+    queryFn: async () => {
+      const [resolved, verified] = await Promise.all([
+        apiRequest<PagedResult<Incident>>('/api/v1/incidents?status=RESOLVED&page=0&size=50'),
+        apiRequest<PagedResult<Incident>>('/api/v1/incidents?status=VERIFIED&page=0&size=50'),
+      ]);
+      return [...resolved.items, ...verified.items];
+    },
   });
 
-  // Verify Mutation
   const verifyMutation = useMutation({
     mutationFn: async (inc: Incident) => {
-      return await apiRequest(`/api/v1/incidents/${inc.id}/verifications`, {
+      return await apiRequest(`/api/v1/incidents/${inc.id}/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ version: inc.version, note: 'Verified by administrator.' }),
@@ -67,11 +70,10 @@ export function VerificationQueuePage() {
     },
   });
 
-  // Reject Resolution Mutation
   const rejectMutation = useMutation({
     mutationFn: async () => {
       if (!rejectingIncident) return;
-      return await apiRequest(`/api/v1/incidents/${rejectingIncident.id}/resolution-rejections`, {
+      return await apiRequest(`/api/v1/incidents/${rejectingIncident.id}/reject-resolution`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -98,13 +100,12 @@ export function VerificationQueuePage() {
     },
   });
 
-  // Close Mutation
   const closeMutation = useMutation({
     mutationFn: async (inc: Incident) => {
       return await apiRequest(`/api/v1/incidents/${inc.id}/close`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ version: inc.version }),
+        body: JSON.stringify({ version: inc.version, note: 'Closed after administrator review.' }),
       });
     },
     onSuccess: () => {
@@ -123,7 +124,7 @@ export function VerificationQueuePage() {
     },
   });
 
-  const resolvedIncidents = resolvedResult?.items ?? [];
+  const resolvedIncidents = queueIncidents ?? [];
 
   return (
     <div className={styles.page}>
@@ -209,41 +210,45 @@ export function VerificationQueuePage() {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                   <span className={styles.incidentAge}>
-                    Resolved {formatRelativeTime(inc.updatedAt)}
+                    {inc.status === 'RESOLVED' ? 'Resolved' : 'Verified'} {formatRelativeTime(inc.updatedAt)}
                   </span>
 
-                  <Button
-                    variant="primary"
-                    size="compact"
-                    isLoading={verifyMutation.isPending}
-                    onClick={() => verifyMutation.mutate(inc)}
-                  >
-                    <Check size={14} weight="light" />
-                    <span>Verify</span>
-                  </Button>
+                  {inc.status === 'RESOLVED' ? (
+                    <>
+                      <Button
+                        variant="primary"
+                        size="compact"
+                        isLoading={verifyMutation.isPending}
+                        onClick={() => verifyMutation.mutate(inc)}
+                      >
+                        <Check size={14} weight="light" />
+                        <span>Verify</span>
+                      </Button>
 
-                  <Button
-                    variant="destructive"
-                    size="compact"
-                    onClick={() => {
-                      setRejectingIncident(inc);
-                      setRejectReason('');
-                      setRejectError('');
-                    }}
-                  >
-                    <X size={14} weight="light" />
-                    <span>Reject</span>
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="compact"
-                    isLoading={closeMutation.isPending}
-                    onClick={() => closeMutation.mutate(inc)}
-                  >
-                    <Lock size={14} weight="light" />
-                    <span>Close</span>
-                  </Button>
+                      <Button
+                        variant="destructive"
+                        size="compact"
+                        onClick={() => {
+                          setRejectingIncident(inc);
+                          setRejectReason('');
+                          setRejectError('');
+                        }}
+                      >
+                        <X size={14} weight="light" />
+                        <span>Reject resolution</span>
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="compact"
+                      isLoading={closeMutation.isPending}
+                      onClick={() => closeMutation.mutate(inc)}
+                    >
+                      <Lock size={14} weight="light" />
+                      <span>Close</span>
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}

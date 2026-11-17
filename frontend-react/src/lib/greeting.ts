@@ -52,13 +52,10 @@ export function extractFirstName(displayName?: string | null): string | undefine
   const trimmed = displayName.trim();
   if (!trimmed) return undefined;
 
-  // Split on whitespace or common separator
   const firstWord = trimmed.split(/[\s,]+/)[0];
-  // Remove leading/trailing non-alphanumeric chars
   const clean = firstWord.replace(/^[^a-zA-Z0-9]+|[^a-zA-Z0-9]+$/g, '');
   if (!clean) return undefined;
 
-  // Capitalize first letter cleanly if all lowercase
   if (clean === clean.toLowerCase()) {
     return clean.charAt(0).toUpperCase() + clean.slice(1);
   }
@@ -121,7 +118,6 @@ export function getGreeting(
   now: Date = new Date(),
   storage?: { getItem: (k: string) => string | null; setItem: (k: string, v: string) => void } | null
 ): GreetingInfo {
-  // Support dev-only clock override stripped in production builds
   if (import.meta.env.DEV) {
     if (typeof window !== 'undefined') {
       const devOverride = (window as unknown as { __DEV_GREETING_TIME_OVERRIDE__?: string })
@@ -136,7 +132,6 @@ export function getGreeting(
   const timeBand = getTimeBand(now);
   const bloomToken = getBloomToken(timeBand);
 
-  // Check visit history from storage if available
   let isFirstVisit = false;
   let isReturning7Days = false;
 
@@ -161,10 +156,8 @@ export function getGreeting(
       }
     }
   } catch {
-    // If storage is unavailable or restricted, fall back silently
   }
 
-  // Determine salutation
   let salutation = 'Good morning';
   if (isFirstVisit) {
     salutation = 'Welcome';
@@ -215,7 +208,6 @@ export function recordGreetingVisit(
       activeStorage.setItem(storageKey, now.toISOString());
     }
   } catch {
-    // Ignore storage errors
   }
 }
 

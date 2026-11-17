@@ -29,12 +29,10 @@ export const GreetingHeader: React.FC<GreetingHeaderProps> = ({
 }) => {
   const [now, setNow] = useState<Date>(() => new Date());
 
-  // Set document title according to DESIGN.md
   useEffect(() => {
     document.title = `Home - ${PRODUCT_NAME}`;
   }, []);
 
-  // Re-evaluate on tab focus and every 5 minutes
   useEffect(() => {
     const handleReevaluate = () => {
       setNow(new Date());
@@ -49,12 +47,10 @@ export const GreetingHeader: React.FC<GreetingHeaderProps> = ({
     };
   }, []);
 
-  // Compute greeting info purely from current clock and identity
   const greeting = useMemo(() => {
     return getGreeting(displayName, userId, now);
   }, [displayName, userId, now]);
 
-  // Record visit in storage after greeting renders
   useEffect(() => {
     recordGreetingVisit(userId, now);
   }, [userId]);
