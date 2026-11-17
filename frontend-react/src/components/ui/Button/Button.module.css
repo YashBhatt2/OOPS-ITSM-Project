@@ -1,0 +1,170 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.005em;
+  text-decoration: none;
+  border-radius: var(--r-md);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: transform var(--dur-1) var(--ease-out), background-color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.button:active {
+  transform: scale(0.98);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ── Sizes ── */
+.default {
+  height: 2.75rem; /* 44px */
+  padding: 0 var(--space-5);
+}
+
+.large {
+  height: 3.25rem; /* 52px */
+  padding: 0 var(--space-6);
+  font-size: var(--fs-body);
+}
+
+.compact {
+  height: 2.25rem; /* 36px */
+  padding: 0 var(--space-3);
+  font-size: var(--fs-body-s);
+  border-radius: var(--r-sm);
+}
+
+.iconOnly {
+  padding: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.iconOnlyLarge {
+  padding: 0;
+  width: 3rem; /* 48px */
+  height: 3rem;
+  border-radius: var(--r-lg);
+}
+
+.iconOnlyCompact {
+  padding: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+/* ── Variants ── */
+.primary {
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+}
+
+@media (hover: hover) {
+  .primary:hover {
+    opacity: 0.92;
+  }
+}
+
+.secondary {
+  background-color: var(--surface-2);
+  border-color: var(--line-2);
+  color: var(--text-1);
+}
+
+@media (hover: hover) {
+  .secondary:hover {
+    background-color: var(--surface-3);
+  }
+}
+
+.ghost {
+  background-color: transparent;
+  color: var(--text-1);
+}
+
+@media (hover: hover) {
+  .ghost:hover {
+    background-color: var(--surface-3);
+  }
+}
+
+.destructive {
+  background-color: var(--red-fill);
+  color: var(--on-red);
+}
+
+@media (hover: hover) {
+  .destructive:hover {
+    opacity: 0.92;
+  }
+}
+
+.link {
+  background-color: transparent;
+  color: var(--blue);
+  padding: 0;
+  height: auto;
+  border-radius: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.1875rem; /* 3px */
+}
+
+@media (hover: hover) {
+  .link:hover {
+    opacity: 0.85;
+  }
+}
+
+/* ── Glass Icon Button (CRED control) ── */
+.glassIcon {
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(24px) saturate(1.6);
+  backdrop-filter: blur(24px) saturate(1.6);
+  border: 1px solid var(--line-2);
+  color: var(--text-1);
+  border-radius: var(--r-lg);
+}
+
+@media (hover: hover) {
+  .glassIcon:hover {
+    background-color: var(--surface-3);
+  }
+}
+
+/* ── States ── */
+.disabled,
+.button:disabled {
+  background-color: var(--surface-2);
+  color: var(--text-3);
+  border-color: transparent;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.spinner {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--r-pill);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+

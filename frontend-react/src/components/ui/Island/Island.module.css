@@ -1,0 +1,593 @@
+/* ── The Island (Notification Instrument) ── */
+
+.islandContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  z-index: var(--z-nav);
+}
+
+/* ── Modal Scrim ── */
+.scrim {
+  position: fixed;
+  inset: 0;
+  background-color: rgb(0 0 0 / 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: var(--z-modal);
+}
+
+:root[data-theme="light"] .scrim {
+  background-color: rgb(11 11 12 / 0.38);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+/* ── Unified Morphing Surface ── */
+.islandSurface {
+  position: relative;
+  background-color: color-mix(in srgb, var(--surface-1) 95%, transparent);
+  backdrop-filter: blur(48px) saturate(190%);
+  -webkit-backdrop-filter: blur(48px) saturate(190%);
+  border: 1px solid var(--line-2);
+  color: var(--text-1);
+  box-sizing: border-box;
+  overflow: hidden;
+  outline: none;
+  box-shadow: 0 24px 64px -8px rgb(0 0 0 / 0.75), inset 0 1px 0 rgba(255 255 255 / 0.14);
+  transform-origin: top right;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+:root[data-theme="light"] .islandSurface {
+  box-shadow: 0 20px 48px -12px rgb(11 11 12 / 0.18), inset 0 1px 0 rgba(255 255 255 / 0.8);
+}
+
+.islandSurface:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ── 1. Rest State (Glass Pill) ── */
+.restPillLayout {
+  min-height: 2.25rem; /* 36px */
+  padding: 0 var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: grab;
+  font-family: var(--font-sans);
+  border-radius: var(--r-pill);
+}
+
+.restPillLayout:active {
+  cursor: grabbing;
+}
+
+.bellIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-1);
+}
+
+/* Rolling Number Odometer */
+.rollingNumberContainer {
+  display: inline-flex;
+  height: 1.15em;
+  overflow: hidden;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  min-width: 0.85em;
+}
+
+.countText {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  font-weight: 600;
+  color: var(--text-1);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.signalDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--red-fill);
+  flex-shrink: 0;
+  transition: transform var(--dur-2) var(--ease-out), opacity var(--dur-2) var(--ease-out);
+}
+
+.signalDotPulse {
+  animation: breachDotPulse 900ms var(--ease-out) 1;
+}
+
+@keyframes breachDotPulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.8); opacity: 0.4; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ── 2. Peek State (Floating Frosted Banner) ── */
+.peekLayout {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  width: clamp(21rem, 90vw, 25rem);
+  min-height: 4.5rem;
+  border-radius: var(--r-lg);
+  padding: var(--space-3) var(--space-4) calc(var(--space-3) + 2px);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  z-index: calc(var(--z-modal) + 1);
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .peekLayout {
+    position: fixed;
+    top: calc(3.75rem + env(safe-area-inset-top, 0px));
+    left: var(--space-3);
+    right: var(--space-3);
+    width: auto;
+  }
+}
+
+.peekP1 {
+  border-color: var(--red);
+  background-color: color-mix(in srgb, var(--tint-red) 55%, var(--surface-1));
+}
+
+.peekP2 {
+  border-color: var(--amber);
+  background-color: color-mix(in srgb, var(--tint-amber) 55%, var(--surface-1));
+}
+
+.peekIconBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--r-md);
+  background-color: var(--surface-2);
+  border: 1px solid var(--line-1);
+  color: var(--text-1);
+  flex-shrink: 0;
+}
+
+.peekContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.peekEyebrowRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.peekEyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--text-3);
+  text-transform: uppercase;
+}
+
+.peekTime {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-3);
+}
+
+.peekMessage {
+  font-size: var(--fs-body-s);
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.peekMoreTag {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-2);
+  margin-top: 0.1rem;
+}
+
+.peekRightAction {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.peekArrow {
+  color: var(--text-2);
+  transition: transform var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
+}
+
+.peekLayout:hover .peekArrow {
+  transform: translate(2px, -2px);
+  color: var(--text-1);
+}
+
+/* Hairline Countdown Timer */
+.peekHairlineTrack {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  overflow: hidden;
+  border-bottom-left-radius: inherit;
+  border-bottom-right-radius: inherit;
+  background-color: var(--line-1);
+}
+
+.peekHairlineBar {
+  height: 100%;
+  width: 100%;
+  background-color: var(--text-2);
+  transform-origin: left center;
+  animation: peekCountdown linear 1 forwards;
+}
+
+.peekHairlineBarP1 {
+  background-color: var(--red);
+}
+
+.peekHairlineBarP2 {
+  background-color: var(--amber);
+}
+
+@keyframes peekCountdown {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+/* Breach Perimeter Hairline Trace */
+.breachTraceSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.breachTraceRect {
+  fill: none;
+  stroke: var(--red);
+  stroke-width: 1.5;
+  stroke-dasharray: 800;
+  stroke-dashoffset: 800;
+  animation: traceBorder 850ms var(--ease-out) 1 forwards;
+}
+
+@keyframes traceBorder {
+  to {
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+}
+
+/* ── 3. Open State (Solid Opaque Instrument Card) ── */
+.openCardLayout {
+  position: fixed;
+  width: clamp(22rem, 92vw, 26.5rem);
+  max-height: 72dvh;
+  border-radius: var(--r-xl);
+  z-index: calc(var(--z-modal) + 1);
+  display: flex;
+  flex-direction: column;
+  background-color: var(--surface-1) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1 !important;
+  border: 1px solid var(--line-2);
+  box-shadow: 0 24px 60px -8px rgb(0 0 0 / 0.75);
+}
+
+:root[data-theme="light"] .openCardLayout {
+  background-color: var(--surface-1) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 20px 48px -12px rgb(11 11 12 / 0.22);
+}
+
+@media (max-width: 600px) {
+  .openCardLayout {
+    position: fixed;
+    top: calc(3.75rem + env(safe-area-inset-top, 0px)) !important;
+    left: var(--space-3) !important;
+    right: var(--space-3) !important;
+    width: auto;
+    max-height: 80dvh;
+  }
+}
+
+.openHeader {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--line-1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  cursor: grab;
+}
+
+.openHeader:active {
+  cursor: grabbing;
+}
+
+.openTitleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.headerIconBadge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--r-sm);
+  background-color: var(--surface-2);
+  border: 1px solid var(--line-1);
+  color: var(--text-2);
+}
+
+.openTitle {
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-3);
+  font-weight: 600;
+  color: var(--text-1);
+  margin: 0;
+}
+
+.unreadPillBadge {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--r-pill);
+  background-color: var(--tint-red);
+  color: var(--red);
+  border: 1px solid var(--line-1);
+}
+
+.errorNotice {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--amber-text);
+  margin-left: var(--space-2);
+}
+
+.openHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ghostActionBtn {
+  background: none;
+  border: 1px solid var(--line-1);
+  color: var(--text-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-meta);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: color var(--dur-1) var(--ease-out), background-color var(--dur-1) var(--ease-out);
+}
+
+.ghostActionBtn:hover {
+  color: var(--text-1);
+  background-color: var(--surface-2);
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: none;
+  border: none;
+  color: var(--text-2);
+  cursor: pointer;
+  border-radius: var(--r-sm);
+  transition: color var(--dur-1) var(--ease-out), background-color var(--dur-1) var(--ease-out);
+}
+
+.closeBtn:hover {
+  color: var(--text-1);
+  background-color: var(--surface-2);
+}
+
+/* ── Grouped Notifications List ── */
+.listScroll {
+  overflow-y: auto;
+  flex: 1;
+  padding: var(--space-2) 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  mask-image: linear-gradient(to bottom, transparent 0px, black 16px, black calc(100% - 16px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0px, black 16px, black calc(100% - 16px), transparent 100%);
+}
+
+.listScroll::-webkit-scrollbar {
+  display: none;
+}
+
+.groupHeader {
+  padding: var(--space-3) var(--space-5) var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.notificationItem {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--line-1);
+  cursor: pointer;
+  touch-action: pan-y;
+  transition: background-color var(--dur-1) var(--ease-out), opacity var(--dur-2) var(--ease-out);
+}
+
+.notificationItem:last-child {
+  border-bottom: none;
+}
+
+.notificationItem:hover {
+  background-color: var(--surface-2);
+}
+
+.itemUnread {
+  background-color: color-mix(in srgb, var(--surface-2) 55%, transparent);
+}
+
+.itemReadDimmed {
+  opacity: 0.65;
+}
+
+.itemDotWrapper {
+  padding-top: 0.35rem;
+  width: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.itemContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemMessage {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-s);
+  color: var(--text-1);
+  margin: 0 0 0.25rem 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.itemFooter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.itemTime {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-3);
+}
+
+.emailTag {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  padding: 0.1rem 0.35rem;
+  border-radius: var(--r-sm);
+  background-color: var(--surface-3);
+  color: var(--text-2);
+  border: 1px solid var(--line-1);
+}
+
+.openIncidentBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--blue);
+  font-family: var(--font-sans);
+  font-size: var(--fs-meta);
+  cursor: pointer;
+  transition: color var(--dur-1) var(--ease-out);
+}
+
+.openIncidentBtn:hover {
+  color: var(--text-1);
+}
+
+/* Mouse Hover Quick Mark-Read Button */
+.quickCheckBtn {
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--r-sm);
+  background-color: var(--surface-3);
+  border: 1px solid var(--line-1);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: opacity var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out), background-color var(--dur-1) var(--ease-out);
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.notificationItem:hover .quickCheckBtn {
+  opacity: 1;
+}
+
+.quickCheckBtn:hover {
+  color: var(--green);
+  background-color: var(--surface-2);
+  border-color: var(--green);
+}
+
+/* Empty State */
+.emptyState {
+  padding: var(--space-8) var(--space-5);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.emptyTitle {
+  font-family: var(--font-serif);
+  font-size: var(--fs-title-3);
+  color: var(--text-1);
+  margin: 0;
+}
+
+.emptyDesc {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-s);
+  color: var(--text-2);
+  margin: 0;
+}

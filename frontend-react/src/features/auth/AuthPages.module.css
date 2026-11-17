@@ -1,0 +1,231 @@
+.heroContainer {
+  min-height: 100dvh;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg);
+  background-image: var(--bloom);
+  background-size: 100% 600px;
+  background-position: center top;
+  background-repeat: no-repeat;
+  color: var(--text-1);
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.asciiBackground {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  opacity: 0.85;
+}
+
+.heroHeader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  padding: 0 var(--margin);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+  box-sizing: border-box;
+}
+
+.skyArea {
+  flex: 0 0 auto;
+  min-height: 10dvh;
+  margin-top: 4.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: var(--space-4);
+  padding-left: var(--margin);
+  padding-right: var(--margin);
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+.displayBrand {
+  font-family: var(--font-sans);
+  font-size: clamp(1.25rem, 3.5vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--text-1);
+  text-align: center;
+  margin: 0;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+@media (min-width: 48rem) {
+  .skyArea {
+    min-height: 14dvh;
+  }
+  .displayBrand {
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    letter-spacing: 0.32em;
+  }
+}
+
+:root[data-theme="dark"] .displayBrand {
+  text-shadow: var(--glow-display);
+}
+
+:root[data-theme="light"] .displayBrand {
+  color: var(--text-1);
+}
+
+.panelWrapper {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1 0 auto;
+  padding: 0 var(--margin);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.glassPanel {
+  width: 100%;
+  max-width: 25.5rem;
+  border-radius: var(--r-xl);
+  padding: var(--space-6);
+  background-color: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--line-2);
+  box-shadow: var(--shadow-float);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  box-sizing: border-box;
+}
+
+@media (max-width: 480px) {
+  .glassPanel {
+    padding: var(--space-5) var(--space-4);
+    border-radius: var(--r-lg);
+  }
+}
+
+.panelTitle {
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-2);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--text-1);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--r-md);
+  border: 1px solid var(--red);
+  background-color: var(--tint-red);
+  color: var(--red);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-s);
+}
+
+.switchLink {
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-s);
+  color: var(--text-2);
+  margin-top: var(--space-1);
+}
+
+.switchLink a {
+  color: var(--text-1);
+  text-decoration: underline;
+  text-underline-offset: 0.1875rem;
+}
+
+.switchLink a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.floorArea {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6) var(--margin);
+  width: 100%;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+.floorTagline {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin: 0;
+  text-align: center;
+}
+
+/* Authentication Check Success Animation (Apple Face ID Style) */
+.authSuccessBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+  gap: var(--space-4);
+  text-align: center;
+  background: transparent;
+}
+
+.faceIdContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+.faceIdSvg {
+  overflow: visible;
+}
+
+.authLoadingTitle {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-2);
+  margin: 0;
+}
+
+.authSuccessTitle {
+  font-family: var(--font-serif);
+  font-size: var(--fs-title-2);
+  color: var(--text-1);
+  margin: 0;
+}
+
+.authSuccessSub {
+  font-size: var(--fs-body-s);
+  color: var(--text-2);
+  margin: 0;
+}

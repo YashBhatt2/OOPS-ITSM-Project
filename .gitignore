@@ -7,3 +7,10 @@
 *.iml
 .local/
 *.log
+
+# Python intelligence service
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+intelligence/.e2e_state.json

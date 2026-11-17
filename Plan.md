@@ -18,7 +18,7 @@ Team targets: backend/database by November 10, 2026; feature cutoff November 15;
 | 4 — incident workflow | Workflow, history, comments, feedback, reopening, and permission cases covered by integration tests |
 | 5 — priority/assignment | Both strategies pass domain tests; core assignment and priority workflows are covered in integration tests |
 | 6 — SLA/notifications | Timing rules and SLA/notification integration cases pass; simulated email only |
-| 7 — intelligence/reports | Java adapter, filters, dashboards, and reports implemented. Python service and React feature integration remain pending. |
+| 7 — intelligence/reports | Java adapter, filters, dashboards, and reports implemented. The React branch exists; route/payload alignment and Python service integration remain. See docs/backend-react-integration-plan.md. |
 | 8 — submission readiness | 51 domain and 23 backend integration tests previously passed; validate the latest migration, complete the React workflow and Python integration, then finish report and demo. |
 
 ## Accepted decisions
@@ -168,10 +168,11 @@ Resolve before implementing the dependent functionality:
 Complete the remaining work in this order:
 
 1. Build the React interface for employee, technician, and administrator workflows. Use the API contracts in `docs/frontend-handoff.md`; include session/CSRF handling, validation, empty states, and role-appropriate actions.
-2. Run the latest Flyway migrations against a fresh PostgreSQL database and verify that the starter catalog and SLA policy appear.
-3. Connect the Python service to the existing duplicate and resolution adapter. Verify valid rankings, empty results, malformed responses, and service outage behavior.
-4. Exercise the full employee-to-technician-to-administrator workflow through the React interface and confirm persistence after restarting the backend.
-5. If time permits, add coverage for concurrent capacity confirmation, database-failure rollback, and notification delivery retry/restart behavior.
-6. Finalize diagrams, report, test evidence, and the recorded demonstration.
+2. Align the React API calls with the canonical backend routes and payloads in `docs/backend-react-integration-plan.md`.
+3. Run the latest Flyway migrations against a fresh PostgreSQL database and verify that the starter catalog and SLA policy appear.
+4. Connect the Python service to the existing duplicate and resolution adapter. Verify valid rankings, empty results, malformed responses, and service outage behavior.
+5. Exercise the full employee-to-technician-to-administrator workflow through the React interface and confirm persistence after restarting the backend.
+6. If time permits, add coverage for concurrent capacity confirmation, database-failure rollback, and notification delivery retry/restart behavior.
+7. Finalize diagrams, report, test evidence, and the recorded demonstration.
 
 The React interface, real Python service, latest migration validation, complete end-to-end workflow, final report, and demonstration are not yet complete.

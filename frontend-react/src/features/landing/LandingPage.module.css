@@ -1,0 +1,1038 @@
+/* ── Landing Page Styles ── */
+
+:global(html.landingSmoothScroll) {
+  scroll-behavior: smooth;
+}
+
+.pageContainer {
+  min-height: 100dvh;
+  background-color: var(--bg);
+  color: var(--text-1);
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ── 1. Frosted Glass Top Bar ── */
+.topBar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  padding: 0 var(--margin);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--line-1);
+  z-index: var(--z-nav);
+  box-sizing: border-box;
+}
+
+.topBarInner {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topBarNav {
+  display: none;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+@media (min-width: 768px) {
+  .topBarNav {
+    display: flex;
+  }
+}
+
+.navLink {
+  font-family: var(--font-sans);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: color var(--dur-1) var(--ease-out);
+  cursor: pointer;
+}
+
+.navLink:hover {
+  color: var(--text-1);
+}
+
+.topBarRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.authGroup {
+  display: none;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+@media (min-width: 600px) {
+  .authGroup {
+    display: flex;
+  }
+}
+
+.mobileMenuBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--r-sm);
+  background: transparent;
+  border: 1px solid var(--line-1);
+  color: var(--text-1);
+  cursor: pointer;
+  padding: 0;
+}
+
+@media (min-width: 768px) {
+  .mobileMenuBtn {
+    display: none;
+  }
+}
+
+.mobileNavContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-2) 0;
+}
+
+.mobileNavLink {
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-3);
+  font-weight: 500;
+  color: var(--text-1);
+  text-decoration: none;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--line-1);
+}
+
+.mobileNavActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+/* ── 2. Cinematic Horizon Hero ── */
+.heroSection {
+  position: relative;
+  min-height: 94dvh;
+  padding-top: 5.5rem;
+  padding-bottom: var(--space-8);
+  padding-left: var(--margin);
+  padding-right: var(--margin);
+  background-image: var(--horizon);
+  background-size: cover;
+  background-position: center top;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.heroCore {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: var(--horizon-core);
+  pointer-events: none;
+  animation: heroBreathing 12s var(--ease-in-out) infinite alternate;
+}
+
+@keyframes heroBreathing {
+  0% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.heroGrain {
+  position: absolute;
+  inset: 0;
+  background-image: var(--noise-grain);
+  pointer-events: none;
+  opacity: 0.04;
+}
+
+.heroContainer {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-7);
+  align-items: center;
+}
+
+@media (min-width: 1024px) {
+  .heroContainer {
+    grid-template-columns: 1.15fr 1fr;
+    gap: var(--space-8);
+  }
+}
+
+.heroLeft {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.heroHeadline {
+  font-family: var(--font-serif);
+  font-size: clamp(2.75rem, 2rem + 3.2vw, 5rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--text-1);
+  margin: 0 0 var(--space-5) 0;
+  text-wrap: balance;
+  max-width: 18ch;
+}
+
+:root[data-theme="dark"] .heroHeadline {
+  text-shadow: var(--glow-display);
+}
+
+.heroSubhead {
+  font-family: var(--font-sans);
+  font-size: clamp(1rem, 0.95rem + 0.3vw, 1.25rem);
+  color: var(--text-2);
+  line-height: 1.55;
+  margin: 0 0 var(--space-6) 0;
+  max-width: 58ch;
+}
+
+.heroCtas {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+/* ── Hero Product Stage ── */
+.heroRight {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+@media (min-width: 1024px) {
+  .heroRight {
+    justify-content: flex-end;
+  }
+}
+
+.heroProductCard {
+  width: 100%;
+  max-width: 32rem;
+  background-color: var(--surface-1);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-float);
+  padding: var(--space-5);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.cardHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cardRef {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.cardTitle {
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-3);
+  font-weight: 600;
+  color: var(--text-1);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.cardMetaRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-s);
+  color: var(--text-2);
+}
+
+.cardDividerDot {
+  color: var(--text-3);
+}
+
+.cardClockRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: var(--space-3);
+  background-color: var(--surface-2);
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-md);
+}
+
+.clockLabel {
+  font-family: var(--font-sans);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.clockDigits {
+  font-family: var(--font-mono);
+  font-size: var(--fs-title-2);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-1);
+}
+
+.clockDimTail {
+  color: var(--text-3);
+}
+
+.cardFooterRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-s);
+  color: var(--text-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line-1);
+}
+
+/* ── 3. Facts Strip ── */
+.factsStrip {
+  border-top: 1px solid var(--line-1);
+  border-bottom: 1px solid var(--line-1);
+  background-color: var(--bg);
+  padding: var(--space-3) var(--margin);
+  box-sizing: border-box;
+}
+
+.factsInner {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.factItem {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  color: var(--text-2);
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.factSeparator {
+  color: var(--text-3);
+  opacity: 0.4;
+}
+
+/* ── Common Section Structure ── */
+.section {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-9) var(--margin);
+  box-sizing: border-box;
+  scroll-margin-top: 4.5rem;
+}
+
+.sectionEyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-2);
+  margin-bottom: var(--space-2);
+}
+
+.sectionTitle {
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-1);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  color: var(--text-1);
+  margin: 0 0 var(--space-3) 0;
+}
+
+.sectionDesc {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-l);
+  color: var(--text-2);
+  line-height: 1.5;
+  margin: 0;
+  max-width: 60ch;
+}
+
+/* ── 4. The Lifecycle Story ── */
+.storyGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-7);
+  margin-top: var(--space-7);
+  position: relative;
+}
+
+@media (min-width: 1024px) {
+  .storyGrid {
+    grid-template-columns: 1.1fr 1fr;
+    gap: var(--space-8);
+  }
+}
+
+/* Sticky Stage (Desktop) */
+.storyStickyColumn {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .storyStickyColumn {
+    display: block;
+    position: sticky;
+    top: 6rem;
+    height: fit-content;
+  }
+}
+
+.stickySurfaceContainer {
+  position: relative;
+  display: flex;
+  gap: var(--space-4);
+  flex-direction: column;
+}
+
+.stickySurfaceInner {
+  display: flex;
+  gap: var(--space-4);
+  position: relative;
+}
+
+.stageTabsContainer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.25rem;
+  background-color: var(--surface-2);
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-pill);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.stageTabsContainer::-webkit-scrollbar {
+  display: none;
+}
+
+.stageTabBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--r-pill);
+  background: transparent;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: var(--fs-meta);
+  color: var(--text-2);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--dur-1) var(--ease-out);
+}
+
+.stageTabBtn:hover {
+  color: var(--text-1);
+  background-color: var(--surface-3);
+}
+
+.stageTabBtnActive {
+  background-color: var(--surface-1);
+  color: var(--text-1);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+}
+
+.stageTabNumber {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-3);
+}
+
+.stageTabBtnActive .stageTabNumber {
+  color: var(--text-1);
+}
+
+.formulaChip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--surface-2);
+  border: 1px solid var(--line-1);
+  border-radius: var(--r-md);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-2);
+}
+
+.formulaHighlight {
+  color: var(--red);
+  font-weight: 600;
+}
+
+.stepRowInteractive {
+  cursor: pointer;
+  border-radius: var(--r-md);
+  padding-left: var(--space-3);
+  padding-right: var(--space-3);
+  margin-left: calc(-1 * var(--space-3));
+  margin-right: calc(-1 * var(--space-3));
+  transition: background-color var(--dur-1) var(--ease-out), opacity var(--dur-2) var(--ease-out);
+}
+
+.stepRowInteractive:hover {
+  background-color: var(--surface-2);
+}
+
+.stepRowInteractiveActive {
+  background-color: color-mix(in srgb, var(--surface-2) 65%, transparent);
+}
+
+.progressRail {
+  width: 2px;
+  background-color: var(--line-1);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: var(--space-4) 0;
+}
+
+.railIndicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  background-color: var(--text-1);
+  transition: height var(--dur-2) var(--ease-out);
+}
+
+.railTick {
+  width: 8px;
+  height: 2px;
+  background-color: var(--line-2);
+  margin-left: -3px;
+  transition: background-color var(--dur-2) var(--ease-out);
+}
+
+.railTickActive {
+  background-color: var(--text-1);
+}
+
+.storySurfaceCard {
+  flex: 1;
+  background-color: var(--surface-1);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  padding: var(--space-5);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  box-shadow: var(--shadow-float);
+  min-height: 22rem;
+}
+
+.surfaceMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.surfaceNotesBox {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background-color: var(--surface-2);
+  border-radius: var(--r-md);
+  border: 1px solid var(--line-1);
+}
+
+.noteItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.noteHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-micro);
+  text-transform: uppercase;
+  color: var(--text-3);
+  letter-spacing: 0.08em;
+}
+
+.internalBadge {
+  color: var(--amber-text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+}
+
+.noteText {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-s);
+  color: var(--text-2);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.resolutionBox {
+  padding: var(--space-3);
+  background-color: var(--surface-2);
+  border-left: 2px solid var(--green);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+}
+
+.resolutionLabel {
+  font-family: var(--font-sans);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--green);
+  margin-bottom: var(--space-1);
+}
+
+.resolutionText {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-s);
+  color: var(--text-1);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.auditBadgeBox {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line-1);
+}
+
+/* Steps Column (Right) */
+.stepsColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.stepRow {
+  padding: var(--space-6) 0;
+  border-bottom: 1px solid var(--line-1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  cursor: default;
+  transition: opacity var(--dur-2) var(--ease-out);
+}
+
+.stepRow:first-child {
+  padding-top: 0;
+}
+
+.stepHeader {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.stepNumber {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.stepNumberActive {
+  color: var(--text-1);
+  font-weight: 600;
+}
+
+.stepTitle {
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-2);
+  font-weight: 600;
+  color: var(--text-1);
+  margin: 0;
+}
+
+.stepSummary {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  color: var(--text-2);
+  line-height: 1.5;
+  margin: 0;
+  max-width: 54ch;
+}
+
+/* Mobile compact step preview */
+.mobileStepPreview {
+  display: block;
+  margin: var(--space-3) 0;
+}
+
+@media (min-width: 1024px) {
+  .mobileStepPreview {
+    display: none;
+  }
+}
+
+/* ── 5. Three Roles ── */
+.rolesGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+  margin-top: var(--space-7);
+  border-top: 1px solid var(--line-1);
+  border-bottom: 1px solid var(--line-1);
+}
+
+@media (min-width: 860px) {
+  .rolesGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.roleColumn {
+  padding: var(--space-6) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  box-sizing: border-box;
+}
+
+@media (min-width: 860px) {
+  .roleColumn {
+    padding: var(--space-6) var(--space-5);
+    border-right: 1px solid var(--line-1);
+  }
+
+  .roleColumn:first-child {
+    padding-left: 0;
+  }
+
+  .roleColumn:last-child {
+    padding-right: 0;
+    border-right: none;
+  }
+}
+
+@media (max-width: 859px) {
+  .roleColumn {
+    border-bottom: 1px solid var(--line-1);
+  }
+
+  .roleColumn:last-child {
+    border-bottom: none;
+  }
+}
+
+.roleTitleRow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.roleTitle {
+  font-family: var(--font-sans);
+  font-size: var(--fs-title-2);
+  font-weight: 600;
+  color: var(--text-1);
+  margin: 0;
+}
+
+.roleTagline {
+  font-family: var(--font-sans);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-3);
+}
+
+.roleDesc {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  color: var(--text-2);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Role Real-UI Vignettes */
+.roleVignette {
+  background-color: var(--surface-1);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  padding: var(--space-4);
+  margin-top: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.vignetteMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--text-3);
+}
+
+.vignetteTitle {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-s);
+  font-weight: 600;
+  color: var(--text-1);
+  margin: 0;
+}
+
+.vignetteStat {
+  font-family: var(--font-mono);
+  font-size: var(--fs-title-2);
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+/* ── 6. SLA Moment ── */
+.slaSection {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-9) var(--margin);
+  box-sizing: border-box;
+  scroll-margin-top: 4.5rem;
+}
+
+.slaGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-5);
+  margin-top: var(--space-7);
+}
+
+@media (min-width: 768px) {
+  .slaGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+  }
+}
+
+.slaBlock {
+  padding: var(--space-6);
+  background-color: var(--surface-1);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  box-sizing: border-box;
+}
+
+.slaBlockBreached {
+  border-color: var(--line-2);
+}
+
+.slaStatusHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.slaStateLabel {
+  font-family: var(--font-sans);
+  font-size: var(--fs-micro);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--text-3);
+}
+
+.slaClockNumeral {
+  font-family: var(--font-mono);
+  font-size: clamp(2.5rem, 1.8rem + 2.5vw, 4.25rem);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--text-1);
+  letter-spacing: -0.02em;
+  margin: var(--space-2) 0;
+}
+
+.slaClockNumeralBreached {
+  color: var(--red);
+}
+
+.slaClockTail {
+  color: var(--text-3);
+}
+
+.slaClockTailBreached {
+  color: var(--red);
+  opacity: 0.65;
+}
+
+.slaCaption {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  color: var(--text-2);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── 7. Closing Section ── */
+.closingSection {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: var(--space-9) var(--margin) var(--space-10) var(--margin);
+  box-sizing: border-box;
+  text-align: left;
+  border-top: 1px solid var(--line-1);
+}
+
+.closingHeadline {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 1.5rem + 1.8vw, 3.25rem);
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--text-1);
+  margin: 0 0 var(--space-3) 0;
+  max-width: 24ch;
+}
+
+.closingSubline {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body-l);
+  color: var(--text-2);
+  line-height: 1.5;
+  margin: 0 0 var(--space-6) 0;
+  max-width: 54ch;
+}
+
+.closingCtas {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+/* ── Minimal Project Footer ── */
+.footer {
+  border-top: 1px solid var(--line-1);
+  background-color: var(--bg);
+  padding: var(--space-6) var(--margin);
+  box-sizing: border-box;
+}
+
+.footerInner {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .footerInner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.footerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.footerLinks {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.footerLink {
+  font-family: var(--font-sans);
+  font-size: var(--fs-label);
+  color: var(--text-2);
+  text-decoration: none;
+  transition: color var(--dur-1) var(--ease-out);
+}
+
+.footerLink:hover {
+  color: var(--text-1);
+}
+
+.footerCourseTag {
+  font-family: var(--font-mono);
+  font-size: var(--fs-meta);
+  color: var(--text-3);
+  letter-spacing: 0.02em;
+}
