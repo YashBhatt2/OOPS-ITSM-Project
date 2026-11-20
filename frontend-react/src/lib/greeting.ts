@@ -1,6 +1,5 @@
 /**
  * Greeting header utility and pure calculation logic.
- * Conforms to AGENTS.md and DESIGN.md sections 3, 5, 9, 11.2, 12, and 12.5.
  */
 
 export type TimeBand = 'morning' | 'afternoon' | 'evening' | 'night';

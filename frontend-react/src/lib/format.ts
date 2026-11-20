@@ -1,5 +1,5 @@
 /**
- * Date, time, reference, and duration formatting utilities following DESIGN.md §12
+ * Date, time, reference, and duration formatting utilities
  */
 
 export function formatDate(dateInput: string | number | Date): string {
@@ -113,7 +113,7 @@ export function formatOverdueDuration(seconds: number): string {
 }
 
 /**
- * Returns hours, minutes, seconds, unit word and whether seconds should be dimmed (DESIGN.md §5.3, §10.14)
+ * Returns hours, minutes, seconds, unit word and whether seconds should be dimmed
  */
 export function formatDurationParts(seconds: number): {
   primary: string;

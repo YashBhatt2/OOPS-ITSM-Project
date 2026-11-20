@@ -1,6 +1,6 @@
 # ITSM intelligence service (FastAPI)
 
-Internal HTTP service that ranks duplicate-incident and historical-resolution candidates for the Spring Boot backend. It implements the contract in the root [README](../README.md#integrate-the-python-intelligence-service) and [intelligence.md](../docs/phase-1/intelligence.md).
+Internal HTTP service that ranks duplicate-incident and historical-resolution candidates for the Spring Boot backend. It implements the contract in [intelligence.md](../docs/phase-1/intelligence.md).
 
 - Stateless: no database access. Spring sends up to 100 candidates per request; this service only scores them.
 - Only Spring Boot calls it. Keep it bound to `127.0.0.1` and never expose it to browsers.

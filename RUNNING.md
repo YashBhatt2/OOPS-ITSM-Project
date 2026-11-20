@@ -55,7 +55,7 @@ With the backend running and the bootstrap administrator credentials set in the 
 node frontend-react/scripts/seed-demo.mjs
 ```
 
-The script creates demo skills, categories, services, SLA policies, technicians, and employees. It uses the bootstrap administrator configured in `.env`. It does not create incident records; report one after signing in as an employee.
+The script creates demo skills, categories, services, SLA policies, technicians, and employees. It uses the bootstrap administrator configured in `.env`. It also prepares sample VPN incidents.
 
 ## 5. Start the React app
 
@@ -73,7 +73,7 @@ Open `http://localhost:5173`. Vite forwards `/api` requests to the backend on po
 
 When using `./scripts/run.sh`, Python is already running. No extra command is needed. Check `http://localhost:8000/health` for `{"status":"ok"}`. Suggestions are returned through Spring Boot; the browser does not call Python directly.
 
-Without the Python service, core reporting and incident lifecycle actions remain usable. Suggestion requests return an unavailable response. The React branch still needs the API path and payload alignment listed in [the integration plan](docs/backend-react-integration-plan.md) before all suggestion and lifecycle controls work.
+Without the Python service, core reporting and incident lifecycle actions remain usable. Suggestion requests return an unavailable response.
 
 ## Stop
 

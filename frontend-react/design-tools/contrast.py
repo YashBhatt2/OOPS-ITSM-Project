@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""WCAG 2.2 contrast checker for the DESIGN.md palette.
+"""WCAG 2.2 contrast checker for the website palette.
 
 Usage
   python3 design-tools/contrast.py "#F5F5F7" "#000000"   # check one pair
