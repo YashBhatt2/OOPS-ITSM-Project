@@ -1,24 +1,16 @@
-# Intelligent IT Service Management
+# Intelligent IT Service Management (I-ITSM)
 
-Employees report service incidents, technicians investigate and record fixes, and administrators assign work and verify resolutions. The service desk tracks response and resolution deadlines, keeps an audit history, and suggests related reports and previously accepted fixes.
+A web-based service desk built for the Object-Oriented Programming course at BITS Pilani, Hyderabad Campus. Employees report IT issues, technicians investigate and record fixes, and administrators assign tickets and verify resolutions. The app tracks response and resolution deadlines, flags possible duplicate reports, and suggests fixes from past incidents.
 
-## Run locally
+[Project report (PDF)](docs/project-report.pdf) · [Local setup](RUNNING.md)
 
-Follow the [local setup guide](RUNNING.md) to configure PostgreSQL, start Spring Boot and the Python ranking service, and open the React app.
-
-## Project
+## Codebase
 
 | Directory | Contents |
 | --- | --- |
-| `frontend-react/` | React and TypeScript website |
-| `frontend/` | Earlier lightweight web client |
-| `domain/` | Java rules for priority, assignment, incident transitions, and deadlines |
-| `backend/` | Spring Boot API, authentication, scheduled jobs, and PostgreSQL migrations |
-| `intelligence/` | Python ranking service, evaluation data, and tests |
+| [frontend-react](frontend-react/) | React and TypeScript web app |
+| [backend](backend/) | Spring Boot REST API and PostgreSQL migrations |
+| [domain](domain/) | Java rules for priority, assignment, and incident lifecycles |
+| [intelligence](intelligence/) | Python service for duplicate and resolution suggestions |
 
-## Assignment documentation
-
-- [Requirements and business rules](docs/phase-1/requirements.md)
-- [Architecture, UML, and database design](docs/phase-1/domain.md)
-- [Implementation decisions](docs/implementation.md)
-- [Validation scenarios](docs/phase-1/validation.md) and [recorded results](docs/validation-results.md)
+See the [design notes](docs/phase-1/domain.md) for the architecture, UML diagrams, and database schema, and the [validation results](docs/validation-results.md) for test coverage.
